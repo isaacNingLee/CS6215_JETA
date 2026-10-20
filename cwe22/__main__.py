@@ -1,4 +1,4 @@
-"""Command line: python3 -m cwe22 {setup,taie,llm,score}.
+"""Command line: python3 -m cwe22 {setup,taie,llm,score,relax}.
 
 Each step is resumable: completed cells in a run directory are skipped.
 """
@@ -6,7 +6,7 @@ import argparse
 import sys
 from datetime import datetime
 
-from . import config, llm, report, taie, workspace
+from . import config, llm, relax, report, taie, workspace
 
 
 def run_dir(name):
@@ -42,7 +42,15 @@ def main(argv=None):
     p_score.add_argument("--run", required=True)
     p_score.add_argument("--samples", type=int, default=config.SAMPLES, help="LLM samples per cell")
 
+    p_relax = with_run(sub.add_parser("relax", help="hint relaxation: Tai-e and hinted LLM at levels H0-E"))
+    p_relax.add_argument("--models", nargs="+", choices=list(config.MODELS), default=list(config.MODELS))
+    p_relax.add_argument("--samples", type=int, default=config.SAMPLES, help="hinted requests per cell")
+    p_relax.add_argument("--workers", type=int, default=8)
+    p_relax.add_argument("--dry-run", action="store_true", help="local steps only; no API calls")
+    p_relax.add_argument("--score", action="store_true", help="only write metrics.json and REPORT.md")
+
     args = parser.parse_args(argv)
+    config.require_data()
     if args.command == "setup":
         workspace.setup()
     elif args.command == "taie":
@@ -52,6 +60,15 @@ def main(argv=None):
             parser.error("--samples must be positive")
         llm.run(run_dir(args.run), args.models, args.modes, args.projects, args.variants,
                 args.samples, args.workers, args.dry_run)
+    elif args.command == "relax":
+        if args.samples < 1:
+            parser.error("--samples must be positive")
+        if not args.score:
+            relax.execute(run_dir(args.run), args.projects, args.models, args.samples, args.dry_run, args.workers)
+        if not args.dry_run:
+            result = relax.evaluate(run_dir(args.run), args.projects, args.models, args.samples)
+            print((run_dir(args.run) / "REPORT.md").read_text())
+            return 0 if all(a["summary"] for a in result["arms"]) else 1
     elif args.command == "score":
         result = report.evaluate(run_dir(args.run), samples=args.samples)
         print((run_dir(args.run) / "REPORT.md").read_text())

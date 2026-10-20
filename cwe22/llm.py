@@ -19,7 +19,6 @@ from .subjects import fix_file, fix_labels, manifest
 from .util import read_json, write_json
 
 PROMPTS = config.DATA / "prompts"
-MAX_TOKENS = 8000  # same budget as the original CS6215_proj runs
 RETRYABLE_HTTP = {408, 429, 500, 502, 503, 504}
 
 
@@ -56,9 +55,9 @@ def input_files(project, variant, mode):
     return files
 
 
-def request_body(model, prompt):
-    return dict(model=model, temperature=0, max_tokens=MAX_TOKENS, reasoning=dict(effort="low"),
-                messages=[dict(role="user", content=prompt)])
+def request_body(model, prompt, system=None):
+    messages = ([dict(role="system", content=system)] if system else []) + [dict(role="user", content=prompt)]
+    return dict(model=model, temperature=0, max_tokens=config.max_tokens(model), reasoning=dict(effort="low"), messages=messages)
 
 
 def call(body, key, timeout=600, attempts=3):
@@ -86,6 +85,48 @@ def call(body, key, timeout=600, attempts=3):
             continue
         return raw, attempt + 1
     raise RuntimeError("OpenRouter request failed after {} attempt(s): {}".format(attempt + 1, last))
+
+
+def ask(path, body, key):
+    """One saved pipeline request. A saved record with the same request is reused and
+    never resent (even if it failed); with ``key`` None (dry run) nothing is sent."""
+    if path.is_file():
+        record = read_json(path)
+        if record["request"] != body:
+            raise RuntimeError("Saved request differs from the new one: {}".format(path))
+        return record
+    if key is None:
+        return None
+    record = dict(request=body)
+    started = time.monotonic()
+    try:
+        raw, attempts = call(body, key)
+        record.update(response=raw, attempts=attempts)
+    except RuntimeError as exc:
+        record["error"] = str(exc)
+    record["seconds"] = round(time.monotonic() - started, 2)
+    write_json(path, record)
+    return record
+
+
+def answer_text(record):
+    """Content of a completed answer; raise ValueError if the request or answer is unusable."""
+    if record is None or "response" not in record:
+        raise ValueError((record or {}).get("error", "no response"))
+    choice = record["response"]["choices"][0]
+    if choice.get("finish_reason") != "stop":
+        raise ValueError("Incomplete response: finish_reason=" + str(choice.get("finish_reason")))
+    content = choice["message"].get("content") or ""
+    if not content.strip():
+        raise ValueError("Empty response content")
+    return content
+
+
+def answer_json(record):
+    match = re.search(r"\{.*\}", answer_text(record), re.DOTALL)
+    if not match:
+        raise ValueError("No JSON object in model response")
+    return json.loads(match.group(0))
 
 
 def parse_findings(content):

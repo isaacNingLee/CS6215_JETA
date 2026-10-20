@@ -43,6 +43,20 @@ MODELS = {
 }
 MODES = ["vanilla", "hinted"]
 SAMPLES = 3  # independent LLM requests per cell
+# Fixed max_tokens per request. Qwen keeps the original CS6215_proj budget; DeepSeek's
+# reasoning tokens count against it, and at 8,000 it often stopped before answering.
+MAX_TOKENS = {"qwen": 8000, "deepseek": 16000}
+
+
+def max_tokens(model):
+    """Budget for an OpenRouter model ID."""
+    return next(MAX_TOKENS[short] for short, name in MODELS.items() if name == model)
+
+
+def require_data():
+    """``data/`` is distributed separately from the code (it is not in git)."""
+    if not (DATA / "subjects.json").is_file():
+        raise RuntimeError("Missing {}: download the data/ folder and place it at {}".format(DATA, ROOT))
 
 
 def load_env(path=ROOT / ".env"):
