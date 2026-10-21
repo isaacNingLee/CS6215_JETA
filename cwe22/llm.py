@@ -60,14 +60,14 @@ def request_body(model, prompt, system=None):
     return dict(model=model, temperature=0, max_tokens=config.max_tokens(model), reasoning=dict(effort="low"), messages=messages)
 
 
-def call(body, key, timeout=600, attempts=3):
+def call(body, key, timeout=600, attempts=3, url=config.OPENROUTER_URL):
     """POST to OpenRouter; retry only network errors, retryable HTTP codes and empty bodies."""
     data = json.dumps(body).encode()
     last = None
     for attempt in range(attempts):
         if attempt:
             time.sleep(10 * attempt)
-        request = urllib.request.Request(config.OPENROUTER_URL, data=data, method="POST", headers={
+        request = urllib.request.Request(url, data=data, method="POST", headers={
             "Authorization": "Bearer " + key, "Content-Type": "application/json"})
         try:
             with urllib.request.urlopen(request, timeout=timeout) as response:
@@ -87,7 +87,7 @@ def call(body, key, timeout=600, attempts=3):
     raise RuntimeError("OpenRouter request failed after {} attempt(s): {}".format(attempt + 1, last))
 
 
-def ask(path, body, key):
+def ask(path, body, key, url=config.OPENROUTER_URL):
     """One saved pipeline request. A saved record with the same request is reused and
     never resent (even if it failed); with ``key`` None (dry run) nothing is sent."""
     if path.is_file():
@@ -100,7 +100,7 @@ def ask(path, body, key):
     record = dict(request=body)
     started = time.monotonic()
     try:
-        raw, attempts = call(body, key)
+        raw, attempts = call(body, key, url=url)
         record.update(response=raw, attempts=attempts)
     except RuntimeError as exc:
         record["error"] = str(exc)
@@ -129,11 +129,32 @@ def answer_json(record):
     return json.loads(match.group(0))
 
 
+def last_findings_object(content):
+    """The last JSON object with a ``findings`` key, for answers that quote JSON before their own
+    (debate round 2 asks for the answer at the end of the response); None if there is none."""
+    decoder, found = json.JSONDecoder(), None
+    for start in (m.start() for m in re.finditer(r"\{", content)):
+        try:
+            value, _ = decoder.raw_decode(content, start)
+        except ValueError:
+            continue
+        if isinstance(value, dict) and "findings" in value:
+            found = value
+    return found
+
+
 def parse_findings(content):
     match = re.search(r"\{.*\}", content.strip(), re.DOTALL)
     if not match:
         raise ValueError("No JSON object in model response")
-    findings = json.loads(match.group(0)).get("findings", [])
+    try:
+        answer = json.loads(match.group(0))
+    except ValueError:
+        # Only when the whole-span parse fails, so answers that parse as one object are unaffected.
+        answer = last_findings_object(content)
+        if answer is None:
+            raise
+    findings = answer.get("findings", [])
     if not isinstance(findings, list) or any(not isinstance(f, dict) for f in findings):
         raise ValueError("'findings' must be a list of objects")
     return findings

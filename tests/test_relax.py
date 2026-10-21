@@ -3,7 +3,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from cwe22 import entry, relax, spec
+from cwe22 import config, entry, relax, spec
 
 FLOW = ("TaintFlow{<a.Unzip: void run(a.H)>[3@L10] $r1 = invokevirtual h.getFileName()/result"
         " -> <a.Out: void <init>(java.io.File)>[1@L5] invokespecial this.<init>(f)/0}")
@@ -63,15 +63,21 @@ class SpecTest(unittest.TestCase):
 class RelaxTest(unittest.TestCase):
     def test_levels_map_to_tai_e_configurations(self):
         self.assertEqual([relax.taie_config(l, "qwen") for l in relax.LEVELS],
-                         ["h0", "h1", "h2a", "h2b-qwen", "e-qwen-h2b"])
-        self.assertEqual([relax.entry_of(c) for c in ("h2b-qwen", "e-qwen-h2a")], ["manual", "e-qwen"])
+                         ["manual", "h1", "h2a", "h2b-qwen", "e-qwen-h2b"])
+        self.assertEqual([relax.entry_of(c) for c in ("manual", "h2b-qwen", "e-qwen-h2a")], ["manual", "manual", "e-qwen"])
+
+    def test_first_level_is_the_hinted_baseline(self):
+        run = relax.Run(Path("/r/relaxrun"), ["zip4j"], ["qwen"], baseline="base")
+        self.assertEqual(run.cell_path("qwen", "hinted", "zip4j", "fixed", 2),
+                         config.RESULTS / "base/llm/qwen-hinted/zip4j-fixed-s2.json")
+        self.assertEqual(run.cell_path("qwen", "h1", "zip4j", "fixed", 2), Path("/r/relaxrun/llm/qwen-h1/zip4j-fixed-s2.json"))
 
     def test_hint_is_exactly_the_tai_e_configuration(self):
         with tempfile.TemporaryDirectory() as tmp:
             run = relax.Run(Path(tmp), ["zip4j"], ["qwen"])
             self.assertIsNone(run.hint("e-qwen-h2b", "zip4j"))
-            run.write_policies("h0")
-            hint = run.hint("h0", "zip4j")
+            run.write_policies("manual")
+            hint = run.hint("manual", "zip4j")
             self.assertIn("Zip4jEntry.java", hint)
             self.assertIn("FileHeader: java.lang.String getFileName()", hint)
             self.assertNotIn("UnzipEngine.java", hint)  # manual sink_files are not part of the configuration

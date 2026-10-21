@@ -3,16 +3,17 @@ hinted LLM exactly the configuration Tai-e receives at each step.
 
 Levels (each removes one more human input from the one before):
 
-* h0   manual adapter + manual per-project policy (reference)
+* hinted  manual adapter + manual per-project policy; the hinted LLM is the prose-hinted
+          baseline of a baseline run (``llm`` command: hints.json + sink files)
 * h1   manual adapter + shared CWE-22 kit only
 * h2a  manual adapter + kit + every catalogue candidate source
 * h2b  manual adapter + kit + candidates the model did not reject (per model)
 * e    LLM-written entry driver + kit + candidates the model did not reject (per model)
 
-At every level the hinted LLM sees the entry program and the policy files of that
-level (data/prompts/relax/hinted.txt) and the same input file as the vanilla
-baseline: the production fix file only. The manual ``sink_files`` are part of the
-manual hint and are not shown at any level, so the hint is the only variable.
+From H1 on, the hinted LLM sees the entry program and the policy files of that level
+(data/prompts/relax/hinted.txt) and the production fix file only; the manual
+``sink_files`` belong to the manual hint and are not shown. The first level reuses the
+hinted baseline unchanged, so the ladder starts from the arm the baselines report.
 
 Every LLM step (pick, driver, repair, selection, hinted answer) is one saved
 request with the fixed token budget, never resent. A failed hinted answer, a
@@ -31,16 +32,17 @@ from .scoring import aggregate, flow_locations, score
 from .subjects import check_dataset, fix_labels, manifest
 from .util import read_json, sha256, write_json
 
-LEVELS = ["h0", "h1", "h2a", "h2b", "e"]
-LEVEL_NAMES = {"h0": "H0 manual policy", "h1": "H1 kit only", "h2a": "H2a kit + all candidates",
+LEVELS = ["hinted", "h1", "h2a", "h2b", "e"]
+LEVEL_NAMES = {"hinted": "Hinted (manual policy)", "h1": "H1 kit only", "h2a": "H2a kit + all candidates",
                "h2b": "H2b kit + LLM-selected sources", "e": "E LLM entry + kit + LLM-selected sources"}
 TEMPLATE = config.DATA / "prompts/relax/hinted.txt"
+BASELINE = "261020b"  # baseline run whose hinted arm is the first level
 TAIE_WORKERS = 3
 
 
 def taie_config(level, short):
     """Tai-e configuration that the hinted ``short`` model sees at ``level``."""
-    return {"h2b": "h2b-" + short, "e": "e-" + short + "-h2b"}.get(level, level)
+    return {"hinted": "manual", "h2b": "h2b-" + short, "e": "e-" + short + "-h2b"}.get(level, level)
 
 
 def entry_of(cfg):
@@ -49,8 +51,9 @@ def entry_of(cfg):
 
 
 class Run:
-    def __init__(self, run_dir, projects, models, jhome=None):
+    def __init__(self, run_dir, projects, models, jhome=None, baseline=BASELINE):
         self.dir, self.raw = run_dir, config.RAW / run_dir.name
+        self.baseline = config.RESULTS / baseline
         self.projects, self.models = projects, models
         self.subjects = manifest()["subjects"]
         self.jhome = jhome
@@ -70,7 +73,9 @@ class Run:
         return self.dir / "taie" / cfg / "{}-{}.json".format(project, variant)
 
     def cell_path(self, short, level, project, variant, sample):
-        return self.dir / "llm" / "{}-{}".format(short, level) / "{}-{}-s{}.json".format(project, variant, sample)
+        """Hinted answer; the first level's answers are the baseline run's hinted arm."""
+        root, arm = (self.baseline, "hinted") if level == "hinted" else (self.dir, level)
+        return root / "llm" / "{}-{}".format(short, arm) / "{}-{}-s{}.json".format(project, variant, sample)
 
     # ---- subjects and catalogues -------------------------------------------
     def prepare_subjects(self):
@@ -114,7 +119,7 @@ class Run:
             folder = self.policy(cfg, project)
             if folder.is_dir() or not self.adapter(cfg, project).is_file():
                 continue
-            if cfg == "h0":
+            if cfg == "manual":
                 taie.taint_config(project, folder)
             elif cfg == "h1":
                 spec.write_policy(folder)
@@ -284,19 +289,19 @@ class Run:
             list(pool.map(one, cells))
 
 
-def execute(run_dir, projects, models, samples=config.SAMPLES, dry_run=False, workers=8):
+def execute(run_dir, projects, models, samples=config.SAMPLES, dry_run=False, workers=8, baseline=BASELINE):
     """Run every missing step in order; resumable, and a dry run stops before any request."""
-    run = Run(run_dir, projects, models)
+    run = Run(run_dir, projects, models, baseline=baseline)
     key = None if dry_run else config.secret("OPENROUTER_API_KEY")
     run.prepare_subjects()
     cats = run.catalogues("manual")
     found = run.candidates("manual", cats)
-    run.write_policies("h0")
+    run.write_policies("manual")
     run.write_policies("h1")
     run.write_policies("h2a", {p: c["union"] for p, c in found.items()})
-    for cfg in ("h0", "h1", "h2a"):
+    for cfg in ("manual", "h1", "h2a"):
         run.run_taie(cfg)
-    ready = {"h0", "h1", "h2a"}
+    ready = {"manual", "h1", "h2a"}
     for short in models:
         selected = run.select("manual", short, cats, found, key)
         if selected is not None:
@@ -315,7 +320,12 @@ def execute(run_dir, projects, models, samples=config.SAMPLES, dry_run=False, wo
             run.write_policies(name + "-h2b", selected)
             run.run_taie(name + "-h2b")
             ready.add(name + "-h2b")
-    levels = [l for l in LEVELS if all(taie_config(l, s) in ready for s in models)]
+    # The first level's hinted answers are the baseline run's hinted arm (``llm`` command), never made here.
+    levels = [l for l in LEVELS[1:] if all(taie_config(l, s) in ready for s in models)]
+    missing = [c for s in models for p in projects for v in config.VARIANTS for c in [run.cell_path(s, LEVELS[0], p, v, 1)]
+               if not c.is_file()]
+    if missing:
+        print("Hinted baseline answers missing (run `llm --run {}`): {}".format(baseline, len(missing)), flush=True)
     if dry_run:
         print("Dry run: Tai-e configurations ready: {}; hinted levels ready: {}".format(sorted(ready), levels))
     run.run_hinted(levels, samples, key, workers)
@@ -368,14 +378,15 @@ def arms(models):
     return rows
 
 
-def evaluate(run_dir, projects=tuple(config.PROJECTS), models=tuple(config.MODELS), samples=config.SAMPLES):
-    run = Run(run_dir, list(projects), list(models))
+def evaluate(run_dir, projects=tuple(config.PROJECTS), models=tuple(config.MODELS), samples=config.SAMPLES,
+             baseline=BASELINE):
+    run = Run(run_dir, list(projects), list(models), baseline=baseline)
     info = manifest()
     check_dataset(info["dataset_commit"])
     labels = {p: fix_labels(info["subjects"][p]["slug"]) for p in projects}
     result = dict(run=run_dir.name, scored_at=datetime.now(timezone.utc).isoformat(timespec="seconds"),
                   dataset_commit=info["dataset_commit"], models={m: config.MODELS[m] for m in models},
-                  samples=samples, max_tokens=budgets(run_dir), failures=[], arms=[])
+                  samples=samples, max_tokens=budgets(run_dir), baseline=baseline, failures=[], arms=[])
     for level, label, (kind, a, b) in arms(models):
         per_sample = []
         for sample in range(1, (1 if kind == "taie" else samples) + 1):
@@ -430,8 +441,10 @@ def render(result, projects, labels):
              "Hinted LLM: {} samples per cell; max_tokens per request: {}. Tai-e is deterministic (1 run).".format(
                  result["samples"], ", ".join("{} {}".format(k, v) for k, v in result["max_tokens"].items())), "",
              "Levels: " + "; ".join("**{}**".format(LEVEL_NAMES[l]) for l in LEVELS) + ".",
-             "At each level the hinted LLM sees exactly the entry program and policy files Tai-e receives,",
-             "plus the production fix file (the vanilla baseline's input). H2b and E are per model: each model",
+             "The first level's hinted LLM is the prose-hinted baseline of run `{}` (manual policy in words, fix".format(
+                 result["baseline"]),
+             "file and sink files). From H1 on, the hinted LLM sees exactly the entry program and policy files",
+             "Tai-e receives, plus the production fix file. H2b and E are per model: each model",
              "selects its own sources (and writes its own driver) and is hinted with that configuration.",
              "*Tai-e app scope* keeps only flows whose two endpoint methods are project or entry code.", "",
              "Unit: `(simple class, method)` on the vulnerable revision; Detected = K > 0, FDR = 1 − K/N,",
