@@ -223,7 +223,7 @@ def arms(relax_run, readers_dir, predictions, models, samples):
 
 
 def evaluate(out, projects=tuple(config.PROJECTS), models=tuple(config.MODELS), samples=config.SAMPLES,
-             relax_run="261020h", readers="261020b"):
+             relax_run="261020h", readers="261021b"):
     relax_dir, readers_dir = config.RESULTS / relax_run, config.RESULTS / readers
     for path in (relax_dir / "taie", readers_dir / "llm"):
         if not path.is_dir():

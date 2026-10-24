@@ -130,8 +130,8 @@ def answer_json(record):
 
 
 def last_findings_object(content):
-    """The last JSON object with a ``findings`` key, for answers that quote JSON before their own
-    (debate round 2 asks for the answer at the end of the response); None if there is none."""
+    """The last JSON object with a ``findings`` key, for answers that quote JSON before their own;
+    None if there is none."""
     decoder, found = json.JSONDecoder(), None
     for start in (m.start() for m in re.finditer(r"\{", content)):
         try:
@@ -165,6 +165,16 @@ def is_path_traversal(finding):
     return any(word in text for word in hints()["path_traversal_keywords"])
 
 
+def simple_location(cls, method):
+    """A finding's ``(class, method)`` in CWE-Bench-Java's form (fix_info.csv): the innermost simple
+    class name, as Tai-e locations are scored. ``("ZipUtil", "Unpacker.process")``,
+    ``("ZipUtil$Unpacker", "process")`` and ``("org.x.Unpacker", "process")`` all name
+    ``("Unpacker", "process")``."""
+    cls = re.split(r"[.$]", cls)[-1]
+    *owner, method = re.split(r"[.$]", method)
+    return (owner[-1] if owner and owner[-1] else cls), method
+
+
 def cwe22_locations(raw):
     """CWE-22 ``(class, method)`` locations from a completed response; raise if unusable."""
     choice = raw["choices"][0]
@@ -174,7 +184,7 @@ def cwe22_locations(raw):
     if not content.strip():
         raise ValueError("Empty response content")
     findings = parse_findings(content)
-    locations = sorted({(str(f.get("class", "")).strip(), str(f.get("method", "")).strip())
+    locations = sorted({simple_location(str(f.get("class", "")).strip(), str(f.get("method", "")).strip())
                         for f in findings if is_path_traversal(f)})
     return [list(loc) for loc in locations if all(loc)], findings
 

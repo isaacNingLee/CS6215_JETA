@@ -1,4 +1,4 @@
-"""Command line: python3 -m cwe22 {setup,taie,llm,score,relax,agree,debate,checklist}.
+"""Command line: python3 -m cwe22 {setup,taie,llm,score,relax,agree,pipeline,llmdfa,paper}.
 
 Each step is resumable: completed cells in a run directory are skipped.
 """
@@ -6,7 +6,7 @@ import argparse
 import sys
 from datetime import datetime
 
-from . import agreement, checklist, config, debate, llm, relax, report, taie, workspace
+from . import agreement, config, llm, llmdfa, paper, pipeline, relax, report, taie, workspace
 
 
 def run_dir(name):
@@ -52,33 +52,39 @@ def main(argv=None):
 
     p_agree = with_run(sub.add_parser("agree", help="agreement guard on every relaxation level, both revisions"))
     p_agree.add_argument("--relax-run", default="261020h", help="hint-relaxation run with the Tai-e flows")
-    p_agree.add_argument("--readers", default="261020b", help="baseline run with the vanilla readers")
+    p_agree.add_argument("--readers", default="261021b", help="baseline run with the vanilla readers")
     p_agree.add_argument("--models", nargs="+", choices=list(config.MODELS), default=list(config.MODELS),
                          help="selection/driver models of the H2b and E configurations")
     p_agree.add_argument("--samples", type=int, default=config.SAMPLES, help="reader samples")
 
-    p_debate = sub.add_parser("debate", help="multiagent debate (Du et al.) between the hinted LLMs, with an opposing agent")
-    p_debate.add_argument("--run", default=datetime.now().strftime("%y%m%d-%H%M"), help="run name under results/")
-    p_debate.add_argument("--relax-run", default="261020h", help="hint-relaxation run whose hinted answers are round 1")
-    p_debate.add_argument("--levels", nargs="+", choices=relax.LEVELS, default=relax.LEVELS)
-    p_debate.add_argument("--samples", type=int, default=config.SAMPLES)
-    p_debate.add_argument("--agreement-runs", nargs="+", default=["261020r", "261020g"],
-                          help="agreement-guard runs to filter with the debated answers")
-    p_debate.add_argument("--workers", type=int, default=8)
-    p_debate.add_argument("--dry-run", action="store_true", help="count calls and prompt sizes; no API calls")
-    p_debate.add_argument("--score", action="store_true", help="only write metrics.json and REPORT.md")
+    p_pipe = sub.add_parser("pipeline", help="proposed pipeline: agreement guard -> Jev judge -> blind checklist")
+    p_pipe.add_argument("--run", default="261021c", help="run name under results/")
+    p_pipe.add_argument("--agreement-run", default="261021g", help="agreement run whose guard tier is filtered")
+    p_pipe.add_argument("--relax-run", default="261020h", help="hint-relaxation run with the hinted answers")
+    p_pipe.add_argument("--baseline", default=relax.BASELINE, help="baseline run whose hinted arm is the first level")
+    p_pipe.add_argument("--levels", nargs="+", choices=relax.LEVELS, default=relax.LEVELS)
+    p_pipe.add_argument("--samples", type=int, default=config.SAMPLES)
+    p_pipe.add_argument("--workers", type=int, default=8)
+    p_pipe.add_argument("--dry-run", action="store_true", help="count missing calls; no API calls")
+    p_pipe.add_argument("--score", action="store_true", help="only write predictions.json, metrics.json and REPORT.md")
 
-    p_check = sub.add_parser("checklist", help="agreement guard + LLM-written CWE-22 checklist answered by Jev")
-    p_check.add_argument("--run", default=datetime.now().strftime("%y%m%d-%H%M"), help="run name under results/")
-    p_check.add_argument("--levels", nargs="+", choices=relax.LEVELS, default=relax.LEVELS)
-    p_check.add_argument("--arms", nargs="+", choices=list(checklist.ARMS), default=list(checklist.ARMS))
-    p_check.add_argument("--samples", type=int, default=config.SAMPLES)
-    p_check.add_argument("--agreement-runs", nargs="+", default=["261020r", "261020g"],
-                         help="agreement-guard runs whose priority tier is filtered")
-    p_check.add_argument("--debate-run", default="261020d", help="debate run whose filter row is shown for comparison")
-    p_check.add_argument("--workers", type=int, default=8)
-    p_check.add_argument("--dry-run", action="store_true", help="count calls and code sizes; no API calls")
-    p_check.add_argument("--score", action="store_true", help="only write metrics.json and REPORT.md")
+    p_dfa = sub.add_parser("llmdfa", help="LLMDFA (NeurIPS 2024) baseline on the Hinted level's inputs")
+    p_dfa.add_argument("--run", default="261022l", help="run name under results/")
+    p_dfa.add_argument("--setup", action="store_true", help="clone the pinned engine, create its venv, build the grammar")
+    p_dfa.add_argument("--python", default=sys.executable, help="interpreter for LLMDFA's virtualenv (with --setup)")
+    p_dfa.add_argument("--models", nargs="+", choices=list(llmdfa.MODELS), default=list(llmdfa.MODELS))
+    p_dfa.add_argument("--samples", type=int, default=config.SAMPLES)
+    p_dfa.add_argument("--projects", nargs="+", choices=config.PROJECTS, default=config.PROJECTS)
+    p_dfa.add_argument("--workers", type=int, default=4, help="cases run at once")
+    p_dfa.add_argument("--dry-run", action="store_true", help="write the plans and list the cases; no API calls")
+    p_dfa.add_argument("--score", action="store_true", help="only write metrics.json and REPORT.md")
+
+    p_paper = sub.add_parser("paper", help="LaTeX tables for the paper from saved runs")
+    p_paper.add_argument("--out", default="paper", help="directory under results/ for the .tex files")
+    p_paper.add_argument("--baseline", default="261021b")
+    p_paper.add_argument("--relax-run", default="261020h")
+    p_paper.add_argument("--pipeline-run", default="261021c")
+    p_paper.add_argument("--llmdfa-run", default="261022l")
 
     args = parser.parse_args(argv)
     config.require_data()
@@ -108,21 +114,27 @@ def main(argv=None):
                                     args.relax_run, args.readers)
         print((run_dir(args.run) / "REPORT.md").read_text())
         return 0 if all(a["summary"] for a in result["arms"]) else 1
-    elif args.command == "debate":
-        if not args.score and not debate.execute(run_dir(args.run), args.relax_run, args.samples, args.levels,
+    elif args.command == "pipeline":
+        if not args.score and not pipeline.execute(run_dir(args.run), args.agreement_run, args.relax_run, args.baseline,
+                                                   args.samples, args.levels, args.workers, args.dry_run):
+            return 0 if args.dry_run else 1
+        result = pipeline.evaluate(run_dir(args.run), args.agreement_run, args.relax_run, args.baseline,
+                                   args.samples, args.levels)
+        print((run_dir(args.run) / "REPORT.md").read_text())
+        return 0 if all(a["summary"] for a in result["arms"]) else 1
+    elif args.command == "llmdfa":
+        if args.setup:
+            llmdfa.setup(args.python)
+            return 0
+        if not args.score and not llmdfa.execute(run_dir(args.run), args.models, args.samples, args.projects,
                                                  args.workers, args.dry_run):
             return 0 if args.dry_run else 1
-        result = debate.evaluate(run_dir(args.run), args.relax_run, args.samples, args.levels, args.agreement_runs)
-        print((run_dir(args.run) / "REPORT.md").read_text())
+        result = llmdfa.evaluate(run_dir(args.run), args.models, args.samples, args.projects)
+        print((run_dir(args.run) / "llmdfa" / "REPORT.md").read_text())
         return 0 if all(a["summary"] for a in result["arms"]) else 1
-    elif args.command == "checklist":
-        if not args.score and not checklist.execute(run_dir(args.run), args.samples, args.levels, args.arms,
-                                                    args.agreement_runs, args.workers, args.dry_run):
-            return 0 if args.dry_run else 1
-        result = checklist.evaluate(run_dir(args.run), args.samples, args.levels, args.arms, args.agreement_runs,
-                                    args.debate_run)
-        print((run_dir(args.run) / "REPORT.md").read_text())
-        return 0 if all(a["summary"] for a in result["arms"]) else 1
+    elif args.command == "paper":
+        out = paper.write(run_dir(args.out), args.baseline, args.relax_run, args.pipeline_run, args.llmdfa_run)
+        print("wrote {}/paper_tables.tex and paper_tables_main.tex".format(out))
     elif args.command == "score":
         result = report.evaluate(run_dir(args.run), samples=args.samples)
         print((run_dir(args.run) / "REPORT.md").read_text())

@@ -5,6 +5,8 @@ CWE-22 (path traversal) baselines on six CWE-Bench-Java projects:
 - **Tai-e** 0.5.4 taint analysis with a manual source/sink/transfer policy and entry adapter per project
 - **Vanilla LLM**: the model reads the production fix file and reports any vulnerabilities
 - **Hinted LLM**: the model also gets Tai-e's source/sink policy and confirms or rejects that flow
+- **Proposed pipeline**: Tai-e's agreement guard, then Jev judging the hinted answers, then a blind
+  CWE-22 checklist answered by Jev ([Proposed pipeline](#proposed-pipeline))
 
 The LLMs are `qwen/qwen3-coder-30b-a3b-instruct` and `deepseek/deepseek-v4-pro`, both via OpenRouter.
 
@@ -24,11 +26,14 @@ cwe22/            Python package (standard library only)
   spec.py         relaxed policies: kit, candidate sources, LLM source selection
   catalogue.py    Tai-e method catalogue (java/MethodCataloguePlugin.java)
   entry.py        LLM-written entry drivers
-  agreement.py    agreement guard (proposed method) on every level, both revisions
+  agreement.py    pipeline stage 1: agreement guard on every level, both revisions
   guards.py       checked guard contracts (java/SourceFacts.java, java/CanonicalGuardCheck.java)
-  debate.py       multiagent debate (Du et al.) between hinted Qwen and hinted DeepSeek
-  checklist.py    agreement guard + LLM-written CWE-22 checklist answered by Jev
-                  (java/MethodContext.java extracts what the judge reads)
+  pipeline.py     the proposed pipeline: agreement guard -> Jev judge -> blind checklist
+                  (java/MethodContext.java extracts the code Jev reads)
+  llmdfa.py       LLMDFA (NeurIPS 2024) baseline: setup, cases, scoring
+  llmdfa_runtime.py  runs inside LLMDFA's venv; patches the pinned engine's boundaries (from CS6215_proj)
+  llmdfa_specs.py    CWE-22 source/sink prompt specs from the manual policy
+  paper.py        LaTeX tables for the paper (python3 -m cwe22 paper)
 data/
   subjects.json   pinned dataset commit and per-project revisions
   taie/           Tai-e taint policies (common string transfers + per project)
@@ -36,19 +41,18 @@ data/
   taie/kit/       shared CWE-22 kit (no project class; frozen in CS6215_proj)
   prompts/        frozen vanilla/hinted prompts and per-project hints
   prompts/relax/  selection, entry-driver and configuration-hinted prompts
-  prompts/debate/ Du et al. update prompt and the opposing agent's prompt
-  prompts/checklist/ checklist writer (blind, per-location) and the control's answer prompt
-results/<run>/    run outputs: taie/, llm/, metrics.json, REPORT.md
-  261020b         baselines: 3 samples, max_tokens 8,000 for both models
-  261020h         hint relaxation: 3 samples, max_tokens 8,000 for both models,
-                  plus paper_tables*.tex
-  261020g         agreement guard: Tai-e from 261020h, readers from 261020b (3 samples)
-  261020r         reproduction check: agreement guard with CS6215_proj's saved readers
-                  (llm/ holds copies of them; each record names its source file)
-  261020d         debate (plain and with an opposing agent), Hinted level only so far (180 calls, $1.98)
-  261021c         checklist filter: blind Jev arm at every level, all arms at Hinted and H1
-                  (558 calls, $1.22)
-tests/            unit tests (guard-checker tests need JDK 17 and the Tai-e jar)
+  prompts/checklist/blind.txt  the checklist writer's prompt (CWE-22's description only)
+  llmdfa.lock.json  pinned LLMDFA and tree-sitter-java commits
+results/<run>/    run outputs: metrics.json, REPORT.md and the saved inputs
+  261021b         baselines (Tai-e, vanilla, hinted): 3 samples, max_tokens 8,000, except 8
+                  DeepSeek vanilla answers cut off at 8,000 and asked again at 16,000
+                  (6 then completed; fixed MPXJ s2 and s3 hit 16,000 too)
+  261020h         hint relaxation: 3 samples, max_tokens 8,000 for both models
+  261021g         pipeline stage 1: agreement guard (Tai-e from 261020h, readers from 261021b)
+  261021c         the pipeline (stages 2 and 3) at every level
+  261022l         LLMDFA baseline: 2 models x 3 samples x 12 cases (llmdfa/; $6.13)
+  paper/          paper_tables.tex (appendix) and paper_tables_main.tex
+tests/            unit tests (Java tests need JDK 17 and the Tai-e jar)
 ```
 
 Large, re-downloadable material is kept **outside OneDrive** in `$CS6215_WORK`
@@ -75,10 +79,16 @@ python3 -m unittest discover -s tests -t .
 ## Running the experiment
 
 ```sh
-python3 -m cwe22 taie  --run 261020b           # 12 Tai-e analyses (builds checkouts first)
-python3 -m cwe22 llm   --run 261020b --dry-run # build prompts only
-python3 -m cwe22 llm   --run 261020b           # 3 samples x 48 cells = 144 OpenRouter requests
-python3 -m cwe22 score --run 261020b           # writes results/261020b/{metrics.json,REPORT.md}
+python3 -m cwe22 taie  --run <run>             # 12 Tai-e analyses (builds checkouts first)
+python3 -m cwe22 llm   --run <run> --dry-run   # build prompts only
+python3 -m cwe22 llm   --run <run>             # 3 samples x 48 cells = 144 OpenRouter requests
+python3 -m cwe22 score --run <run>             # writes results/<run>/{metrics.json,REPORT.md}
+python3 -m cwe22 relax --run <run>             # hint relaxation (see below)
+python3 -m cwe22 agree --run <run>             # pipeline stage 1
+python3 -m cwe22 pipeline --run <run>          # pipeline stages 2 and 3
+python3 -m cwe22 llmdfa --setup                # pinned LLMDFA + venv + grammar in $CS6215_WORK/tools
+python3 -m cwe22 llmdfa --run <run>            # LLMDFA baseline (results/<run>/llmdfa/)
+python3 -m cwe22 paper                         # results/paper/*.tex
 ```
 
 Every step can be resumed. Cells that already have results are skipped, so a rerun never pays again for a completed LLM answer. Use `--projects`, `--variants`, `--models` and `--modes` to run a subset.
@@ -89,6 +99,9 @@ The unit is one `(simple class, method)` location on the **vulnerable** revision
 
 - Tai-e contributes the enclosing methods of both endpoints of every flow.
 - An LLM contributes the methods of findings whose CWE or explanation mentions path traversal.
+  Names take `fix_info.csv`'s form, the innermost simple class (`llm.simple_location`):
+  `("ZipUtil", "Unpacker.process")` and `("ZipUtil$Unpacker", "process")` are both
+  `("Unpacker", "process")`.
 
 Let N be the number of locations an arm reports for a project, and K the number of those that are production fix methods in `fix_info.csv`. Then:
 
@@ -97,12 +110,14 @@ Let N be the number of locations an arm reports for a project, and K the number 
 - **F1**: 2K/(N+K), using binary project recall as in IRIS §3.6
 
 Macro FDR averages only projects with nonempty output. Detection and macro F1 count all projects.
+The paper tables (`python3 -m cwe22 paper`) instead count a failed or empty output as 100% FDR,
+so their FDR can differ from a `REPORT.md`.
 
 Hosted LLMs are not deterministic even at temperature 0, so each LLM cell is sampled 3 times (`--samples`). Each sample is scored on its own, and the report gives the mean and [min–max]. Tai-e is deterministic and runs once.
 
-Each sample is one request with a fixed `max_tokens` budget per model (`config.MAX_TOKENS`) and is never retried. Both saved runs used 8,000 for both models, the original CS6215_proj budget. The current setting gives DeepSeek 16,000 because its reasoning tokens count against the budget. A saved request is never resent with different parameters, so set DeepSeek back to 8,000 before resuming either saved run; scoring makes no requests and works either way. Each report states the budget it was run with. A failed answer counts as empty output: undetected, F1 0, FDR undefined. Failures include a request error, a response truncated at the budget, empty content or malformed JSON. `REPORT.md` lists every failed cell.
+Each sample is one request with a fixed `max_tokens` budget per model (`config.MAX_TOKENS`) and is never retried. The saved runs used 8,000 for both models, the original CS6215_proj budget (see `261021b` for the exception). The current setting gives DeepSeek 16,000 because its reasoning tokens count against the budget. A saved request is never resent with different parameters, so set DeepSeek back to 8,000 before resuming a saved run; scoring makes no requests and works either way. Each report states the budget it was run with. A failed answer counts as empty output: undetected, F1 0, FDR undefined. Failures include a request error, a response truncated at the budget, empty content or malformed JSON. `REPORT.md` lists every failed cell.
 
-`score` reports fixed-revision outputs as counts only. `agree` also scores them; see [Agreement guard](#agreement-guard-proposed-method). All scores are fix-location proxies, not verified vulnerability labels.
+`score` reports fixed-revision outputs as counts only. `agree` and `pipeline` also score them; see [Proposed pipeline](#proposed-pipeline). All scores are fix-location proxies, not verified vulnerability labels.
 
 Caveat: the LLM arms read the file that the dataset says contains the fix. That gives them oracle-selected input. Tai-e instead analyses the whole program reachable from its entry adapter.
 
@@ -128,7 +143,7 @@ input from Tai-e's configuration:
 - **H2b and E are per model:** Qwen and DeepSeek each select their own sources and
   write their own drivers, and each is hinted with its own configuration.
 - **Hinted LLM:** the first level *is* the hinted baseline above. Its answers are read
-  from the baseline run (`--baseline`, default `261020b`), not made again. From H1 on,
+  from the baseline run (`--baseline`, default `261021b`), not made again. From H1 on,
   the model sees exactly what Tai-e receives: the entry program and every policy file,
   rendered by one template ([data/prompts/relax/hinted.txt](data/prompts/relax/hinted.txt)),
   plus the production fix file. The manual `sink_files` are part of the manual hint, so
@@ -141,202 +156,109 @@ input from Tai-e's configuration:
 
 Catalogues, drivers' class files and raw Tai-e output go to `$CS6215_WORK/raw/<run>/`.
 
-## Agreement guard (proposed method)
+## Proposed pipeline
 
-`python3 -m cwe22 agree --run 261020g` ports the method of CS6215_proj that scored
-proxy F1 0.92 and FDR 11% there ("agreement/fallback + checked guards"). It makes no
-API call. It reuses the Tai-e flows of a relaxation run (`--relax-run`, default
-`261020h`) and the vanilla readers of a baseline run (`--readers`, default `261020b`).
-For each Tai-e configuration, revision and reader sample, it does three things:
+Three stages run on each Tai-e configuration, project, revision and sample k. Each stage
+after the first only removes locations, and every rule was fixed before it was scored.
 
-1. **Guard:** sets aside Tai-e flows into a `FileOutputStream(File)` sink that a checked
-   guard contract protects. The two restricted checkers come from CS6215_proj; see
-   [cwe22/guards.py](cwe22/guards.py).
-   - A `java.nio.file.Path` containment template.
-   - An attributed `getCanonicalPath().startsWith(root + File.separator)` check.
+1. **Agreement guard** (`python3 -m cwe22 agree --run 261021g`, from CS6215_proj; no API call).
+   - *Guard:* Tai-e flows into a `FileOutputStream(File)` sink that a checked guard contract
+     protects are set aside ([cwe22/guards.py](cwe22/guards.py)): a `java.nio.file.Path`
+     containment template, and an attributed `getCanonicalPath().startsWith(root +
+     File.separator)` check. A bare String-prefix check is refuted (`/tmp/outside` starts
+     with `/tmp/out`); any other shape keeps its flows.
+   - *Agreement:* the Tai-e endpoint methods of the remaining flows that at least one
+     vanilla reader (Qwen, DeepSeek; sample k of each, from `261021b`) also reports, or
+     every Tai-e location when they share none.
+2. **Jev judge** (`python3 -m cwe22 pipeline --run 261021c`). Jev (`typesafe/jev-1.13`,
+   TypeSafe's decision model on OpenRouter's `/api/alpha/decisions` endpoint) reads both
+   hinted LLMs' answers (sample k) to the configuration's hinted prompt and the code of each
+   location, and answers one yes/no question per location (`pipeline.JUDGE_QUESTION`). The
+   location is kept when p ≥ 0.5. At H2b and E each model's hinted prompt shows its own
+   configuration, so the other model first answers the owner's prompt with its saved hinted
+   settings (120 calls; 5 DeepSeek answers to Qwen's H2b prompt were cut off at 8,000 tokens
+   and appear as "(no answer)").
+3. **Blind checklist.** DeepSeek writes one CWE-22 checklist per sample from CWE-22's
+   description alone ([data/prompts/checklist/blind.txt](data/prompts/checklist/blind.txt);
+   no subject, code, fix or result is shown, and a test checks the prompt): *safe patterns*,
+   each a list of yes/no conditions. Jev answers checklist k for each remaining location's
+   code; a location is dropped when some pattern has every condition at p ≥ 0.5.
 
-   A bare String-prefix check is refuted (`/tmp/outside` starts with `/tmp/out`), and
-   any other shape is unknown and keeps its flows.
-2. **Candidates:** the endpoint methods of the remaining flows, plus the CWE-22
-   methods named by vanilla Qwen and vanilla DeepSeek. Sample k pairs sample k of both
-   readers.
-3. **Output:** the locations that Tai-e and at least one reader both report. When there
-   are none, the output is every Tai-e location. The other candidates are the review
-   tail; they are kept in `predictions.json` but not scored.
+Jev reads the method, its class's fields and constructors and the same-class methods it
+calls ([cwe22/java/MethodContext.java](cwe22/java/MethodContext.java), parse only). A location
+outside the project's production source (JDK, anonymous classes) has no code: the judge sees
+that, and the checklist keeps it.
 
-It runs at every level (Hinted, H1, H2a, H2b and E, with the H2b/E configurations of each
-selector model), on all flows and with application scope. Each arm is also run
-without the guard, as an ablation.
-
-Every arm, including the baselines, is scored on both revisions:
-
-- **Vulnerable revision:** the metrics above.
-- **Fixed revision:**
-  - **Flagged:** the patched fix method is still reported, which is a false alarm.
-  - **Pair-correct:** the fix method is reported on the vulnerable revision and not on
-    the fixed one.
-
+Every stage is scored on both revisions: the metrics above on the vulnerable revision, and
+on the fixed revision **Flagged** (the patched fix method is still reported, a false alarm)
+and **Pair-correct** (reported on the vulnerable revision and not on the fixed one).
 Predictions are written before labels are loaded.
 
-What the runs show:
+Hinted level, all flows, means ± SD over 3 runs (paper convention: an empty output counts as
+100% FDR):
 
-- **The guard proves one sink.** On these six projects that is fixed MPXJ's
-  `processZipStream`. The zip4j, zt-zip, plexus-archiver and plexus-utils fixes are
-  bare String-prefix checks, and Spark's fix guards no file write. With application
-  scope, the guard clears fixed MPXJ at Hinted–H2b, which is +1 pair-correct project.
-  With all flows it does not: the method is still the source endpoint of false flows
-  into a JDK-internal sink.
-- **The CS6215_proj score belongs to one reader sample.** Run `261020r` gives the
-  agreement rule CS6215_proj's saved readers and reproduces its numbers exactly:
-  - Hinted (manual policy): 0.9167 / 11.11%
-  - Hinted with application scope: 0.9444 / 8.33%
-  - H1: 0.7778 / 10.00%
-  - H2b: 0.9444 / 8.33%
-
-  With the three fresh samples of `261020g`, the Hinted level averages F1 0.75 [0.66–0.86] and
-  FDR 32% [19–43%]. Extra reader locations, and samples where the readers do not
-  agree with Tai-e and so fall back to every Tai-e location, account for the gap.
-- **Fixed revisions:** the agreement rule still flags 4–6 of 6 projects at every level.
-  The one exception is E with DeepSeek's drivers, which compiled for only two
-  projects. The readers see only the fix file and do not tell the fixed code from
-  the vulnerable code.
-
-The checkers compile into `$CS6215_WORK/raw/<run>/guards/`. Contracts are cached in
-`results/<run>/guards/` and recomputed when `guards.py` or a checker changes. The
-canonical checker was written after inspecting MPXJ, so its gain is in-sample.
-
-## Multiagent debate between the hinted LLMs
-
-`python3 -m cwe22 debate --run 261020d` (`--relax-run`, default `261020h`; add `--dry-run` to
-count calls) runs multiagent debate (Du et al., 2023) between hinted Qwen and hinted
-DeepSeek. It adds nothing to the task beyond the paper's update prompt.
-
-- **Round 1** is the hinted arm of the relaxation run: both models answer the same hinted
-  prompt for every level, project, revision and sample.
-- **Round 2:** each model continues its own conversation with Du et al.'s update prompt
-  ([data/prompts/debate/update.txt](data/prompts/debate/update.txt)), which shows the other
-  model's answer, and answers again. Only the answer format ("(X)" in the paper, JSON here)
-  is adapted.
-- **H2b and E:** each model's hinted prompt shows its own configuration. So for each
-  configuration, the other model first answers that same prompt in a new round-1 call, and
-  then both debate it.
-- **Arms per configuration:** each model's answer before and after the debate, plus the
-  consensus, i.e. the locations both models report (majority vote with two agents), before
-  and after the debate. Scoring is the same as the agreement guard's, on both revisions.
-- **Budget:** every call reuses the saved hinted request's settings, including its 8,000-token
-  budget, and is never resent.
-
-Run `261020d` covers the Hinted level only so far. The other levels can be added later with
-`--levels h1 h2a h2b e`, and saved calls are never resent. Projects are out of 6; each
-value is the mean of the 3 samples:
-
-| Arm | Detected | Macro F1 | Fixed: flagged ↓ | Pair-correct ↑ |
-| --- | --- | --- | --- | --- |
-| Hinted Qwen (round 1) | 4.3 | 0.72 | 5.7 | 0.0 |
-| Hinted DeepSeek (round 1) | 5.7 | 0.78 | 4.0 | 1.7 |
-| Consensus, no debate | 4.3 | 0.72 | 3.3 | 1.7 |
-| Debated Qwen | 5.7 | 0.81 | 4.0 | 1.7 |
-| Debated DeepSeek | 5.3 | 0.80 | 4.0 | 1.3 |
-| Debated consensus | 5.3 | 0.80 | 4.0 | 1.3 |
-
-- **Qwen converges on DeepSeek.** After the debate it matches DeepSeek's round-1 detection,
-  flags and pair-correct, and its F1 rises from 0.72 to 0.81. It changed 20 of its 36
-  answers; DeepSeek changed 9.
-- **Debate does not beat DeepSeek alone on fixed code.** Debated DeepSeek and the debated
-  consensus reach 1.3 pair-correct, against DeepSeek's 1.7 before the debate. Requiring
-  both models without a debate flags the fewest fixed projects (3.3), but it detects less
-  (4.3).
-- **Answer parsing.** In round 2, Qwen often quotes the other agent's JSON before its own
-  answer. `llm.parse_findings` therefore falls back to the last JSON object with a
-  `findings` key, but only when the whole-span parse fails, so every earlier report is
-  unchanged.
-
-### Opposing agent, and the agreement guard + debate filter
-
-- **Opposing agent.** A DeepSeek opponent (`debate.OPPONENT`) gets the hinted question and
-  both round-1 answers. Its generic instruction is in
-  [data/prompts/debate/opponent.txt](data/prompts/debate/opponent.txt): argue against the
-  findings from the code shown, without inventing code. In the opposed round 2, each
-  analyst reads the other analyst's answer and the opponent's argument, through Du et
-  al.'s update prompt.
-- **Filter.** The agreement guard's output (`--agreement-runs`, default `261020r` and
-  `261020g`) keeps a location only if either model still reports it. This rule was fixed
-  before scoring. The one-sample `261020r` is paired with every debate sample.
-
-Hinted level, all flows (app scope is the same, except that the guard alone starts at
-5.0 flagged and 1.0 pair-correct). Means over 3 samples, out of 6 projects:
-
-| Arm | Detected | F1 | FDR | Fixed: flagged ↓ | Pair-correct ↑ |
+| Stage | FDR | F1 | Det. | Flag. | P-C |
 | --- | --- | --- | --- | --- | --- |
-| Agreement guard (`261020r`) | 6.0 | 0.92 | 11% | 6.0 | 0.0 |
-| + hinted filter, no debate | 5.7 | 0.94 | 0% | 6.0 | 0.0 |
-| + debate filter | 5.7 | 0.94 | 0% | 4.0 | 1.7 |
-| + opposed debate filter | 4.7 | 0.78 | 0% | 3.3 | 2.3 |
+| Agreement guard | 27.4 ±13.7 | 79.5 ±11.5 | 6.0 | 6.0 | 0.0 |
+| + Jev (hinted answers) | 5.6 ±9.6 | 96.3 ±6.4 | 6.0 | 6.0 | 0.0 |
+| + checklist (Jev) | 5.6 ±9.6 | 96.3 ±6.4 | 6.0 | 4.7 ±0.6 | 1.3 ±0.6 |
 
-- **The plain debate is the better trade-off.** It removes the fixed zip4j and MPXJ flags
-  and keeps F1 at 0.94.
-- **The opposing agent goes further, at a real cost.** It also clears fixed zt-zip and
-  Spark in one sample each. But it loses one sample's detection of zt-zip, plexus-archiver
-  and plexus-utils. On plexus-archiver the fixed revision stays flagged anyway.
-- **Mostly Qwen moves.** The opponent changed 26 of Qwen's 36 answers (detection 2.7/6
-  after the opposed debate). DeepSeek changed 9.
-- **Both guard runs end up with the same filtered numbers,** because the hinted filter
-  removes the extra reader locations that separate them.
+- **The stages do different jobs.** The judge removes false locations on vulnerable code; the
+  checklist removes fixed-revision flags (fixed MPXJ in 3 of 3 runs, fixed zip4j in 1 of 3)
+  and never drops a vulnerable fix location at this level.
+- **Under relaxation** (`results/paper/`) the pattern holds at H1–H2b: the judge lowers FDR
+  by 11–23 points at a cost of up to 0.7 detected projects, and after the checklist
+  pair-correct is 1.0–2.0 (0 for the guard alone). At E the judge costs one detected project
+  with Qwen's driver (4.7 → 3.7), and DeepSeek's drivers compiled for only two projects.
+- **The guard proves one sink.** On these six projects that is fixed MPXJ's
+  `processZipStream`; the zip4j, zt-zip, plexus-archiver and plexus-utils fixes are bare
+  String-prefix checks, and Spark's fix guards no file write.
+- **Fixed zt-zip, Spark, plexus-archiver and plexus-utils stay flagged** at every stage.
 
-## Checklist filter after the agreement guard (Jev)
+Caveats, as for the whole experiment: the LLM inputs include the oracle-selected fix file;
+at the Hinted level they also include per-project prose hints and sink files; the canonical
+checker was written after inspecting MPXJ, and the agreement rule was designed on these same
+six projects in CS6215_proj (where one saved reader sample gave F1 0.92; fresh samples give
+0.80). Nothing has been evaluated on held-out projects.
 
-`python3 -m cwe22 checklist --run <name> [--levels ...] [--arms ...]` filters the agreement
-guard's priority tier (`--agreement-runs`, default `261020r` and `261020g`). An LLM writes a
-CWE-22 checklist of *safe patterns*. Each pattern is a list of yes/no conditions, where yes
-means the code shows that part of a protection. A judge answers the conditions for each
-location.
+Guard contracts are cached in `results/<run>/guards/`; method contexts in
+`results/<run>/context/`. Every call is saved once and never resent.
 
-- **Rule.** A location is dropped when some pattern has every condition answered yes;
-  otherwise it is kept. For Jev, a condition is yes at probability >= 0.5. The rule was
-  fixed before any call, and the filter only removes locations.
-- **What the judge reads.** [cwe22/java/MethodContext.java](cwe22/java/MethodContext.java)
-  (parse only) extracts the method (every overload), its class's fields and constructors,
-  and the same-class methods it calls, from the revision's checkout. JDK and anonymous-class
-  locations have no project code and are kept.
-- **Jev** is TypeSafe's decision model `typesafe/jev-1.13`. It is served on OpenRouter's
-  `/api/alpha/decisions` endpoint, not chat completions. Each condition is one `noul`
-  (yes/no) question, and Jev returns a probability for each.
+## LLMDFA baseline (published work)
 
-| Arm | Checklist written by | Answered by |
-| --- | --- | --- |
-| `blind-jev` | DeepSeek, one per sample, from CWE-22's description alone ([blind.txt](data/prompts/checklist/blind.txt)); no subject, code or result shown | Jev |
-| `blind-deepseek` (control) | the same checklists | DeepSeek ([answer.txt](data/prompts/checklist/answer.txt)) |
-| `local-jev` | DeepSeek, per location from its code, told not to decide ([local.txt](data/prompts/checklist/local.txt)) | Jev |
+`python3 -m cwe22 llmdfa --run 261022l` runs LLMDFA (Wang et al., NeurIPS 2024, "LLMDFA: Analyzing
+Dataflow in Code with Large Language Models"): the upstream engine pinned in
+[data/llmdfa.lock.json](data/llmdfa.lock.json), cloned with its own virtualenv by `--setup`.
+CS6215_proj's wrapper ([cwe22/llmdfa_runtime.py](cwe22/llmdfa_runtime.py)) patches the engine's
+boundaries for real repositories, never its source; every change is in its `DEVIATIONS` list and in
+each `plan.json`.
 
-Run `261021c`, `261020r` guard, all flows. Means over 3 samples, out of 6 projects
-(`results/261021c/REPORT.md` also has the app-scope rows and the `261020g` guard):
+- **Inputs, as at the Original hint level.** The manual per-project source/sink policy, rendered as
+  CWE-22 prompt specs ([cwe22/llmdfa_specs.py](cwe22/llmdfa_specs.py); checked against
+  `data/taie/<project>/policy.yml` and `data/prompts/hints.json`), and the Tai-e entry point. It
+  parses the fix file, the hinted sink files, the entry class and the Tai-e adapter, with their
+  superclass closure.
+- **Settings:** syn_parser off, few-shot CoT on, syn_solver off (it executes model-written Python).
+  Both models via OpenRouter at their current budgets (Qwen 8,000, DeepSeek 16,000 tokens), low
+  reasoning; at most 1,200 requests and $3 per case.
+- **Unit:** both endpoints of every validated trace, scored like every other arm. A failed case
+  reports nothing; all 72 cases completed.
+- **Deviations added here (2026-10-22):** OpenRouter transport. An answer cut off at the token limit
+  is used as returned, as upstream does (Qwen loops on the source prompt; 28 such answers). A null
+  answer from a reasoning model that finished normally with its reasoning present is its empty
+  answer (DeepSeek, 1,072; each one's reasoning concludes there is no source or sink).
 
-| Level | Arm | Detected | F1 | FDR | Fixed: flagged ↓ | Pair-correct ↑ |
-| --- | --- | --- | --- | --- | --- | --- |
-| Hinted | Agreement guard | 6.0 | 0.92 | 11% | 6.0 | 0.0 |
-| Hinted | + debate filter (`261020d`) | 5.7 | 0.94 | 0% | 4.0 | 1.7 |
-| Hinted | + blind checklist, Jev | 6.0 | 0.92 | 11% | 4.7 | 1.3 |
-| Hinted | + blind checklist, DeepSeek answers | 6.0 | 0.92 | 11% | 5.3 | 0.7 |
-| Hinted | + per-location checklist, Jev | 5.3 | 0.86 | 15% | 3.3 | 2.0 |
-| H1 | Agreement guard | 5.0 | 0.68 | 33% | 5.0 | 0.0 |
-| H1 | + blind checklist, Jev | 5.0 | 0.68 | 33% | 4.0 | 1.0 |
-| H1 | + blind checklist, DeepSeek answers | 5.0 | 0.68 | 33% | 4.3 | 0.7 |
-| H1 | + per-location checklist, Jev | 4.3 | 0.67 | 33% | 3.0 | 1.3 |
+Means ± SD over 3 runs, paper convention (empty output = 100% FDR):
 
-- **Blind checklist + Jev never loses a detection.** At every level it dropped 0 of 345
-  vulnerable-revision judgements and 4 of 339 fixed ones: fixed MPXJ in 3 of 3 samples
-  and fixed zip4j in 1 of 3. At H2a and both H2b configurations, flagged falls from 6.0
-  to 4.7 and pair-correct rises from 0 to 1.3, with detection, F1 and FDR unchanged. At E
-  it changes little.
-- **Jev answers the same checklist better than DeepSeek.** The control clears fewer fixed
-  revisions (pair-correct 0.7 vs 1.3), so the gain is not just the checklist.
-- **The per-location checklist is the most aggressive.** It also clears fixed Spark in 3 of
-  3 samples, but drops vulnerable Spark in 2 of 3. In 8 cells DeepSeek wrote an empty
-  checklist (it saw no way the code could be protected), so nothing was dropped there.
-  Five generator answers hit the 16k-token limit, and their locations were kept.
-- **None clears fixed zt-zip, plexus-archiver or plexus-utils.** Fixed zt-zip, for one,
-  checks a canonical String prefix without a separator, and every blind checklist requires
-  the separator.
-- **Neither filter dominates.** Against the debate filter, blind+Jev keeps every detection
-  but leaves the FDR at 11%; the debate removes Spark's extra locations as well.
-  DeepSeek arms at H2a–E were not run (about $3).
+| Arm | FDR | F1 | Det. | Flag. | P-C |
+| --- | --- | --- | --- | --- | --- |
+| LLMDFA Qwen | 64.4 ±5.4 | 42.1 ±6.9 | 3.3 ±0.6 | 3.0 | 0.3 ±0.6 |
+| LLMDFA DeepSeek | 84.3 ±15.3 | 19.4 ±18.2 | 1.7 ±1.5 | 1.7 ±0.6 | 0.7 ±1.2 |
+| Hinted Qwen / DeepSeek (same inputs, one prompt) | 27.8 / 30.6 | 72.2 / 77.8 | 4.3 / 5.7 | 5.7 / 4.0 | 0.0 / 1.7 |
+| Proposed pipeline (Original hint) | 5.6 ±9.6 | 96.3 ±6.4 | 6.0 | 4.7 ±0.6 | 1.3 ±0.6 |
+
+- **LLMDFA detects fewer projects than one hinted prompt.** Qwen finds zt-zip, plexus-utils and MPXJ
+  (and plexus-archiver in one run); it never finds zip4j or Spark. DeepSeek's validator rejects most
+  flows: it reports nothing on plexus-archiver and Spark, and misses zip4j's fix method.
+- **Its low flagged count is mostly reporting little,** not telling fixed code apart: pair-correct
+  stays under 1.

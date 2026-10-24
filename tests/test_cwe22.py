@@ -66,6 +66,21 @@ class LlmTest(unittest.TestCase):
         self.assertEqual(locations, [["C", "d"], ["Unzip", "initExtractFile"]])
         self.assertEqual(len(findings), 4)
 
+    def test_nested_class_names_take_the_benchmark_form(self):
+        content = ('{"findings": [{"cwe": "CWE-22", "class": "ZipUtil", "method": "Unpacker.process"},'
+                   '{"cwe": "CWE-22", "class": "ZipUtil$Unwraper", "method": "process"},'
+                   '{"cwe": "CWE-22", "class": "org.zeroturnaround.zip.ZipUtil", "method": "unpack"}]}')
+        self.assertEqual(llm.cwe22_locations(response(content))[0],
+                         [["Unpacker", "process"], ["Unwraper", "process"], ["ZipUtil", "unpack"]])
+
+    def test_answer_that_quotes_json_before_its_own_parses(self):
+        quoted = 'The other agent said `{"findings": []}`, but {not json}. Final:\n{"findings": [' \
+                 '{"cwe": "CWE-22", "class": "Unzip", "method": "x", "explanation": "path traversal"}]}'
+        self.assertEqual(llm.parse_findings(quoted)[0]["method"], "x")
+        self.assertEqual(llm.parse_findings('{"findings": [] } trailing {bad}'), [])
+        with self.assertRaises(ValueError):
+            llm.parse_findings('see {bad} and {"other": 1} {worse}')
+
     def test_incomplete_or_malformed_responses_are_unusable(self):
         for raw in (response('{"findings": []}', finish="length"), response(""),
                     response("no json here"), response('{"findings": ["x"]}')):

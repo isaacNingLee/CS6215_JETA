@@ -36,7 +36,7 @@ LEVELS = ["hinted", "h1", "h2a", "h2b", "e"]
 LEVEL_NAMES = {"hinted": "Hinted (manual policy)", "h1": "H1 kit only", "h2a": "H2a kit + all candidates",
                "h2b": "H2b kit + LLM-selected sources", "e": "E LLM entry + kit + LLM-selected sources"}
 TEMPLATE = config.DATA / "prompts/relax/hinted.txt"
-BASELINE = "261020b"  # baseline run whose hinted arm is the first level
+BASELINE = "261021b"  # baseline run whose hinted arm is the first level
 TAIE_WORKERS = 3
 
 
