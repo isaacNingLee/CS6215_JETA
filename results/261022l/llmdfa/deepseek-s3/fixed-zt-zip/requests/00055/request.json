@@ -1,0 +1,18 @@
+{
+  "model": "deepseek/deepseek-v4-pro",
+  "temperature": 0,
+  "max_tokens": 16000,
+  "reasoning": {
+    "effort": "low"
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are a Java programmer and very good at analyzing Java code."
+    },
+    {
+      "role": "user",
+      "content": "Please identify the source values for path traversal (CWE-22) according to the following instructions. The sources indicate attacker-controlled data\n- If a variable is assigned the return value of a method named `getName` (called on a `ZipEntry`, yielding an archive entry's filename), it is a source value.\nExample (illustrative only; report values from the program below):\n1. String entryName = entry.getName();\n- Src name: entryName, Line number: 1\nNegative example: 1. validate();\nAnswer: an empty string. Never copy example identifiers into the answer.\nNow I will give you the program. Please list all the names of sources and the line numbers.The line numbers should indicate the line where the values of variables can be attacker-controlled.A variable can occur multiple times if it is assigned by different statements.\nDo not add extra explanations.Just list the pairs of variable and line number (where the variable has an attacker-controlled value) line by line.Each line should start with -.If there is no variable as source, just output an empty string.\nHere are several examples:\nExample 1:\n- Src name: x, Line number: 1\n- Src name: x, Line number: 4\nExample 2:\n- Src name: y, Line number: 3\nHere is the program:\n```\n1. public void process(InputStream in, ZipEntry zipEntry) throws IOException {\n2.       final tmp1 = zipEntry.getName();\n3.       String root = getRootName(tmp1);\n4.       if (rootDir == null) {\n5.         rootDir = root;\n6.       }\n7.       else if (!rootDir.equals(root)) {\n8.         throw new ZipException(\"Unwrapping with multiple roots is not supported, roots: \" + rootDir + \", \" + root);\n9.       }\n10. \n11.       String name = mapper.map(getUnrootedName(root, zipEntry.getName()));\n12.       if (name != null) {\n13.         File file = new File(outputDir, name);\n14. \n15.         \n16. \n17. \n18. \n19.         if (name.indexOf(\"..\") != -1 && !file.getCanonicalPath().startsWith(outputDir.getCanonicalPath())) {\n20.           throw new ZipException(\"The file \"+name+\" is trying to leave the target output directory of \"+outputDir+\". Ignoring this file.\");\n21.         }\n22. \n23.         if (zipEntry.isDirectory()) {\n24.           FileUtils.forceMkdir(file);\n25.         }\n26.         else {\n27.           File tmp2 = file.getParentFile();\n28.           FileUtils.forceMkdir(tmp2);\n29. \n30.           if (log.isDebugEnabled() && file.exists()) {\n31.             log.debug(\"Overwriting file '{}'.\", zipEntry.getName());\n32.           }\n33. \n34.           FileUtils.copy(in, file);\n35.         }\n36.       }\n37.     }\n```\n"
+    }
+  ]
+}

@@ -1,0 +1,69 @@
+{
+  "model": "qwen/qwen3-coder-30b-a3b-instruct",
+  "mode": "hinted",
+  "project": "mpxj",
+  "variant": "fixed",
+  "sample": 1,
+  "request": {
+    "model": "qwen/qwen3-coder-30b-a3b-instruct",
+    "temperature": 0,
+    "max_tokens": 8000,
+    "reasoning": {
+      "effort": "low"
+    },
+    "messages": [
+      {
+        "role": "user",
+        "content": "You are confirming one specific hypothesis from a static taint-analysis configuration, not doing a free-form audit.\n\nA static taint analysis is configured for this project with: entry point `InputStreamHelper.writeZipStreamToTempDir(InputStream)`; SOURCE = each `ZipEntry.getName()` result (an archive entry's filename), treated as attacker-controlled; SINK = argument 0 of a `FileOutputStream(File)` constructor call (the file being opened for writing). Manual rules also propagate taint through `File(File,String)` (argument 1 to the constructed object) and `File(String)` (argument 0 to the constructed object). This is the CWE-22 path-traversal source/sink pairing used for this project's known CVE.\n\nGiven the following Java source file, decide whether attacker-controlled data from that source can reach that sink without an adequate restriction (e.g. path normalization, allow-listing, a containment check) somewhere on the way. Respond with ONLY a JSON object, no prose outside it, in this exact shape:\n{\"findings\": [{\"cwe\": \"CWE-22\", \"class\": \"EnclosingClassName\", \"method\": \"methodName\", \"explanation\": \"one paragraph naming exactly where the missing or inadequate check is\"}]}\nList one finding per enclosing method you believe is actually responsible for the unguarded flow (there may be more than one, e.g. an entry method and a helper it calls). Use the class's simple name (no package) and the method name as written (for a constructor, use the class name). If you conclude the flow is fully restricted, or does not reach the sink across the file(s) shown, return {\"findings\": []}.\n\nFile: src/main/java/net/sf/mpxj/common/InputStreamHelper.java\n```java\n/*\n * file:       InputStreamHelper.java\n * author:     Jon Iles\n * copyright:  (c) Packwood Software 2016\n * date:       06/06/2016\n */\n\n/*\n * This library is free software; you can redistribute it and/or modify it\n * under the terms of the GNU Lesser General Public License as published by the\n * Free Software Foundation; either version 2.1 of the License, or (at your\n * option) any later version.\n *\n * This library is distributed in the hope that it will be useful, but\n * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY\n * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public\n * License for more details.\n *\n * You should have received a copy of the GNU Lesser General Public License\n * along with this library; if not, write to the Free Software Foundation, Inc.,\n * 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.\n */\n\npackage net.sf.mpxj.common;\n\nimport java.io.File;\nimport java.io.FileOutputStream;\nimport java.io.IOException;\nimport java.io.InputStream;\nimport java.util.zip.ZipEntry;\nimport java.util.zip.ZipException;\nimport java.util.zip.ZipInputStream;\n\n/**\n * Helper methods for dealing with InputStreams.\n */\npublic class InputStreamHelper\n{\n   /**\n    * Copy the data from an InputStream to a temp file.\n    *\n    * @param inputStream data source\n    * @param tempFileSuffix suffix to use for temp file\n    * @return File instance\n    */\n   public static File writeStreamToTempFile(InputStream inputStream, String tempFileSuffix) throws IOException\n   {\n      FileOutputStream outputStream = null;\n\n      try\n      {\n         File file = File.createTempFile(\"mpxj\", tempFileSuffix);\n         outputStream = new FileOutputStream(file);\n         byte[] buffer = new byte[1024];\n         while (true)\n         {\n            int bytesRead = inputStream.read(buffer);\n            if (bytesRead == -1)\n            {\n               break;\n            }\n            outputStream.write(buffer, 0, bytesRead);\n         }\n         return file;\n      }\n\n      finally\n      {\n         if (outputStream != null)\n         {\n            outputStream.close();\n         }\n      }\n   }\n\n   /**\n    * Expands a zip file input stream into a temporary directory.\n    *\n    * @param inputStream zip file input stream\n    * @return File instance representing the temporary directory\n    */\n   public static File writeZipStreamToTempDir(InputStream inputStream) throws IOException\n   {\n      File dir = FileHelper.createTempDir();\n\n      try\n      {\n         processZipStream(dir, inputStream);\n      }\n\n      catch (ZipException ex)\n      {\n         // Java doesn't support zip files with zero byte entries.\n         // We could use a different library which does handle these zip files, but\n         // I'm reluctant to add new dependencies just for this. Rather than\n         // propagating the error, we'll just stop at this point and see if we\n         // can make sense of anything we have extracted from the zip file so far.\n         // For what it's worth I haven't come across a valid compressed schedule file\n         // which includes zero bytes files.\n         if (!ex.getMessage().equals(\"only DEFLATED entries can have EXT descriptor\"))\n         {\n            throw ex;\n         }\n      }\n\n      return dir;\n   }\n\n   /**\n    * Expands a zip file input stream into a temporary directory.\n    *\n    * @param dir temporary directory\n    * @param inputStream zip file input stream\n    */\n   private static void processZipStream(File dir, InputStream inputStream) throws IOException\n   {\n      String canonicalDestinationDirPath = dir.getCanonicalPath();\n      ZipInputStream zip = new ZipInputStream(inputStream);\n      while (true)\n      {\n         ZipEntry entry = zip.getNextEntry();\n         if (entry == null)\n         {\n            break;\n         }\n\n         File file = new File(dir, entry.getName());\n\n         // https://snyk.io/research/zip-slip-vulnerability\n         String canonicalDestinationFile = file.getCanonicalPath();\n         if (!canonicalDestinationFile.startsWith(canonicalDestinationDirPath + File.separator))\n         {\n            throw new IOException(\"Entry is outside of the target dir: \" + entry.getName());\n         }\n\n         if (entry.isDirectory())\n         {\n            FileHelper.mkdirsQuietly(file);\n            continue;\n         }\n\n         File parent = file.getParentFile();\n         if (parent != null)\n         {\n            FileHelper.mkdirsQuietly(parent);\n         }\n\n         FileOutputStream fos = new FileOutputStream(file);\n         byte[] bytes = new byte[1024];\n         int length;\n         while ((length = zip.read(bytes)) >= 0)\n         {\n            fos.write(bytes, 0, length);\n         }\n         fos.close();\n      }\n   }\n}\n\n```"
+      }
+    ]
+  },
+  "response": {
+    "id": "gen-1792474321-EuacvE6LYxSiQlhbDcRQ",
+    "object": "chat.completion",
+    "created": 1792474321,
+    "model": "qwen/qwen3-coder-30b-a3b-instruct",
+    "provider": "SiliconFlow",
+    "system_fingerprint": null,
+    "service_tier": null,
+    "choices": [
+      {
+        "index": 0,
+        "logprobs": null,
+        "finish_reason": "stop",
+        "native_finish_reason": "stop",
+        "message": {
+          "role": "assistant",
+          "content": "{\"findings\": [{\"cwe\": \"CWE-22\", \"class\": \"InputStreamHelper\", \"method\": \"processZipStream\", \"explanation\": \"The method processes zip entries by constructing file paths using entry.getName() as the filename, which is treated as attacker-controlled data, and directly passes it to the File constructor. Although there is a check to prevent path traversal using canonical paths, the check only validates the constructed file's canonical path against the canonical path of the destination directory, but it does not prevent all forms of path traversal attacks because the check occurs after the File object is created and the FileOutputStream is opened, allowing for a window where malicious paths could still be processed before the check.\"}]}",
+          "refusal": null,
+          "reasoning": null
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 1390,
+      "completion_tokens": 145,
+      "total_tokens": 1535,
+      "cost": 0.0001379,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 1120,
+        "cache_write_tokens": 0,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 0.0001379,
+        "upstream_inference_prompt_cost": 9.73e-05,
+        "upstream_inference_completions_cost": 4.06e-05
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 0,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    }
+  },
+  "attempts": 1,
+  "seconds": 4.21
+}

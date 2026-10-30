@@ -1,0 +1,2998 @@
+{
+  "run": "261021b",
+  "scored_at": "2026-10-30T02:12:48+00:00",
+  "dataset_commit": "afe0ebd0adc237abb46255f9cd479b1d71819136",
+  "models": {
+    "qwen": "qwen/qwen3-coder-30b-a3b-instruct",
+    "deepseek": "deepseek/deepseek-v4-pro"
+  },
+  "unit": "(simple class, method) CWE-22 location; vulnerable revisions only",
+  "fix_methods": {
+    "zip4j": [
+      "Unzip.initExtractFile"
+    ],
+    "zt-zip": [
+      "Unpacker.process",
+      "Unwraper.getRootName",
+      "Unwraper.process"
+    ],
+    "spark": [
+      "ClassPathResource.ClassPathResource",
+      "ClassPathResource.equals",
+      "ClassPathResource.exists",
+      "ClassPathResource.getInputStream",
+      "ClassPathResource.getPath",
+      "ClassPathResource.getURL"
+    ],
+    "plexus-archiver": [
+      "AbstractUnArchiver.extractFile"
+    ],
+    "plexus-utils": [
+      "Expand.extractFile"
+    ],
+    "mpxj": [
+      "InputStreamHelper.processZipStream"
+    ]
+  },
+  "llm_samples": 3,
+  "max_tokens": [
+    8000,
+    16000
+  ],
+  "failed_cells": [
+    {
+      "arm": "Vanilla Deepseek",
+      "sample": 2,
+      "project": "mpxj",
+      "variant": "fixed",
+      "reason": "Incomplete response: finish_reason=length"
+    },
+    {
+      "arm": "Vanilla Deepseek",
+      "sample": 3,
+      "project": "mpxj",
+      "variant": "fixed",
+      "reason": "Incomplete response: finish_reason=length"
+    }
+  ],
+  "arms": {
+    "Tai-e": {
+      "samples": [
+        {
+          "sample": 1,
+          "projects": [
+            {
+              "project": "zip4j",
+              "status": "scored",
+              "reported": 7,
+              "matched": 1,
+              "detected": true,
+              "fdr": 0.8571428571428572,
+              "f1": 0.25,
+              "matched_locations": [
+                [
+                  "Unzip",
+                  "initExtractFile"
+                ]
+              ],
+              "locations": [
+                [
+                  "HeaderReader",
+                  "readLocalFileHeader"
+                ],
+                [
+                  "Unzip",
+                  "checkOutputDirectoryStructure"
+                ],
+                [
+                  "Unzip",
+                  "initExtractFile"
+                ],
+                [
+                  "UnzipEngine",
+                  "checkCRC"
+                ],
+                [
+                  "UnzipEngine",
+                  "getInputStream"
+                ],
+                [
+                  "UnzipEngine",
+                  "getOutputFileNameWithPath"
+                ],
+                [
+                  "UnzipEngine",
+                  "getOutputStream"
+                ]
+              ],
+              "failure": null
+            },
+            {
+              "project": "zt-zip",
+              "status": "scored",
+              "reported": 13,
+              "matched": 1,
+              "detected": true,
+              "fdr": 0.9230769230769231,
+              "f1": 0.14285714285714285,
+              "matched_locations": [
+                [
+                  "Unpacker",
+                  "process"
+                ]
+              ],
+              "locations": [
+                [
+                  "1",
+                  "run"
+                ],
+                [
+                  "FileUtils",
+                  "copy"
+                ],
+                [
+                  "JarEntry",
+                  "getRealName"
+                ],
+                [
+                  "JarFile",
+                  "getBytes"
+                ],
+                [
+                  "JarFile",
+                  "verifiableEntry"
+                ],
+                [
+                  "JarFileEntry",
+                  "getRealName"
+                ],
+                [
+                  "JarFileEntry",
+                  "realEntry"
+                ],
+                [
+                  "JarLoader",
+                  "validIndex"
+                ],
+                [
+                  "JarVerifier",
+                  "beginEntry"
+                ],
+                [
+                  "JarVerifier",
+                  "processEntry"
+                ],
+                [
+                  "Unpacker",
+                  "process"
+                ],
+                [
+                  "ZipEntry",
+                  "toString"
+                ],
+                [
+                  "ZipUtil",
+                  "iterate"
+                ]
+              ],
+              "failure": null
+            },
+            {
+              "project": "spark",
+              "status": "scored",
+              "reported": 3,
+              "matched": 1,
+              "detected": true,
+              "fdr": 0.6666666666666667,
+              "f1": 0.5,
+              "matched_locations": [
+                [
+                  "ClassPathResource",
+                  "getInputStream"
+                ]
+              ],
+              "locations": [
+                [
+                  "1",
+                  "run"
+                ],
+                [
+                  "ClassPathResource",
+                  "getInputStream"
+                ],
+                [
+                  "SparkEntry",
+                  "main"
+                ]
+              ],
+              "failure": null
+            },
+            {
+              "project": "plexus-archiver",
+              "status": "scored",
+              "reported": 7,
+              "matched": 1,
+              "detected": true,
+              "fdr": 0.8571428571428572,
+              "f1": 0.25,
+              "matched_locations": [
+                [
+                  "AbstractUnArchiver",
+                  "extractFile"
+                ]
+              ],
+              "locations": [
+                [
+                  "1",
+                  "run"
+                ],
+                [
+                  "AbstractUnArchiver",
+                  "extractFile"
+                ],
+                [
+                  "UnsupportedZipFeatureException",
+                  "UnsupportedZipFeatureException"
+                ],
+                [
+                  "ZipArchiveEntry",
+                  "setExtra"
+                ],
+                [
+                  "ZipEntry",
+                  "toString"
+                ],
+                [
+                  "ZipEntryFileInfo",
+                  "getName"
+                ],
+                [
+                  "ZipFile",
+                  "resolveLocalFileHeaderData"
+                ]
+              ],
+              "failure": null
+            },
+            {
+              "project": "plexus-utils",
+              "status": "scored",
+              "reported": 12,
+              "matched": 1,
+              "detected": true,
+              "fdr": 0.9166666666666666,
+              "f1": 0.15384615384615385,
+              "matched_locations": [
+                [
+                  "Expand",
+                  "extractFile"
+                ]
+              ],
+              "locations": [
+                [
+                  "1",
+                  "run"
+                ],
+                [
+                  "Expand",
+                  "expandFile"
+                ],
+                [
+                  "Expand",
+                  "extractFile"
+                ],
+                [
+                  "JarEntry",
+                  "getRealName"
+                ],
+                [
+                  "JarFile",
+                  "getBytes"
+                ],
+                [
+                  "JarFile",
+                  "verifiableEntry"
+                ],
+                [
+                  "JarFileEntry",
+                  "getRealName"
+                ],
+                [
+                  "JarFileEntry",
+                  "realEntry"
+                ],
+                [
+                  "JarLoader",
+                  "validIndex"
+                ],
+                [
+                  "JarVerifier",
+                  "beginEntry"
+                ],
+                [
+                  "JarVerifier",
+                  "processEntry"
+                ],
+                [
+                  "ZipEntry",
+                  "toString"
+                ]
+              ],
+              "failure": null
+            },
+            {
+              "project": "mpxj",
+              "status": "scored",
+              "reported": 11,
+              "matched": 1,
+              "detected": true,
+              "fdr": 0.9090909090909091,
+              "f1": 0.16666666666666666,
+              "matched_locations": [
+                [
+                  "InputStreamHelper",
+                  "processZipStream"
+                ]
+              ],
+              "locations": [
+                [
+                  "1",
+                  "run"
+                ],
+                [
+                  "InputStreamHelper",
+                  "processZipStream"
+                ],
+                [
+                  "JarEntry",
+                  "getRealName"
+                ],
+                [
+                  "JarFile",
+                  "getBytes"
+                ],
+                [
+                  "JarFile",
+                  "verifiableEntry"
+                ],
+                [
+                  "JarFileEntry",
+                  "getRealName"
+                ],
+                [
+                  "JarFileEntry",
+                  "realEntry"
+                ],
+                [
+                  "JarLoader",
+                  "validIndex"
+                ],
+                [
+                  "JarVerifier",
+                  "beginEntry"
+                ],
+                [
+                  "JarVerifier",
+                  "processEntry"
+                ],
+                [
+                  "ZipEntry",
+                  "toString"
+                ]
+              ],
+              "failure": null
+            }
+          ],
+          "summary": {
+            "projects": 6,
+            "scored": 6,
+            "complete": true,
+            "detected": 6,
+            "macro_fdr": 0.85496447996448,
+            "macro_f1": 0.2438949938949939,
+            "fdr_projects": 6
+          },
+          "fixed_revision_locations": {
+            "zip4j": 7,
+            "zt-zip": 13,
+            "spark": 3,
+            "plexus-archiver": 7,
+            "plexus-utils": 12,
+            "mpxj": 11
+          }
+        }
+      ],
+      "summary": {
+        "detected": {
+          "mean": 6,
+          "min": 6,
+          "max": 6
+        },
+        "macro_fdr": {
+          "mean": 0.85496447996448,
+          "min": 0.85496447996448,
+          "max": 0.85496447996448
+        },
+        "macro_f1": {
+          "mean": 0.2438949938949939,
+          "min": 0.2438949938949939,
+          "max": 0.2438949938949939
+        },
+        "per_project": {
+          "zip4j": {
+            "detected": 1,
+            "samples": 1,
+            "fdr": {
+              "mean": 0.8571428571428572,
+              "min": 0.8571428571428572,
+              "max": 0.8571428571428572
+            },
+            "f1": {
+              "mean": 0.25,
+              "min": 0.25,
+              "max": 0.25
+            },
+            "reported": [
+              7
+            ],
+            "failed": 0
+          },
+          "zt-zip": {
+            "detected": 1,
+            "samples": 1,
+            "fdr": {
+              "mean": 0.9230769230769231,
+              "min": 0.9230769230769231,
+              "max": 0.9230769230769231
+            },
+            "f1": {
+              "mean": 0.14285714285714285,
+              "min": 0.14285714285714285,
+              "max": 0.14285714285714285
+            },
+            "reported": [
+              13
+            ],
+            "failed": 0
+          },
+          "spark": {
+            "detected": 1,
+            "samples": 1,
+            "fdr": {
+              "mean": 0.6666666666666667,
+              "min": 0.6666666666666667,
+              "max": 0.6666666666666667
+            },
+            "f1": {
+              "mean": 0.5,
+              "min": 0.5,
+              "max": 0.5
+            },
+            "reported": [
+              3
+            ],
+            "failed": 0
+          },
+          "plexus-archiver": {
+            "detected": 1,
+            "samples": 1,
+            "fdr": {
+              "mean": 0.8571428571428572,
+              "min": 0.8571428571428572,
+              "max": 0.8571428571428572
+            },
+            "f1": {
+              "mean": 0.25,
+              "min": 0.25,
+              "max": 0.25
+            },
+            "reported": [
+              7
+            ],
+            "failed": 0
+          },
+          "plexus-utils": {
+            "detected": 1,
+            "samples": 1,
+            "fdr": {
+              "mean": 0.9166666666666666,
+              "min": 0.9166666666666666,
+              "max": 0.9166666666666666
+            },
+            "f1": {
+              "mean": 0.15384615384615385,
+              "min": 0.15384615384615385,
+              "max": 0.15384615384615385
+            },
+            "reported": [
+              12
+            ],
+            "failed": 0
+          },
+          "mpxj": {
+            "detected": 1,
+            "samples": 1,
+            "fdr": {
+              "mean": 0.9090909090909091,
+              "min": 0.9090909090909091,
+              "max": 0.9090909090909091
+            },
+            "f1": {
+              "mean": 0.16666666666666666,
+              "min": 0.16666666666666666,
+              "max": 0.16666666666666666
+            },
+            "reported": [
+              11
+            ],
+            "failed": 0
+          }
+        }
+      }
+    },
+    "Vanilla Qwen": {
+      "samples": [
+        {
+          "sample": 1,
+          "projects": [
+            {
+              "project": "zip4j",
+              "status": "scored",
+              "reported": 1,
+              "matched": 1,
+              "detected": true,
+              "fdr": 0.0,
+              "f1": 1.0,
+              "matched_locations": [
+                [
+                  "Unzip",
+                  "initExtractFile"
+                ]
+              ],
+              "locations": [
+                [
+                  "Unzip",
+                  "initExtractFile"
+                ]
+              ],
+              "failure": null
+            },
+            {
+              "project": "zt-zip",
+              "status": "scored",
+              "reported": 3,
+              "matched": 0,
+              "detected": false,
+              "fdr": 1.0,
+              "f1": 0.0,
+              "matched_locations": [],
+              "locations": [
+                [
+                  "ZipUtil",
+                  "doUnpackEntry"
+                ],
+                [
+                  "ZipUtil",
+                  "unpack"
+                ],
+                [
+                  "ZipUtil",
+                  "unpackEntry"
+                ]
+              ],
+              "failure": null
+            },
+            {
+              "project": "spark",
+              "status": "scored",
+              "reported": 1,
+              "matched": 0,
+              "detected": false,
+              "fdr": 1.0,
+              "f1": 0.0,
+              "matched_locations": [],
+              "locations": [
+                [
+                  "ClassPathResource",
+                  "getDescription"
+                ]
+              ],
+              "failure": null
+            },
+            {
+              "project": "plexus-archiver",
+              "status": "scored",
+              "reported": 1,
+              "matched": 1,
+              "detected": true,
+              "fdr": 0.0,
+              "f1": 1.0,
+              "matched_locations": [
+                [
+                  "AbstractUnArchiver",
+                  "extractFile"
+                ]
+              ],
+              "locations": [
+                [
+                  "AbstractUnArchiver",
+                  "extractFile"
+                ]
+              ],
+              "failure": null
+            },
+            {
+              "project": "plexus-utils",
+              "status": "scored",
+              "reported": 2,
+              "matched": 1,
+              "detected": true,
+              "fdr": 0.5,
+              "f1": 0.6666666666666666,
+              "matched_locations": [
+                [
+                  "Expand",
+                  "extractFile"
+                ]
+              ],
+              "locations": [
+                [
+                  "Expand",
+                  "expandFile"
+                ],
+                [
+                  "Expand",
+                  "extractFile"
+                ]
+              ],
+              "failure": null
+            },
+            {
+              "project": "mpxj",
+              "status": "scored",
+              "reported": 2,
+              "matched": 1,
+              "detected": true,
+              "fdr": 0.5,
+              "f1": 0.6666666666666666,
+              "matched_locations": [
+                [
+                  "InputStreamHelper",
+                  "processZipStream"
+                ]
+              ],
+              "locations": [
+                [
+                  "InputStreamHelper",
+                  "processZipStream"
+                ],
+                [
+                  "InputStreamHelper",
+                  "writeZipStreamToTempDir"
+                ]
+              ],
+              "failure": null
+            }
+          ],
+          "summary": {
+            "projects": 6,
+            "scored": 6,
+            "complete": true,
+            "detected": 4,
+            "macro_fdr": 0.5,
+            "macro_f1": 0.5555555555555556,
+            "fdr_projects": 6
+          },
+          "fixed_revision_locations": {
+            "zip4j": 1,
+            "zt-zip": 5,
+            "spark": 1,
+            "plexus-archiver": 1,
+            "plexus-utils": 1,
+            "mpxj": 1
+          }
+        },
+        {
+          "sample": 2,
+          "projects": [
+            {
+              "project": "zip4j",
+              "status": "scored",
+              "reported": 1,
+              "matched": 1,
+              "detected": true,
+              "fdr": 0.0,
+              "f1": 1.0,
+              "matched_locations": [
+                [
+                  "Unzip",
+                  "initExtractFile"
+                ]
+              ],
+              "locations": [
+                [
+                  "Unzip",
+                  "initExtractFile"
+                ]
+              ],
+              "failure": null
+            },
+            {
+              "project": "zt-zip",
+              "status": "scored",
+              "reported": 3,
+              "matched": 2,
+              "detected": true,
+              "fdr": 0.33333333333333337,
+              "f1": 0.8,
+              "matched_locations": [
+                [
+                  "Unpacker",
+                  "process"
+                ],
+                [
+                  "Unwraper",
+                  "process"
+                ]
+              ],
+              "locations": [
+                [
+                  "Unpacker",
+                  "process"
+                ],
+                [
+                  "Unwraper",
+                  "process"
+                ],
+                [
+                  "ZipUtil",
+                  "doUnpackEntry"
+                ]
+              ],
+              "failure": null
+            },
+            {
+              "project": "spark",
+              "status": "scored",
+              "reported": 0,
+              "matched": 0,
+              "detected": false,
+              "fdr": null,
+              "f1": 0.0,
+              "matched_locations": [],
+              "locations": [],
+              "failure": null
+            },
+            {
+              "project": "plexus-archiver",
+              "status": "scored",
+              "reported": 1,
+              "matched": 1,
+              "detected": true,
+              "fdr": 0.0,
+              "f1": 1.0,
+              "matched_locations": [
+                [
+                  "AbstractUnArchiver",
+                  "extractFile"
+                ]
+              ],
+              "locations": [
+                [
+                  "AbstractUnArchiver",
+                  "extractFile"
+                ]
+              ],
+              "failure": null
+            },
+            {
+              "project": "plexus-utils",
+              "status": "scored",
+              "reported": 1,
+              "matched": 1,
+              "detected": true,
+              "fdr": 0.0,
+              "f1": 1.0,
+              "matched_locations": [
+                [
+                  "Expand",
+                  "extractFile"
+                ]
+              ],
+              "locations": [
+                [
+                  "Expand",
+                  "extractFile"
+                ]
+              ],
+              "failure": null
+            },
+            {
+              "project": "mpxj",
+              "status": "scored",
+              "reported": 1,
+              "matched": 0,
+              "detected": false,
+              "fdr": 1.0,
+              "f1": 0.0,
+              "matched_locations": [],
+              "locations": [
+                [
+                  "InputStreamHelper",
+                  "writeZipStreamToTempDir"
+                ]
+              ],
+              "failure": null
+            }
+          ],
+          "summary": {
+            "projects": 6,
+            "scored": 6,
+            "complete": true,
+            "detected": 4,
+            "macro_fdr": 0.26666666666666666,
+            "macro_f1": 0.6333333333333333,
+            "fdr_projects": 5
+          },
+          "fixed_revision_locations": {
+            "zip4j": 1,
+            "zt-zip": 5,
+            "spark": 1,
+            "plexus-archiver": 1,
+            "plexus-utils": 1,
+            "mpxj": 1
+          }
+        },
+        {
+          "sample": 3,
+          "projects": [
+            {
+              "project": "zip4j",
+              "status": "scored",
+              "reported": 1,
+              "matched": 1,
+              "detected": true,
+              "fdr": 0.0,
+              "f1": 1.0,
+              "matched_locations": [
+                [
+                  "Unzip",
+                  "initExtractFile"
+                ]
+              ],
+              "locations": [
+                [
+                  "Unzip",
+                  "initExtractFile"
+                ]
+              ],
+              "failure": null
+            },
+            {
+              "project": "zt-zip",
+              "status": "scored",
+              "reported": 3,
+              "matched": 2,
+              "detected": true,
+              "fdr": 0.33333333333333337,
+              "f1": 0.8,
+              "matched_locations": [
+                [
+                  "Unpacker",
+                  "process"
+                ],
+                [
+                  "Unwraper",
+                  "process"
+                ]
+              ],
+              "locations": [
+                [
+                  "Unpacker",
+                  "process"
+                ],
+                [
+                  "Unwraper",
+                  "process"
+                ],
+                [
+                  "ZipUtil",
+                  "doUnpackEntry"
+                ]
+              ],
+              "failure": null
+            },
+            {
+              "project": "spark",
+              "status": "scored",
+              "reported": 1,
+              "matched": 0,
+              "detected": false,
+              "fdr": 1.0,
+              "f1": 0.0,
+              "matched_locations": [],
+              "locations": [
+                [
+                  "ClassPathResource",
+                  "createRelative"
+                ]
+              ],
+              "failure": null
+            },
+            {
+              "project": "plexus-archiver",
+              "status": "scored",
+              "reported": 1,
+              "matched": 1,
+              "detected": true,
+              "fdr": 0.0,
+              "f1": 1.0,
+              "matched_locations": [
+                [
+                  "AbstractUnArchiver",
+                  "extractFile"
+                ]
+              ],
+              "locations": [
+                [
+                  "AbstractUnArchiver",
+                  "extractFile"
+                ]
+              ],
+              "failure": null
+            },
+            {
+              "project": "plexus-utils",
+              "status": "scored",
+              "reported": 1,
+              "matched": 1,
+              "detected": true,
+              "fdr": 0.0,
+              "f1": 1.0,
+              "matched_locations": [
+                [
+                  "Expand",
+                  "extractFile"
+                ]
+              ],
+              "locations": [
+                [
+                  "Expand",
+                  "extractFile"
+                ]
+              ],
+              "failure": null
+            },
+            {
+              "project": "mpxj",
+              "status": "scored",
+              "reported": 1,
+              "matched": 0,
+              "detected": false,
+              "fdr": 1.0,
+              "f1": 0.0,
+              "matched_locations": [],
+              "locations": [
+                [
+                  "InputStreamHelper",
+                  "writeZipStreamToTempDir"
+                ]
+              ],
+              "failure": null
+            }
+          ],
+          "summary": {
+            "projects": 6,
+            "scored": 6,
+            "complete": true,
+            "detected": 4,
+            "macro_fdr": 0.3888888888888889,
+            "macro_f1": 0.6333333333333333,
+            "fdr_projects": 6
+          },
+          "fixed_revision_locations": {
+            "zip4j": 1,
+            "zt-zip": 5,
+            "spark": 1,
+            "plexus-archiver": 1,
+            "plexus-utils": 1,
+            "mpxj": 1
+          }
+        }
+      ],
+      "summary": {
+        "detected": {
+          "mean": 4,
+          "min": 4,
+          "max": 4
+        },
+        "macro_fdr": {
+          "mean": 0.3851851851851852,
+          "min": 0.26666666666666666,
+          "max": 0.5
+        },
+        "macro_f1": {
+          "mean": 0.6074074074074074,
+          "min": 0.5555555555555556,
+          "max": 0.6333333333333333
+        },
+        "per_project": {
+          "zip4j": {
+            "detected": 3,
+            "samples": 3,
+            "fdr": {
+              "mean": 0.0,
+              "min": 0.0,
+              "max": 0.0
+            },
+            "f1": {
+              "mean": 1.0,
+              "min": 1.0,
+              "max": 1.0
+            },
+            "reported": [
+              1,
+              1,
+              1
+            ],
+            "failed": 0
+          },
+          "zt-zip": {
+            "detected": 2,
+            "samples": 3,
+            "fdr": {
+              "mean": 0.5555555555555556,
+              "min": 0.33333333333333337,
+              "max": 1.0
+            },
+            "f1": {
+              "mean": 0.5333333333333333,
+              "min": 0.0,
+              "max": 0.8
+            },
+            "reported": [
+              3,
+              3,
+              3
+            ],
+            "failed": 0
+          },
+          "spark": {
+            "detected": 0,
+            "samples": 3,
+            "fdr": {
+              "mean": 1.0,
+              "min": 1.0,
+              "max": 1.0
+            },
+            "f1": {
+              "mean": 0.0,
+              "min": 0.0,
+              "max": 0.0
+            },
+            "reported": [
+              1,
+              0,
+              1
+            ],
+            "failed": 0
+          },
+          "plexus-archiver": {
+            "detected": 3,
+            "samples": 3,
+            "fdr": {
+              "mean": 0.0,
+              "min": 0.0,
+              "max": 0.0
+            },
+            "f1": {
+              "mean": 1.0,
+              "min": 1.0,
+              "max": 1.0
+            },
+            "reported": [
+              1,
+              1,
+              1
+            ],
+            "failed": 0
+          },
+          "plexus-utils": {
+            "detected": 3,
+            "samples": 3,
+            "fdr": {
+              "mean": 0.16666666666666666,
+              "min": 0.0,
+              "max": 0.5
+            },
+            "f1": {
+              "mean": 0.8888888888888888,
+              "min": 0.6666666666666666,
+              "max": 1.0
+            },
+            "reported": [
+              2,
+              1,
+              1
+            ],
+            "failed": 0
+          },
+          "mpxj": {
+            "detected": 1,
+            "samples": 3,
+            "fdr": {
+              "mean": 0.8333333333333334,
+              "min": 0.5,
+              "max": 1.0
+            },
+            "f1": {
+              "mean": 0.2222222222222222,
+              "min": 0.0,
+              "max": 0.6666666666666666
+            },
+            "reported": [
+              2,
+              1,
+              1
+            ],
+            "failed": 0
+          }
+        }
+      }
+    },
+    "Vanilla Deepseek": {
+      "samples": [
+        {
+          "sample": 1,
+          "projects": [
+            {
+              "project": "zip4j",
+              "status": "scored",
+              "reported": 2,
+              "matched": 1,
+              "detected": true,
+              "fdr": 0.5,
+              "f1": 0.6666666666666666,
+              "matched_locations": [
+                [
+                  "Unzip",
+                  "initExtractFile"
+                ]
+              ],
+              "locations": [
+                [
+                  "Unzip",
+                  "checkOutputDirectoryStructure"
+                ],
+                [
+                  "Unzip",
+                  "initExtractFile"
+                ]
+              ],
+              "failure": null
+            },
+            {
+              "project": "zt-zip",
+              "status": "scored",
+              "reported": 1,
+              "matched": 0,
+              "detected": false,
+              "fdr": 1.0,
+              "f1": 0.0,
+              "matched_locations": [],
+              "locations": [
+                [
+                  "ZipUtil",
+                  "unpack"
+                ]
+              ],
+              "failure": null
+            },
+            {
+              "project": "spark",
+              "status": "scored",
+              "reported": 1,
+              "matched": 0,
+              "detected": false,
+              "fdr": 1.0,
+              "f1": 0.0,
+              "matched_locations": [],
+              "locations": [
+                [
+                  "ClassPathResource",
+                  "createRelative"
+                ]
+              ],
+              "failure": null
+            },
+            {
+              "project": "plexus-archiver",
+              "status": "scored",
+              "reported": 1,
+              "matched": 1,
+              "detected": true,
+              "fdr": 0.0,
+              "f1": 1.0,
+              "matched_locations": [
+                [
+                  "AbstractUnArchiver",
+                  "extractFile"
+                ]
+              ],
+              "locations": [
+                [
+                  "AbstractUnArchiver",
+                  "extractFile"
+                ]
+              ],
+              "failure": null
+            },
+            {
+              "project": "plexus-utils",
+              "status": "scored",
+              "reported": 1,
+              "matched": 1,
+              "detected": true,
+              "fdr": 0.0,
+              "f1": 1.0,
+              "matched_locations": [
+                [
+                  "Expand",
+                  "extractFile"
+                ]
+              ],
+              "locations": [
+                [
+                  "Expand",
+                  "extractFile"
+                ]
+              ],
+              "failure": null
+            },
+            {
+              "project": "mpxj",
+              "status": "scored",
+              "reported": 1,
+              "matched": 1,
+              "detected": true,
+              "fdr": 0.0,
+              "f1": 1.0,
+              "matched_locations": [
+                [
+                  "InputStreamHelper",
+                  "processZipStream"
+                ]
+              ],
+              "locations": [
+                [
+                  "InputStreamHelper",
+                  "processZipStream"
+                ]
+              ],
+              "failure": null
+            }
+          ],
+          "summary": {
+            "projects": 6,
+            "scored": 6,
+            "complete": true,
+            "detected": 4,
+            "macro_fdr": 0.4166666666666667,
+            "macro_f1": 0.6111111111111112,
+            "fdr_projects": 6
+          },
+          "fixed_revision_locations": {
+            "zip4j": 1,
+            "zt-zip": 3,
+            "spark": 0,
+            "plexus-archiver": 1,
+            "plexus-utils": 1,
+            "mpxj": 0
+          }
+        },
+        {
+          "sample": 2,
+          "projects": [
+            {
+              "project": "zip4j",
+              "status": "scored",
+              "reported": 2,
+              "matched": 1,
+              "detected": true,
+              "fdr": 0.5,
+              "f1": 0.6666666666666666,
+              "matched_locations": [
+                [
+                  "Unzip",
+                  "initExtractFile"
+                ]
+              ],
+              "locations": [
+                [
+                  "Unzip",
+                  "checkOutputDirectoryStructure"
+                ],
+                [
+                  "Unzip",
+                  "initExtractFile"
+                ]
+              ],
+              "failure": null
+            },
+            {
+              "project": "zt-zip",
+              "status": "scored",
+              "reported": 3,
+              "matched": 2,
+              "detected": true,
+              "fdr": 0.33333333333333337,
+              "f1": 0.8,
+              "matched_locations": [
+                [
+                  "Unpacker",
+                  "process"
+                ],
+                [
+                  "Unwraper",
+                  "process"
+                ]
+              ],
+              "locations": [
+                [
+                  "BackslashUnpacker",
+                  "process"
+                ],
+                [
+                  "Unpacker",
+                  "process"
+                ],
+                [
+                  "Unwraper",
+                  "process"
+                ]
+              ],
+              "failure": null
+            },
+            {
+              "project": "spark",
+              "status": "scored",
+              "reported": 0,
+              "matched": 0,
+              "detected": false,
+              "fdr": null,
+              "f1": 0.0,
+              "matched_locations": [],
+              "locations": [],
+              "failure": null
+            },
+            {
+              "project": "plexus-archiver",
+              "status": "scored",
+              "reported": 1,
+              "matched": 1,
+              "detected": true,
+              "fdr": 0.0,
+              "f1": 1.0,
+              "matched_locations": [
+                [
+                  "AbstractUnArchiver",
+                  "extractFile"
+                ]
+              ],
+              "locations": [
+                [
+                  "AbstractUnArchiver",
+                  "extractFile"
+                ]
+              ],
+              "failure": null
+            },
+            {
+              "project": "plexus-utils",
+              "status": "scored",
+              "reported": 1,
+              "matched": 1,
+              "detected": true,
+              "fdr": 0.0,
+              "f1": 1.0,
+              "matched_locations": [
+                [
+                  "Expand",
+                  "extractFile"
+                ]
+              ],
+              "locations": [
+                [
+                  "Expand",
+                  "extractFile"
+                ]
+              ],
+              "failure": null
+            },
+            {
+              "project": "mpxj",
+              "status": "scored",
+              "reported": 1,
+              "matched": 1,
+              "detected": true,
+              "fdr": 0.0,
+              "f1": 1.0,
+              "matched_locations": [
+                [
+                  "InputStreamHelper",
+                  "processZipStream"
+                ]
+              ],
+              "locations": [
+                [
+                  "InputStreamHelper",
+                  "processZipStream"
+                ]
+              ],
+              "failure": null
+            }
+          ],
+          "summary": {
+            "projects": 6,
+            "scored": 6,
+            "complete": true,
+            "detected": 5,
+            "macro_fdr": 0.16666666666666669,
+            "macro_f1": 0.7444444444444445,
+            "fdr_projects": 5
+          },
+          "fixed_revision_locations": {
+            "zip4j": 1,
+            "zt-zip": 3,
+            "spark": 0,
+            "plexus-archiver": 1,
+            "plexus-utils": 1,
+            "mpxj": 0
+          }
+        },
+        {
+          "sample": 3,
+          "projects": [
+            {
+              "project": "zip4j",
+              "status": "scored",
+              "reported": 2,
+              "matched": 1,
+              "detected": true,
+              "fdr": 0.5,
+              "f1": 0.6666666666666666,
+              "matched_locations": [
+                [
+                  "Unzip",
+                  "initExtractFile"
+                ]
+              ],
+              "locations": [
+                [
+                  "Unzip",
+                  "checkOutputDirectoryStructure"
+                ],
+                [
+                  "Unzip",
+                  "initExtractFile"
+                ]
+              ],
+              "failure": null
+            },
+            {
+              "project": "zt-zip",
+              "status": "scored",
+              "reported": 3,
+              "matched": 2,
+              "detected": true,
+              "fdr": 0.33333333333333337,
+              "f1": 0.8,
+              "matched_locations": [
+                [
+                  "Unpacker",
+                  "process"
+                ],
+                [
+                  "Unwraper",
+                  "process"
+                ]
+              ],
+              "locations": [
+                [
+                  "BackslashUnpacker",
+                  "process"
+                ],
+                [
+                  "Unpacker",
+                  "process"
+                ],
+                [
+                  "Unwraper",
+                  "process"
+                ]
+              ],
+              "failure": null
+            },
+            {
+              "project": "spark",
+              "status": "scored",
+              "reported": 0,
+              "matched": 0,
+              "detected": false,
+              "fdr": null,
+              "f1": 0.0,
+              "matched_locations": [],
+              "locations": [],
+              "failure": null
+            },
+            {
+              "project": "plexus-archiver",
+              "status": "scored",
+              "reported": 1,
+              "matched": 1,
+              "detected": true,
+              "fdr": 0.0,
+              "f1": 1.0,
+              "matched_locations": [
+                [
+                  "AbstractUnArchiver",
+                  "extractFile"
+                ]
+              ],
+              "locations": [
+                [
+                  "AbstractUnArchiver",
+                  "extractFile"
+                ]
+              ],
+              "failure": null
+            },
+            {
+              "project": "plexus-utils",
+              "status": "scored",
+              "reported": 1,
+              "matched": 1,
+              "detected": true,
+              "fdr": 0.0,
+              "f1": 1.0,
+              "matched_locations": [
+                [
+                  "Expand",
+                  "extractFile"
+                ]
+              ],
+              "locations": [
+                [
+                  "Expand",
+                  "extractFile"
+                ]
+              ],
+              "failure": null
+            },
+            {
+              "project": "mpxj",
+              "status": "scored",
+              "reported": 1,
+              "matched": 1,
+              "detected": true,
+              "fdr": 0.0,
+              "f1": 1.0,
+              "matched_locations": [
+                [
+                  "InputStreamHelper",
+                  "processZipStream"
+                ]
+              ],
+              "locations": [
+                [
+                  "InputStreamHelper",
+                  "processZipStream"
+                ]
+              ],
+              "failure": null
+            }
+          ],
+          "summary": {
+            "projects": 6,
+            "scored": 6,
+            "complete": true,
+            "detected": 5,
+            "macro_fdr": 0.16666666666666669,
+            "macro_f1": 0.7444444444444445,
+            "fdr_projects": 5
+          },
+          "fixed_revision_locations": {
+            "zip4j": 1,
+            "zt-zip": 3,
+            "spark": 0,
+            "plexus-archiver": 1,
+            "plexus-utils": 1,
+            "mpxj": 0
+          }
+        }
+      ],
+      "summary": {
+        "detected": {
+          "mean": 4.666666666666667,
+          "min": 4,
+          "max": 5
+        },
+        "macro_fdr": {
+          "mean": 0.25,
+          "min": 0.16666666666666669,
+          "max": 0.4166666666666667
+        },
+        "macro_f1": {
+          "mean": 0.7000000000000001,
+          "min": 0.6111111111111112,
+          "max": 0.7444444444444445
+        },
+        "per_project": {
+          "zip4j": {
+            "detected": 3,
+            "samples": 3,
+            "fdr": {
+              "mean": 0.5,
+              "min": 0.5,
+              "max": 0.5
+            },
+            "f1": {
+              "mean": 0.6666666666666666,
+              "min": 0.6666666666666666,
+              "max": 0.6666666666666666
+            },
+            "reported": [
+              2,
+              2,
+              2
+            ],
+            "failed": 0
+          },
+          "zt-zip": {
+            "detected": 2,
+            "samples": 3,
+            "fdr": {
+              "mean": 0.5555555555555556,
+              "min": 0.33333333333333337,
+              "max": 1.0
+            },
+            "f1": {
+              "mean": 0.5333333333333333,
+              "min": 0.0,
+              "max": 0.8
+            },
+            "reported": [
+              1,
+              3,
+              3
+            ],
+            "failed": 0
+          },
+          "spark": {
+            "detected": 0,
+            "samples": 3,
+            "fdr": {
+              "mean": 1.0,
+              "min": 1.0,
+              "max": 1.0
+            },
+            "f1": {
+              "mean": 0.0,
+              "min": 0.0,
+              "max": 0.0
+            },
+            "reported": [
+              1,
+              0,
+              0
+            ],
+            "failed": 0
+          },
+          "plexus-archiver": {
+            "detected": 3,
+            "samples": 3,
+            "fdr": {
+              "mean": 0.0,
+              "min": 0.0,
+              "max": 0.0
+            },
+            "f1": {
+              "mean": 1.0,
+              "min": 1.0,
+              "max": 1.0
+            },
+            "reported": [
+              1,
+              1,
+              1
+            ],
+            "failed": 0
+          },
+          "plexus-utils": {
+            "detected": 3,
+            "samples": 3,
+            "fdr": {
+              "mean": 0.0,
+              "min": 0.0,
+              "max": 0.0
+            },
+            "f1": {
+              "mean": 1.0,
+              "min": 1.0,
+              "max": 1.0
+            },
+            "reported": [
+              1,
+              1,
+              1
+            ],
+            "failed": 0
+          },
+          "mpxj": {
+            "detected": 3,
+            "samples": 3,
+            "fdr": {
+              "mean": 0.0,
+              "min": 0.0,
+              "max": 0.0
+            },
+            "f1": {
+              "mean": 1.0,
+              "min": 1.0,
+              "max": 1.0
+            },
+            "reported": [
+              1,
+              1,
+              1
+            ],
+            "failed": 0
+          }
+        }
+      }
+    },
+    "Hinted Qwen": {
+      "samples": [
+        {
+          "sample": 1,
+          "projects": [
+            {
+              "project": "zip4j",
+              "status": "scored",
+              "reported": 1,
+              "matched": 0,
+              "detected": false,
+              "fdr": 1.0,
+              "f1": 0.0,
+              "matched_locations": [],
+              "locations": [
+                [
+                  "UnzipEngine",
+                  "getOutputStream"
+                ]
+              ],
+              "failure": null
+            },
+            {
+              "project": "zt-zip",
+              "status": "scored",
+              "reported": 1,
+              "matched": 0,
+              "detected": false,
+              "fdr": 1.0,
+              "f1": 0.0,
+              "matched_locations": [],
+              "locations": [
+                [
+                  "ZipUtil",
+                  "unpack"
+                ]
+              ],
+              "failure": null
+            },
+            {
+              "project": "spark",
+              "status": "scored",
+              "reported": 1,
+              "matched": 1,
+              "detected": true,
+              "fdr": 0.0,
+              "f1": 1.0,
+              "matched_locations": [
+                [
+                  "ClassPathResource",
+                  "getInputStream"
+                ]
+              ],
+              "locations": [
+                [
+                  "ClassPathResource",
+                  "getInputStream"
+                ]
+              ],
+              "failure": null
+            },
+            {
+              "project": "plexus-archiver",
+              "status": "scored",
+              "reported": 1,
+              "matched": 1,
+              "detected": true,
+              "fdr": 0.0,
+              "f1": 1.0,
+              "matched_locations": [
+                [
+                  "AbstractUnArchiver",
+                  "extractFile"
+                ]
+              ],
+              "locations": [
+                [
+                  "AbstractUnArchiver",
+                  "extractFile"
+                ]
+              ],
+              "failure": null
+            },
+            {
+              "project": "plexus-utils",
+              "status": "scored",
+              "reported": 1,
+              "matched": 1,
+              "detected": true,
+              "fdr": 0.0,
+              "f1": 1.0,
+              "matched_locations": [
+                [
+                  "Expand",
+                  "extractFile"
+                ]
+              ],
+              "locations": [
+                [
+                  "Expand",
+                  "extractFile"
+                ]
+              ],
+              "failure": null
+            },
+            {
+              "project": "mpxj",
+              "status": "scored",
+              "reported": 1,
+              "matched": 1,
+              "detected": true,
+              "fdr": 0.0,
+              "f1": 1.0,
+              "matched_locations": [
+                [
+                  "InputStreamHelper",
+                  "processZipStream"
+                ]
+              ],
+              "locations": [
+                [
+                  "InputStreamHelper",
+                  "processZipStream"
+                ]
+              ],
+              "failure": null
+            }
+          ],
+          "summary": {
+            "projects": 6,
+            "scored": 6,
+            "complete": true,
+            "detected": 4,
+            "macro_fdr": 0.3333333333333333,
+            "macro_f1": 0.6666666666666666,
+            "fdr_projects": 6
+          },
+          "fixed_revision_locations": {
+            "zip4j": 1,
+            "zt-zip": 1,
+            "spark": 1,
+            "plexus-archiver": 1,
+            "plexus-utils": 1,
+            "mpxj": 1
+          }
+        },
+        {
+          "sample": 2,
+          "projects": [
+            {
+              "project": "zip4j",
+              "status": "scored",
+              "reported": 1,
+              "matched": 0,
+              "detected": false,
+              "fdr": 1.0,
+              "f1": 0.0,
+              "matched_locations": [],
+              "locations": [
+                [
+                  "UnzipEngine",
+                  "getOutputStream"
+                ]
+              ],
+              "failure": null
+            },
+            {
+              "project": "zt-zip",
+              "status": "scored",
+              "reported": 1,
+              "matched": 0,
+              "detected": false,
+              "fdr": 1.0,
+              "f1": 0.0,
+              "matched_locations": [],
+              "locations": [
+                [
+                  "ZipUtil",
+                  "unpack"
+                ]
+              ],
+              "failure": null
+            },
+            {
+              "project": "spark",
+              "status": "scored",
+              "reported": 1,
+              "matched": 1,
+              "detected": true,
+              "fdr": 0.0,
+              "f1": 1.0,
+              "matched_locations": [
+                [
+                  "ClassPathResource",
+                  "getInputStream"
+                ]
+              ],
+              "locations": [
+                [
+                  "ClassPathResource",
+                  "getInputStream"
+                ]
+              ],
+              "failure": null
+            },
+            {
+              "project": "plexus-archiver",
+              "status": "scored",
+              "reported": 1,
+              "matched": 1,
+              "detected": true,
+              "fdr": 0.0,
+              "f1": 1.0,
+              "matched_locations": [
+                [
+                  "AbstractUnArchiver",
+                  "extractFile"
+                ]
+              ],
+              "locations": [
+                [
+                  "AbstractUnArchiver",
+                  "extractFile"
+                ]
+              ],
+              "failure": null
+            },
+            {
+              "project": "plexus-utils",
+              "status": "scored",
+              "reported": 1,
+              "matched": 1,
+              "detected": true,
+              "fdr": 0.0,
+              "f1": 1.0,
+              "matched_locations": [
+                [
+                  "Expand",
+                  "extractFile"
+                ]
+              ],
+              "locations": [
+                [
+                  "Expand",
+                  "extractFile"
+                ]
+              ],
+              "failure": null
+            },
+            {
+              "project": "mpxj",
+              "status": "scored",
+              "reported": 1,
+              "matched": 1,
+              "detected": true,
+              "fdr": 0.0,
+              "f1": 1.0,
+              "matched_locations": [
+                [
+                  "InputStreamHelper",
+                  "processZipStream"
+                ]
+              ],
+              "locations": [
+                [
+                  "InputStreamHelper",
+                  "processZipStream"
+                ]
+              ],
+              "failure": null
+            }
+          ],
+          "summary": {
+            "projects": 6,
+            "scored": 6,
+            "complete": true,
+            "detected": 4,
+            "macro_fdr": 0.3333333333333333,
+            "macro_f1": 0.6666666666666666,
+            "fdr_projects": 6
+          },
+          "fixed_revision_locations": {
+            "zip4j": 1,
+            "zt-zip": 1,
+            "spark": 1,
+            "plexus-archiver": 1,
+            "plexus-utils": 1,
+            "mpxj": 1
+          }
+        },
+        {
+          "sample": 3,
+          "projects": [
+            {
+              "project": "zip4j",
+              "status": "scored",
+              "reported": 1,
+              "matched": 1,
+              "detected": true,
+              "fdr": 0.0,
+              "f1": 1.0,
+              "matched_locations": [
+                [
+                  "Unzip",
+                  "initExtractFile"
+                ]
+              ],
+              "locations": [
+                [
+                  "Unzip",
+                  "initExtractFile"
+                ]
+              ],
+              "failure": null
+            },
+            {
+              "project": "zt-zip",
+              "status": "scored",
+              "reported": 1,
+              "matched": 0,
+              "detected": false,
+              "fdr": 1.0,
+              "f1": 0.0,
+              "matched_locations": [],
+              "locations": [
+                [
+                  "ZipUtil",
+                  "unpack"
+                ]
+              ],
+              "failure": null
+            },
+            {
+              "project": "spark",
+              "status": "scored",
+              "reported": 1,
+              "matched": 1,
+              "detected": true,
+              "fdr": 0.0,
+              "f1": 1.0,
+              "matched_locations": [
+                [
+                  "ClassPathResource",
+                  "getInputStream"
+                ]
+              ],
+              "locations": [
+                [
+                  "ClassPathResource",
+                  "getInputStream"
+                ]
+              ],
+              "failure": null
+            },
+            {
+              "project": "plexus-archiver",
+              "status": "scored",
+              "reported": 1,
+              "matched": 1,
+              "detected": true,
+              "fdr": 0.0,
+              "f1": 1.0,
+              "matched_locations": [
+                [
+                  "AbstractUnArchiver",
+                  "extractFile"
+                ]
+              ],
+              "locations": [
+                [
+                  "AbstractUnArchiver",
+                  "extractFile"
+                ]
+              ],
+              "failure": null
+            },
+            {
+              "project": "plexus-utils",
+              "status": "scored",
+              "reported": 1,
+              "matched": 1,
+              "detected": true,
+              "fdr": 0.0,
+              "f1": 1.0,
+              "matched_locations": [
+                [
+                  "Expand",
+                  "extractFile"
+                ]
+              ],
+              "locations": [
+                [
+                  "Expand",
+                  "extractFile"
+                ]
+              ],
+              "failure": null
+            },
+            {
+              "project": "mpxj",
+              "status": "scored",
+              "reported": 1,
+              "matched": 1,
+              "detected": true,
+              "fdr": 0.0,
+              "f1": 1.0,
+              "matched_locations": [
+                [
+                  "InputStreamHelper",
+                  "processZipStream"
+                ]
+              ],
+              "locations": [
+                [
+                  "InputStreamHelper",
+                  "processZipStream"
+                ]
+              ],
+              "failure": null
+            }
+          ],
+          "summary": {
+            "projects": 6,
+            "scored": 6,
+            "complete": true,
+            "detected": 5,
+            "macro_fdr": 0.16666666666666666,
+            "macro_f1": 0.8333333333333334,
+            "fdr_projects": 6
+          },
+          "fixed_revision_locations": {
+            "zip4j": 1,
+            "zt-zip": 1,
+            "spark": 1,
+            "plexus-archiver": 1,
+            "plexus-utils": 1,
+            "mpxj": 1
+          }
+        }
+      ],
+      "summary": {
+        "detected": {
+          "mean": 4.333333333333333,
+          "min": 4,
+          "max": 5
+        },
+        "macro_fdr": {
+          "mean": 0.2777777777777778,
+          "min": 0.16666666666666666,
+          "max": 0.3333333333333333
+        },
+        "macro_f1": {
+          "mean": 0.7222222222222222,
+          "min": 0.6666666666666666,
+          "max": 0.8333333333333334
+        },
+        "per_project": {
+          "zip4j": {
+            "detected": 1,
+            "samples": 3,
+            "fdr": {
+              "mean": 0.6666666666666666,
+              "min": 0.0,
+              "max": 1.0
+            },
+            "f1": {
+              "mean": 0.3333333333333333,
+              "min": 0.0,
+              "max": 1.0
+            },
+            "reported": [
+              1,
+              1,
+              1
+            ],
+            "failed": 0
+          },
+          "zt-zip": {
+            "detected": 0,
+            "samples": 3,
+            "fdr": {
+              "mean": 1.0,
+              "min": 1.0,
+              "max": 1.0
+            },
+            "f1": {
+              "mean": 0.0,
+              "min": 0.0,
+              "max": 0.0
+            },
+            "reported": [
+              1,
+              1,
+              1
+            ],
+            "failed": 0
+          },
+          "spark": {
+            "detected": 3,
+            "samples": 3,
+            "fdr": {
+              "mean": 0.0,
+              "min": 0.0,
+              "max": 0.0
+            },
+            "f1": {
+              "mean": 1.0,
+              "min": 1.0,
+              "max": 1.0
+            },
+            "reported": [
+              1,
+              1,
+              1
+            ],
+            "failed": 0
+          },
+          "plexus-archiver": {
+            "detected": 3,
+            "samples": 3,
+            "fdr": {
+              "mean": 0.0,
+              "min": 0.0,
+              "max": 0.0
+            },
+            "f1": {
+              "mean": 1.0,
+              "min": 1.0,
+              "max": 1.0
+            },
+            "reported": [
+              1,
+              1,
+              1
+            ],
+            "failed": 0
+          },
+          "plexus-utils": {
+            "detected": 3,
+            "samples": 3,
+            "fdr": {
+              "mean": 0.0,
+              "min": 0.0,
+              "max": 0.0
+            },
+            "f1": {
+              "mean": 1.0,
+              "min": 1.0,
+              "max": 1.0
+            },
+            "reported": [
+              1,
+              1,
+              1
+            ],
+            "failed": 0
+          },
+          "mpxj": {
+            "detected": 3,
+            "samples": 3,
+            "fdr": {
+              "mean": 0.0,
+              "min": 0.0,
+              "max": 0.0
+            },
+            "f1": {
+              "mean": 1.0,
+              "min": 1.0,
+              "max": 1.0
+            },
+            "reported": [
+              1,
+              1,
+              1
+            ],
+            "failed": 0
+          }
+        }
+      }
+    },
+    "Hinted Deepseek": {
+      "samples": [
+        {
+          "sample": 1,
+          "projects": [
+            {
+              "project": "zip4j",
+              "status": "scored",
+              "reported": 2,
+              "matched": 1,
+              "detected": true,
+              "fdr": 0.5,
+              "f1": 0.6666666666666666,
+              "matched_locations": [
+                [
+                  "Unzip",
+                  "initExtractFile"
+                ]
+              ],
+              "locations": [
+                [
+                  "Unzip",
+                  "initExtractFile"
+                ],
+                [
+                  "UnzipEngine",
+                  "unzipFile"
+                ]
+              ],
+              "failure": null
+            },
+            {
+              "project": "zt-zip",
+              "status": "scored",
+              "reported": 2,
+              "matched": 1,
+              "detected": true,
+              "fdr": 0.5,
+              "f1": 0.6666666666666666,
+              "matched_locations": [
+                [
+                  "Unpacker",
+                  "process"
+                ]
+              ],
+              "locations": [
+                [
+                  "Unpacker",
+                  "process"
+                ],
+                [
+                  "ZipUtil",
+                  "unpack"
+                ]
+              ],
+              "failure": null
+            },
+            {
+              "project": "spark",
+              "status": "scored",
+              "reported": 2,
+              "matched": 2,
+              "detected": true,
+              "fdr": 0.0,
+              "f1": 1.0,
+              "matched_locations": [
+                [
+                  "ClassPathResource",
+                  "ClassPathResource"
+                ],
+                [
+                  "ClassPathResource",
+                  "getInputStream"
+                ]
+              ],
+              "locations": [
+                [
+                  "ClassPathResource",
+                  "ClassPathResource"
+                ],
+                [
+                  "ClassPathResource",
+                  "getInputStream"
+                ]
+              ],
+              "failure": null
+            },
+            {
+              "project": "plexus-archiver",
+              "status": "scored",
+              "reported": 1,
+              "matched": 1,
+              "detected": true,
+              "fdr": 0.0,
+              "f1": 1.0,
+              "matched_locations": [
+                [
+                  "AbstractUnArchiver",
+                  "extractFile"
+                ]
+              ],
+              "locations": [
+                [
+                  "AbstractUnArchiver",
+                  "extractFile"
+                ]
+              ],
+              "failure": null
+            },
+            {
+              "project": "plexus-utils",
+              "status": "scored",
+              "reported": 1,
+              "matched": 1,
+              "detected": true,
+              "fdr": 0.0,
+              "f1": 1.0,
+              "matched_locations": [
+                [
+                  "Expand",
+                  "extractFile"
+                ]
+              ],
+              "locations": [
+                [
+                  "Expand",
+                  "extractFile"
+                ]
+              ],
+              "failure": null
+            },
+            {
+              "project": "mpxj",
+              "status": "scored",
+              "reported": 2,
+              "matched": 1,
+              "detected": true,
+              "fdr": 0.5,
+              "f1": 0.6666666666666666,
+              "matched_locations": [
+                [
+                  "InputStreamHelper",
+                  "processZipStream"
+                ]
+              ],
+              "locations": [
+                [
+                  "InputStreamHelper",
+                  "processZipStream"
+                ],
+                [
+                  "InputStreamHelper",
+                  "writeZipStreamToTempDir"
+                ]
+              ],
+              "failure": null
+            }
+          ],
+          "summary": {
+            "projects": 6,
+            "scored": 6,
+            "complete": true,
+            "detected": 6,
+            "macro_fdr": 0.25,
+            "macro_f1": 0.8333333333333333,
+            "fdr_projects": 6
+          },
+          "fixed_revision_locations": {
+            "zip4j": 0,
+            "zt-zip": 2,
+            "spark": 2,
+            "plexus-archiver": 1,
+            "plexus-utils": 2,
+            "mpxj": 0
+          }
+        },
+        {
+          "sample": 2,
+          "projects": [
+            {
+              "project": "zip4j",
+              "status": "scored",
+              "reported": 2,
+              "matched": 0,
+              "detected": false,
+              "fdr": 1.0,
+              "f1": 0.0,
+              "matched_locations": [],
+              "locations": [
+                [
+                  "Unzip",
+                  "extractAll"
+                ],
+                [
+                  "UnzipEngine",
+                  "unzipFile"
+                ]
+              ],
+              "failure": null
+            },
+            {
+              "project": "zt-zip",
+              "status": "scored",
+              "reported": 2,
+              "matched": 1,
+              "detected": true,
+              "fdr": 0.5,
+              "f1": 0.6666666666666666,
+              "matched_locations": [
+                [
+                  "Unpacker",
+                  "process"
+                ]
+              ],
+              "locations": [
+                [
+                  "Unpacker",
+                  "process"
+                ],
+                [
+                  "ZipUtil",
+                  "unpack"
+                ]
+              ],
+              "failure": null
+            },
+            {
+              "project": "spark",
+              "status": "scored",
+              "reported": 2,
+              "matched": 2,
+              "detected": true,
+              "fdr": 0.0,
+              "f1": 1.0,
+              "matched_locations": [
+                [
+                  "ClassPathResource",
+                  "ClassPathResource"
+                ],
+                [
+                  "ClassPathResource",
+                  "getInputStream"
+                ]
+              ],
+              "locations": [
+                [
+                  "ClassPathResource",
+                  "ClassPathResource"
+                ],
+                [
+                  "ClassPathResource",
+                  "getInputStream"
+                ]
+              ],
+              "failure": null
+            },
+            {
+              "project": "plexus-archiver",
+              "status": "scored",
+              "reported": 1,
+              "matched": 1,
+              "detected": true,
+              "fdr": 0.0,
+              "f1": 1.0,
+              "matched_locations": [
+                [
+                  "AbstractUnArchiver",
+                  "extractFile"
+                ]
+              ],
+              "locations": [
+                [
+                  "AbstractUnArchiver",
+                  "extractFile"
+                ]
+              ],
+              "failure": null
+            },
+            {
+              "project": "plexus-utils",
+              "status": "scored",
+              "reported": 2,
+              "matched": 1,
+              "detected": true,
+              "fdr": 0.5,
+              "f1": 0.6666666666666666,
+              "matched_locations": [
+                [
+                  "Expand",
+                  "extractFile"
+                ]
+              ],
+              "locations": [
+                [
+                  "Expand",
+                  "expandFile"
+                ],
+                [
+                  "Expand",
+                  "extractFile"
+                ]
+              ],
+              "failure": null
+            },
+            {
+              "project": "mpxj",
+              "status": "scored",
+              "reported": 2,
+              "matched": 1,
+              "detected": true,
+              "fdr": 0.5,
+              "f1": 0.6666666666666666,
+              "matched_locations": [
+                [
+                  "InputStreamHelper",
+                  "processZipStream"
+                ]
+              ],
+              "locations": [
+                [
+                  "InputStreamHelper",
+                  "processZipStream"
+                ],
+                [
+                  "InputStreamHelper",
+                  "writeZipStreamToTempDir"
+                ]
+              ],
+              "failure": null
+            }
+          ],
+          "summary": {
+            "projects": 6,
+            "scored": 6,
+            "complete": true,
+            "detected": 5,
+            "macro_fdr": 0.4166666666666667,
+            "macro_f1": 0.6666666666666666,
+            "fdr_projects": 6
+          },
+          "fixed_revision_locations": {
+            "zip4j": 0,
+            "zt-zip": 1,
+            "spark": 2,
+            "plexus-archiver": 1,
+            "plexus-utils": 1,
+            "mpxj": 0
+          }
+        },
+        {
+          "sample": 3,
+          "projects": [
+            {
+              "project": "zip4j",
+              "status": "scored",
+              "reported": 2,
+              "matched": 1,
+              "detected": true,
+              "fdr": 0.5,
+              "f1": 0.6666666666666666,
+              "matched_locations": [
+                [
+                  "Unzip",
+                  "initExtractFile"
+                ]
+              ],
+              "locations": [
+                [
+                  "Unzip",
+                  "initExtractFile"
+                ],
+                [
+                  "UnzipEngine",
+                  "getOutputStream"
+                ]
+              ],
+              "failure": null
+            },
+            {
+              "project": "zt-zip",
+              "status": "scored",
+              "reported": 2,
+              "matched": 1,
+              "detected": true,
+              "fdr": 0.5,
+              "f1": 0.6666666666666666,
+              "matched_locations": [
+                [
+                  "Unpacker",
+                  "process"
+                ]
+              ],
+              "locations": [
+                [
+                  "Unpacker",
+                  "process"
+                ],
+                [
+                  "ZipUtil",
+                  "unpack"
+                ]
+              ],
+              "failure": null
+            },
+            {
+              "project": "spark",
+              "status": "scored",
+              "reported": 2,
+              "matched": 2,
+              "detected": true,
+              "fdr": 0.0,
+              "f1": 1.0,
+              "matched_locations": [
+                [
+                  "ClassPathResource",
+                  "ClassPathResource"
+                ],
+                [
+                  "ClassPathResource",
+                  "getInputStream"
+                ]
+              ],
+              "locations": [
+                [
+                  "ClassPathResource",
+                  "ClassPathResource"
+                ],
+                [
+                  "ClassPathResource",
+                  "getInputStream"
+                ]
+              ],
+              "failure": null
+            },
+            {
+              "project": "plexus-archiver",
+              "status": "scored",
+              "reported": 1,
+              "matched": 1,
+              "detected": true,
+              "fdr": 0.0,
+              "f1": 1.0,
+              "matched_locations": [
+                [
+                  "AbstractUnArchiver",
+                  "extractFile"
+                ]
+              ],
+              "locations": [
+                [
+                  "AbstractUnArchiver",
+                  "extractFile"
+                ]
+              ],
+              "failure": null
+            },
+            {
+              "project": "plexus-utils",
+              "status": "scored",
+              "reported": 1,
+              "matched": 1,
+              "detected": true,
+              "fdr": 0.0,
+              "f1": 1.0,
+              "matched_locations": [
+                [
+                  "Expand",
+                  "extractFile"
+                ]
+              ],
+              "locations": [
+                [
+                  "Expand",
+                  "extractFile"
+                ]
+              ],
+              "failure": null
+            },
+            {
+              "project": "mpxj",
+              "status": "scored",
+              "reported": 2,
+              "matched": 1,
+              "detected": true,
+              "fdr": 0.5,
+              "f1": 0.6666666666666666,
+              "matched_locations": [
+                [
+                  "InputStreamHelper",
+                  "processZipStream"
+                ]
+              ],
+              "locations": [
+                [
+                  "InputStreamHelper",
+                  "processZipStream"
+                ],
+                [
+                  "InputStreamHelper",
+                  "writeZipStreamToTempDir"
+                ]
+              ],
+              "failure": null
+            }
+          ],
+          "summary": {
+            "projects": 6,
+            "scored": 6,
+            "complete": true,
+            "detected": 6,
+            "macro_fdr": 0.25,
+            "macro_f1": 0.8333333333333333,
+            "fdr_projects": 6
+          },
+          "fixed_revision_locations": {
+            "zip4j": 0,
+            "zt-zip": 2,
+            "spark": 1,
+            "plexus-archiver": 1,
+            "plexus-utils": 1,
+            "mpxj": 0
+          }
+        }
+      ],
+      "summary": {
+        "detected": {
+          "mean": 5.666666666666667,
+          "min": 5,
+          "max": 6
+        },
+        "macro_fdr": {
+          "mean": 0.3055555555555556,
+          "min": 0.25,
+          "max": 0.4166666666666667
+        },
+        "macro_f1": {
+          "mean": 0.7777777777777777,
+          "min": 0.6666666666666666,
+          "max": 0.8333333333333333
+        },
+        "per_project": {
+          "zip4j": {
+            "detected": 2,
+            "samples": 3,
+            "fdr": {
+              "mean": 0.6666666666666666,
+              "min": 0.5,
+              "max": 1.0
+            },
+            "f1": {
+              "mean": 0.4444444444444444,
+              "min": 0.0,
+              "max": 0.6666666666666666
+            },
+            "reported": [
+              2,
+              2,
+              2
+            ],
+            "failed": 0
+          },
+          "zt-zip": {
+            "detected": 3,
+            "samples": 3,
+            "fdr": {
+              "mean": 0.5,
+              "min": 0.5,
+              "max": 0.5
+            },
+            "f1": {
+              "mean": 0.6666666666666666,
+              "min": 0.6666666666666666,
+              "max": 0.6666666666666666
+            },
+            "reported": [
+              2,
+              2,
+              2
+            ],
+            "failed": 0
+          },
+          "spark": {
+            "detected": 3,
+            "samples": 3,
+            "fdr": {
+              "mean": 0.0,
+              "min": 0.0,
+              "max": 0.0
+            },
+            "f1": {
+              "mean": 1.0,
+              "min": 1.0,
+              "max": 1.0
+            },
+            "reported": [
+              2,
+              2,
+              2
+            ],
+            "failed": 0
+          },
+          "plexus-archiver": {
+            "detected": 3,
+            "samples": 3,
+            "fdr": {
+              "mean": 0.0,
+              "min": 0.0,
+              "max": 0.0
+            },
+            "f1": {
+              "mean": 1.0,
+              "min": 1.0,
+              "max": 1.0
+            },
+            "reported": [
+              1,
+              1,
+              1
+            ],
+            "failed": 0
+          },
+          "plexus-utils": {
+            "detected": 3,
+            "samples": 3,
+            "fdr": {
+              "mean": 0.16666666666666666,
+              "min": 0.0,
+              "max": 0.5
+            },
+            "f1": {
+              "mean": 0.8888888888888888,
+              "min": 0.6666666666666666,
+              "max": 1.0
+            },
+            "reported": [
+              1,
+              2,
+              1
+            ],
+            "failed": 0
+          },
+          "mpxj": {
+            "detected": 3,
+            "samples": 3,
+            "fdr": {
+              "mean": 0.5,
+              "min": 0.5,
+              "max": 0.5
+            },
+            "f1": {
+              "mean": 0.6666666666666666,
+              "min": 0.6666666666666666,
+              "max": 0.6666666666666666
+            },
+            "reported": [
+              2,
+              2,
+              2
+            ],
+            "failed": 0
+          }
+        }
+      }
+    }
+  }
+}

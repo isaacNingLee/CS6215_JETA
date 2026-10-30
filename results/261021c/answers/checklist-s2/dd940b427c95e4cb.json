@@ -1,0 +1,169 @@
+{
+  "request": {
+    "model": "typesafe/jev-1.13",
+    "state": {
+      "task": "Java code that a taint analysis reported as a possible path traversal (CWE-22). The questions are about the method under review.",
+      "code": "// File: src/main/java/spark/resource/ClassPathResource.java\n// Method under review: ClassPathResource.getInputStream\n    private final String path;\n\n    private ClassLoader classLoader;\n\n    private Class<?> clazz;\n\n    public ClassPathResource(String path) {\n        this(path, null);\n    }\n\n    public ClassPathResource(String path, ClassLoader classLoader) {\n        Assert.notNull(path, \"Path must not be null\");\n        Assert.state(doesNotContainFileColon(path), \"Path must not contain 'file:'\");\n\n        String pathToUse = StringUtils.cleanPath(path);\n\n        if (pathToUse.startsWith(\"/\")) {\n            pathToUse = pathToUse.substring(1);\n        }\n\n        this.path = pathToUse;\n        this.classLoader = (classLoader != null ? classLoader : ClassUtils.getDefaultClassLoader());\n    }\n\n    protected ClassPathResource(String path, ClassLoader classLoader, Class<?> clazz) {\n        this.path = StringUtils.cleanPath(path);\n        this.classLoader = classLoader;\n        this.clazz = clazz;\n    }\n\n    @Override\n    public InputStream getInputStream() throws IOException {\n        InputStream is;\n        if (this.clazz != null) {\n            is = this.clazz.getResourceAsStream(this.path);\n        } else {\n            is = this.classLoader.getResourceAsStream(this.path);\n        }\n        if (is == null) {\n            throw new FileNotFoundException(getDescription() + \" cannot be opened because it does not exist\");\n        }\n        return is;\n    }\n\n    @Override\n    public String getDescription() {\n        StringBuilder builder = new StringBuilder(\"class path resource [\");\n        String pathToUse = path;\n        if (this.clazz != null && !pathToUse.startsWith(\"/\")) {\n            builder.append(ClassUtils.classPackageAsResourcePath(this.clazz));\n            builder.append('/');\n        }\n        if (pathToUse.startsWith(\"/\")) {\n            pathToUse = pathToUse.substring(1);\n        }\n        builder.append(pathToUse);\n        builder.append(']');\n        return builder.toString();\n    }"
+    },
+    "questions": {
+      "p1_c1": {
+        "type": "noul",
+        "instructions": "True if the answer to this question is yes: Does the method use a hardcoded mapping (e.g., a Map, array, or switch statement) that maps the user input to a predetermined file name or path component?"
+      },
+      "p1_c2": {
+        "type": "noul",
+        "instructions": "True if the answer to this question is yes: Are all file name values in that mapping simple names that contain no path separators ('/' or '\\\\') and are not equal to '.' or '..'?"
+      },
+      "p1_c3": {
+        "type": "noul",
+        "instructions": "True if the answer to this question is yes: Does the method use the mapped value as the complete final filename without further concatenation with any part of the user input?"
+      },
+      "p2_c1": {
+        "type": "noul",
+        "instructions": "True if the answer to this question is yes: Does the method construct a java.io.File object using a fixed base directory and the user-provided path component?"
+      },
+      "p2_c2": {
+        "type": "noul",
+        "instructions": "True if the answer to this question is yes: Is the base directory obtained from a constant or trusted source, not incorporating any part of the user input?"
+      },
+      "p2_c3": {
+        "type": "noul",
+        "instructions": "True if the answer to this question is yes: Does the method call getCanonicalPath() on both the base directory File and the constructed File?"
+      },
+      "p2_c4": {
+        "type": "noul",
+        "instructions": "True if the answer to this question is yes: Does the method verify that the constructed file's canonical path starts with the base directory's canonical path followed by the system file separator (i.e., baseCanonicalPath + File.separator)?"
+      },
+      "p3_c1": {
+        "type": "noul",
+        "instructions": "True if the answer to this question is yes: Does the method use java.nio.file.Path.of() or Paths.get() to obtain the base directory path, and resolve the user input against it using resolve()?"
+      },
+      "p3_c2": {
+        "type": "noul",
+        "instructions": "True if the answer to this question is yes: Is the base directory path defined using only hardcoded strings or trusted configuration, not incorporating any part of the user input?"
+      },
+      "p3_c3": {
+        "type": "noul",
+        "instructions": "True if the answer to this question is yes: Does the method call toRealPath() on both the base directory Path and the resolved Path?"
+      },
+      "p3_c4": {
+        "type": "noul",
+        "instructions": "True if the answer to this question is yes: Does the method use startsWith(baseRealPath) to verify that the real path of the constructed file is a descendant of the base directory's real path?"
+      },
+      "p4_c1": {
+        "type": "noul",
+        "instructions": "True if the answer to this question is yes: Does the method use `new java.io.File(userInput).getName()` or `Path.of(userInput).getFileName()` to extract only the last path component (the simple file name) from the user input?"
+      },
+      "p4_c2": {
+        "type": "noul",
+        "instructions": "True if the answer to this question is yes: Does the method validate that the extracted file name is not null, not empty, not equal to `.`, not equal to `..`, and does not contain any occurrence of '/' or '\\\\' characters?"
+      },
+      "p4_c3": {
+        "type": "noul",
+        "instructions": "True if the answer to this question is yes: Does the method then combine this validated file name with a fixed base directory to construct the final path, without further incorporating the original user input?"
+      },
+      "p5_c1": {
+        "type": "noul",
+        "instructions": "True if the answer to this question is yes: Does the method use java.nio.file.Path to represent a fixed base directory, and resolve the user input against it using resolve()?"
+      },
+      "p5_c2": {
+        "type": "noul",
+        "instructions": "True if the answer to this question is yes: Is the base directory path defined using only hardcoded strings or trusted configuration, not incorporating any part of the user input?"
+      },
+      "p5_c3": {
+        "type": "noul",
+        "instructions": "True if the answer to this question is yes: Does the method call normalize() on the resulting path?"
+      },
+      "p5_c4": {
+        "type": "noul",
+        "instructions": "True if the answer to this question is yes: Does the method check that the normalized path starts with the normalized base path by calling startsWith(basePath.normalize())?"
+      }
+    }
+  },
+  "response": {
+    "model": "typesafe/jev-1.13-20260917",
+    "answers": {
+      "p1_c1": {
+        "type": "noul",
+        "noul": 0.04
+      },
+      "p1_c2": {
+        "type": "noul",
+        "noul": 0.34
+      },
+      "p1_c3": {
+        "type": "noul",
+        "noul": 0.64
+      },
+      "p2_c1": {
+        "type": "noul",
+        "noul": 0.03
+      },
+      "p2_c2": {
+        "type": "noul",
+        "noul": 0.71
+      },
+      "p2_c3": {
+        "type": "noul",
+        "noul": 0.03
+      },
+      "p2_c4": {
+        "type": "noul",
+        "noul": 0.04
+      },
+      "p3_c1": {
+        "type": "noul",
+        "noul": 0.02
+      },
+      "p3_c2": {
+        "type": "noul",
+        "noul": 0.62
+      },
+      "p3_c3": {
+        "type": "noul",
+        "noul": 0.03
+      },
+      "p3_c4": {
+        "type": "noul",
+        "noul": 0.03
+      },
+      "p4_c1": {
+        "type": "noul",
+        "noul": 0.03
+      },
+      "p4_c2": {
+        "type": "noul",
+        "noul": 0.08
+      },
+      "p4_c3": {
+        "type": "noul",
+        "noul": 0.18
+      },
+      "p5_c1": {
+        "type": "noul",
+        "noul": 0.02
+      },
+      "p5_c2": {
+        "type": "noul",
+        "noul": 0.63
+      },
+      "p5_c3": {
+        "type": "noul",
+        "noul": 0.16
+      },
+      "p5_c4": {
+        "type": "noul",
+        "noul": 0.03
+      }
+    },
+    "usage": {
+      "input_tokens": 1650,
+      "output_tokens": 346,
+      "cost": 6.93e-05
+    },
+    "id": "gen-dec-1792545484-TNaa9URKsUWGnWaIquie",
+    "provider": "TypeSafe"
+  },
+  "attempts": 1,
+  "seconds": 1.66
+}

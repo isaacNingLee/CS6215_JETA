@@ -1,0 +1,46 @@
+{
+  "id": "gen-1792657763-LWNVtH3IEa0kCndFo6f7",
+  "object": "chat.completion",
+  "created": 1792657763,
+  "model": "qwen/qwen3-coder-30b-a3b-instruct",
+  "provider": "Amazon Bedrock",
+  "system_fingerprint": null,
+  "service_tier": null,
+  "choices": [
+    {
+      "index": 0,
+      "logprobs": null,
+      "finish_reason": "stop",
+      "native_finish_reason": "end_turn",
+      "message": {
+        "role": "assistant",
+        "content": "Explanation: Let me trace through the execution flow to determine if the value of `in` at line 25 depends on the value of `name` at line 11.\n\nLine 11: `String name = mapper.map(getUnrootedName(root, zipEntry.getName()));`\nThis line computes the value of `name` based on various inputs including `zipEntry.getName()` and potentially `root` (which comes from line 3).\n\nLine 25: `FileUtils.copy(in, file);`\nThis line uses the parameter `in` (InputStream) as the first argument to the copy method.\n\nLooking at the control flow:\n- Line 11 computes `name` \n- Line 25 uses `in` in the FileUtils.copy() call\n- The computation of `name` (line 11) and the use of `in` (line 25) happen in the same conditional block (lines 12-27), but they are independent operations\n- The value of `in` is passed into the method as a parameter and is not affected by any computation of `name`\n- The `name` variable is computed from `zipEntry.getName()` and other values, but this computation doesn't affect the `in` parameter which is already available at the beginning of the method\n- The `in` parameter is used in line 25 regardless of whether `name` was computed or not (the conditional check on line 12 determines if we even reach line 25)\n\nSince `in` is a method parameter that's passed in and used directly without any dependency on the computed value of `name`, the value of `in` at line 25 does not depend on the value of `name` at line 11.\n\nAnswer: No",
+        "refusal": null,
+        "reasoning": null
+      }
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 1204,
+    "completion_tokens": 370,
+    "total_tokens": 1574,
+    "cost": 0.0004026,
+    "is_byok": false,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0,
+      "video_tokens": 0
+    },
+    "cost_details": {
+      "upstream_inference_cost": 0.0004026,
+      "upstream_inference_prompt_cost": 0.0001806,
+      "upstream_inference_completions_cost": 0.000222
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "image_tokens": 0,
+      "audio_tokens": 0
+    }
+  }
+}

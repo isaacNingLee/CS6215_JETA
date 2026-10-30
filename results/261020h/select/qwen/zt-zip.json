@@ -1,0 +1,68 @@
+{
+  "request": {
+    "model": "qwen/qwen3-coder-30b-a3b-instruct",
+    "temperature": 0,
+    "max_tokens": 8000,
+    "reasoning": {
+      "effort": "low"
+    },
+    "messages": [
+      {
+        "role": "system",
+        "content": "Classify candidate taint SOURCES for a Java CWE-22 (path traversal) static analysis.\nA source is a method call whose RETURNED value can carry data that an external\nattacker controls and that may be used to name a file or resource path, such as\nnames read from an archive or upload, request parameters, environment or\ncommand-line input. Values the program computes or chooses itself, or that a\ntrusted caller supplies, are not sources. For each candidate decide\nsource | not_source | unknown. Cite at least one supplied call-site ID (K...)\nshowing how the value is obtained or used. Do not decide from the method name\nalone; if the supplied code is insufficient, answer unknown. Labels, versions\nand fix locations are unavailable.\nReturn ONLY JSON: {\"sources\":[{\"id\":\"C01\",\"decision\":\"source|not_source|unknown\",\n\"reason\":\"at most 30 words\",\"evidence\":[\"K1\"]}]}. Return every candidate exactly once.\n"
+      },
+      {
+        "role": "user",
+        "content": "{\"scope\": \"Java CWE-22 source selection; candidates already reach a path sink in a static run\", \"project_label\": \"subject\", \"candidates\": [{\"id\": \"C01\", \"signature\": \"<java.util.jar.JarFile$JarFileEntry: java.lang.String getName()>\", \"declared_in_project\": false, \"call_sites\": [{\"id\": \"K1\", \"caller\": \"<org.zeroturnaround.zip.ZipUtil$Unpacker: void process(java.io.InputStream,java.util.zip.ZipEntry)>\", \"line\": 1150, \"code\": \"1145:       this.outputDir = outputDir;\\n1146:       this.mapper = mapper;\\n1147:     }\\n1148: \\n1149:     public void process(InputStream in, ZipEntry zipEntry) throws IOException {\\n1150:       String name = mapper.map(zipEntry.getName());\\n1151:       if (name != null) {\\n1152:         File file = new File(outputDir, name);\\n1153:         if (zipEntry.isDirectory()) {\\n1154:           FileUtils.forceMkdir(file);\\n1155:         }\"}, {\"id\": \"K2\", \"caller\": \"<org.zeroturnaround.zip.ZipUtil$Unpacker: void process(java.io.InputStream,java.util.zip.ZipEntry)>\", \"line\": 1160, \"code\": \"1155:         }\\n1156:         else {\\n1157:           FileUtils.forceMkdir(file.getParentFile());\\n1158: \\n1159:           if (log.isDebugEnabled() && file.exists()) {\\n1160:             log.debug(\\\"Overwriting file '{}'.\\\", zipEntry.getName());\\n1161:           }\\n1162: \\n1163:           FileUtils.copy(in, file);\\n1164:         }\\n1165: \"}, {\"id\": \"K3\", \"caller\": \"<org.zeroturnaround.zip.ZipUtil: void iterate(java.io.File,org.zeroturnaround.zip.ZipEntryCallback,java.nio.charset.Charset)>\", \"line\": 511, \"code\": \"506:         InputStream is = zf.getInputStream(e);\\n507:         try {\\n508:           action.process(is, e);\\n509:         }\\n510:         catch (IOException ze) {\\n511:           throw new ZipException(\\\"Failed to process zip entry '\\\" + e.getName() + \\\"' with action \\\" + action, ze);\\n512:         }\\n513:         catch (ZipBreakException ex) {\\n514:           break;\\n515:         }\\n516:         finally {\"}]}]}"
+      }
+    ]
+  },
+  "response": {
+    "id": "gen-1792477808-AjWRXxSm3jgvM24K9XVO",
+    "object": "chat.completion",
+    "created": 1792477808,
+    "model": "qwen/qwen3-coder-30b-a3b-instruct",
+    "provider": "SiliconFlow",
+    "system_fingerprint": null,
+    "service_tier": null,
+    "choices": [
+      {
+        "index": 0,
+        "logprobs": null,
+        "finish_reason": "stop",
+        "native_finish_reason": "stop",
+        "message": {
+          "role": "assistant",
+          "content": "{\n  \"sources\": [\n    {\n      \"id\": \"C01\",\n      \"decision\": \"source\",\n      \"reason\": \"The getName() method returns a path from a ZipEntry, which is controlled by an attacker.\",\n      \"evidence\": [\"K1\"]\n    }\n  ]\n}",
+          "refusal": null,
+          "reasoning": null
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 843,
+      "completion_tokens": 62,
+      "total_tokens": 905,
+      "cost": 7.637e-05,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 0,
+        "cache_write_tokens": 0,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 7.637e-05,
+        "upstream_inference_prompt_cost": 5.901e-05,
+        "upstream_inference_completions_cost": 1.736e-05
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 0,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    }
+  },
+  "attempts": 1,
+  "seconds": 3.46
+}

@@ -1,0 +1,46 @@
+{
+  "id": "gen-1792656488-zGySi3wu7fU3MHCNJibu",
+  "object": "chat.completion",
+  "created": 1792656488,
+  "model": "qwen/qwen3-coder-30b-a3b-instruct",
+  "provider": "SiliconFlow",
+  "system_fingerprint": null,
+  "service_tier": null,
+  "choices": [
+    {
+      "index": 0,
+      "logprobs": null,
+      "finish_reason": "stop",
+      "native_finish_reason": "stop",
+      "message": {
+        "role": "assistant",
+        "content": "Explanation: Let me trace through this path step by step.\n\nLine 2 in the function process: `String name = mapper.map(zipEntry.getName());`\nThis line executes and assigns a value to `name`.\n\nLine 36 in the function process: `FileUtils.copy(in, destFile);`\nThis line is in the true branch of the if-statement with condition `(name.indexOf('\\\\') != -1)` at line 14. For this line to be reachable, we need `name.indexOf('\\\\') != -1` to be true, meaning `name` must contain a backslash character.\n\nLine 1 in the function copy: `public static void copy(InputStream in, File file) throws IOException {`\nThis is the method signature and is always reachable when the method is called.\n\nLine 2 in the function copy: `OutputStream out = new BufferedOutputStream(new FileOutputStream(file));`\nThis line executes when the copy method is called.\n\nFor this path to be reachable, we need:\n1. `name != null` (from line 3) - this is satisfied since we're in the true branch\n2. `name.indexOf('\\\\') != -1` (from line 14) - this must be true for line 36 to execute\n\nBoth conditions can be satisfied in a valid program execution. The path represents a reachable execution path where sensitive data (from the InputStream) gets copied to a destination file, which could potentially be a security vulnerability if the file path is maliciously crafted.\n\nAnswer: Yes",
+        "refusal": null,
+        "reasoning": null
+      }
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 2602,
+    "completion_tokens": 309,
+    "total_tokens": 2911,
+    "cost": 0.00026866,
+    "is_byok": false,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0,
+      "video_tokens": 0
+    },
+    "cost_details": {
+      "upstream_inference_cost": 0.00026866,
+      "upstream_inference_prompt_cost": 0.00018214,
+      "upstream_inference_completions_cost": 8.652e-05
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "image_tokens": 0,
+      "audio_tokens": 0
+    }
+  }
+}

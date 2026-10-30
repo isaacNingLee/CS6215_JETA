@@ -1,0 +1,68 @@
+{
+  "request": {
+    "model": "qwen/qwen3-coder-30b-a3b-instruct",
+    "temperature": 0,
+    "max_tokens": 8000,
+    "reasoning": {
+      "effort": "low"
+    },
+    "messages": [
+      {
+        "role": "system",
+        "content": "Classify candidate taint SOURCES for a Java CWE-22 (path traversal) static analysis.\nA source is a method call whose RETURNED value can carry data that an external\nattacker controls and that may be used to name a file or resource path, such as\nnames read from an archive or upload, request parameters, environment or\ncommand-line input. Values the program computes or chooses itself, or that a\ntrusted caller supplies, are not sources. For each candidate decide\nsource | not_source | unknown. Cite at least one supplied call-site ID (K...)\nshowing how the value is obtained or used. Do not decide from the method name\nalone; if the supplied code is insufficient, answer unknown. Labels, versions\nand fix locations are unavailable.\nReturn ONLY JSON: {\"sources\":[{\"id\":\"C01\",\"decision\":\"source|not_source|unknown\",\n\"reason\":\"at most 30 words\",\"evidence\":[\"K1\"]}]}. Return every candidate exactly once.\n"
+      },
+      {
+        "role": "user",
+        "content": "{\"scope\": \"Java CWE-22 source selection; candidates already reach a path sink in a static run\", \"project_label\": \"subject\", \"candidates\": [{\"id\": \"C01\", \"signature\": \"<java.util.jar.JarFile$JarFileEntry: java.lang.String getName()>\", \"declared_in_project\": false, \"call_sites\": [{\"id\": \"K1\", \"caller\": \"<org.zeroturnaround.zip.ZipEntryUtil: java.util.zip.ZipEntry copy(java.util.zip.ZipEntry,java.lang.String)>\", \"line\": 77, \"code\": \"72:       copy.setExtra(original.getExtra());\\n73:     }\\n74: \\n75:     copy.setComment(original.getComment());\\n76:     copy.setTime(original.getTime());\\n77:     return copy;\\n78:   }\\n79: \\n80:   /**\\n81:    * Copies a given ZIP entry to a ZIP file.\\n82:    *\"}, {\"id\": \"K2\", \"caller\": \"<org.zeroturnaround.zip.ZipUtil$Unpacker: void process(java.io.InputStream,java.util.zip.ZipEntry)>\", \"line\": 1150, \"code\": \"1145:       this.outputDir = outputDir;\\n1146:       this.mapper = mapper;\\n1147:     }\\n1148: \\n1149:     public void process(InputStream in, ZipEntry zipEntry) throws IOException {\\n1150:       String name = mapper.map(zipEntry.getName());\\n1151:       if (name != null) {\\n1152:         File file = new File(outputDir, name);\\n1153:         if (zipEntry.isDirectory()) {\\n1154:           FileUtils.forceMkdir(file);\\n1155:         }\"}, {\"id\": \"K3\", \"caller\": \"<org.zeroturnaround.zip.ZipUtil$Unpacker: void process(java.io.InputStream,java.util.zip.ZipEntry)>\", \"line\": 1160, \"code\": \"1155:         }\\n1156:         else {\\n1157:           FileUtils.forceMkdir(file.getParentFile());\\n1158: \\n1159:           if (log.isDebugEnabled() && file.exists()) {\\n1160:             log.debug(\\\"Overwriting file '{}'.\\\", zipEntry.getName());\\n1161:           }\\n1162: \\n1163:           FileUtils.copy(in, file);\\n1164:         }\\n1165: \"}]}, {\"id\": \"C02\", \"signature\": \"<org.zeroturnaround.zip.Zips: java.io.File getDestinationFile()>\", \"declared_in_project\": true, \"call_sites\": [{\"id\": \"K4\", \"caller\": \"<org.zeroturnaround.zip.Zips: void process()>\", \"line\": 352, \"code\": \"347:       throw new IllegalArgumentException(\\\"Source and destination shouldn't be null together\\\");\\n348:     }\\n349: \\n350:     File destinationFile = null;\\n351:     try {\\n352:       destinationFile = getDestinationFile();\\n353:       ZipOutputStream out = null;\\n354:       ZipEntryOrInfoAdapter zipEntryAdapter = null;\\n355: \\n356:       if (destinationFile.isFile()) {\\n357:         out = ZipFileUtil.createZipOutputStream(new BufferedOutputStream(new FileOutputStream(destinationFile)), charset);\"}]}]}"
+      }
+    ]
+  },
+  "response": {
+    "id": "gen-1792478205-D2lv0yDYhR26P7ISN3P0",
+    "object": "chat.completion",
+    "created": 1792478205,
+    "model": "qwen/qwen3-coder-30b-a3b-instruct",
+    "provider": "SiliconFlow",
+    "system_fingerprint": null,
+    "service_tier": null,
+    "choices": [
+      {
+        "index": 0,
+        "logprobs": null,
+        "finish_reason": "stop",
+        "native_finish_reason": "stop",
+        "message": {
+          "role": "assistant",
+          "content": "{\n  \"sources\": [\n    {\n      \"id\": \"C01\",\n      \"decision\": \"source\",\n      \"reason\": \"The getName() method returns a file name from a ZipEntry, which can be controlled by an attacker.\",\n      \"evidence\": [\"K2\"]\n    },\n    {\n      \"id\": \"C02\",\n      \"decision\": \"unknown\",\n      \"reason\": \"Insufficient information to determine if the destination file path is attacker-controlled.\",\n      \"evidence\": [\"K4\"]\n    }\n  ]\n}",
+          "refusal": null,
+          "reasoning": null
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 1023,
+      "completion_tokens": 112,
+      "total_tokens": 1135,
+      "cost": 0.00010297,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 256,
+        "cache_write_tokens": 0,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 0.00010297,
+        "upstream_inference_prompt_cost": 7.161e-05,
+        "upstream_inference_completions_cost": 3.136e-05
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 0,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    }
+  },
+  "attempts": 1,
+  "seconds": 4.2
+}

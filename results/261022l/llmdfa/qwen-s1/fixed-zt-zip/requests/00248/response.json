@@ -1,0 +1,46 @@
+{
+  "id": "gen-1792655035-vvInIH7EQRTEeXas9DHd",
+  "object": "chat.completion",
+  "created": 1792655035,
+  "model": "qwen/qwen3-coder-30b-a3b-instruct",
+  "provider": "Amazon Bedrock",
+  "system_fingerprint": null,
+  "service_tier": null,
+  "choices": [
+    {
+      "index": 0,
+      "logprobs": null,
+      "finish_reason": "stop",
+      "native_finish_reason": "end_turn",
+      "message": {
+        "role": "assistant",
+        "content": "Explanation: Let me trace through this path step by step:\n\n1. Line 12 in iterate: `if (!namesSet.contains(entry.getName()))` - This checks if the entry name is not in the set\n2. Line 17 in iterate: `action.process(in, entry)` - This calls the process method\n3. Line 1 in process: `String name = mapper.map(zipEntry.getName())` - This maps the entry name\n4. Line 25 in process: `FileUtils.copy(in, file)` - This copies from input to file\n\nFor this path to be reachable:\n- Line 12 must evaluate to false (so `namesSet.contains(entry.getName())` is true), meaning the entry name IS in the namesSet\n- Line 3 in process: `if (name != null)` must be true, so name is not null\n- Line 14 in process: `if (zipEntry.isDirectory())` must be false, so zipEntry is NOT a directory\n- Line 25 in process: Since the condition is false, we go to the else branch, and line 25 executes\n\nAll these conditions can be satisfied in normal execution. The path goes through valid control flow where:\n- An entry name exists in the namesSet (so it's processed)\n- The mapper returns a non-null name\n- The entry is not a directory\n- The copy operation proceeds normally\n\nThis path represents a reachable execution path that could potentially cause an exception or bug during the file copying operation.\n\nAnswer: Yes",
+        "refusal": null,
+        "reasoning": null
+      }
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 2794,
+    "completion_tokens": 320,
+    "total_tokens": 3114,
+    "cost": 0.0006111,
+    "is_byok": false,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0,
+      "video_tokens": 0
+    },
+    "cost_details": {
+      "upstream_inference_cost": 0.0006111,
+      "upstream_inference_prompt_cost": 0.0004191,
+      "upstream_inference_completions_cost": 0.000192
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "image_tokens": 0,
+      "audio_tokens": 0
+    }
+  }
+}

@@ -1,0 +1,46 @@
+{
+  "id": "gen-1792657984-gmCZHcIBYbkXOpceeJTG",
+  "object": "chat.completion",
+  "created": 1792657984,
+  "model": "qwen/qwen3-coder-30b-a3b-instruct",
+  "provider": "Amazon Bedrock",
+  "system_fingerprint": null,
+  "service_tier": null,
+  "choices": [
+    {
+      "index": 0,
+      "logprobs": null,
+      "finish_reason": "stop",
+      "native_finish_reason": "end_turn",
+      "message": {
+        "role": "assistant",
+        "content": "Explanation: Let me trace through the code to determine if the value of `destFile` at line 27 depends on the value of `in` at line 1.\n\nLooking at the code flow:\n- Line 1: `in` parameter is passed to the method\n- Line 2: `name = mapper.map(zipEntry.getName())` - this creates a new string based on zipEntry.getName()\n- Line 14-25: This section handles the case where `name` contains backslashes, creating directories and building up `parentDirectory` and `destFile`\n- Line 26: `File destFile = new File(parentDirectory, dirs[dirs.length - 1])` - creates destFile using parentDirectory and the last directory component\n- Line 27: `FileUtils.copy(in, destFile)` - uses `in` and `destFile`\n\nThe key point is that `destFile` is constructed entirely from `parentDirectory` and `dirs[dirs.length - 1]`, which are derived from the `name` variable (line 2) and the split operation on `name`. The `in` parameter is only used in the `FileUtils.copy(in, destFile)` call at line 27, but it's not used in constructing the `destFile` itself. The `destFile` object is created before `in` is used in the copy operation, and its construction doesn't involve the `in` parameter at all.\n\nThe value of `destFile` is determined by the path construction logic using `name` and `outputDir`, not by the input stream `in`.\n\nAnswer: No",
+        "refusal": null,
+        "reasoning": null
+      }
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 1208,
+    "completion_tokens": 341,
+    "total_tokens": 1549,
+    "cost": 0.0003858,
+    "is_byok": false,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0,
+      "video_tokens": 0
+    },
+    "cost_details": {
+      "upstream_inference_cost": 0.0003858,
+      "upstream_inference_prompt_cost": 0.0001812,
+      "upstream_inference_completions_cost": 0.0002046
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "image_tokens": 0,
+      "audio_tokens": 0
+    }
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "model": "deepseek/deepseek-v4-pro",
+  "temperature": 0,
+  "max_tokens": 16000,
+  "reasoning": {
+    "effort": "low"
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are a Java programmer and very good at analyzing Java code."
+    },
+    {
+      "role": "user",
+      "content": "Please identify the sink values for path traversal (CWE-22) according to the following instructions.\n- When a variable/expression is used as argument 0 of a `FileOutputStream` constructor call (the file being opened for writing), it is a sink for path traversal.\nExample (illustrative only; report values from the program below):\n1. Object stream = new FileOutputStream(target);\n- Sink name: target, Line number: 1\nNegative example: 1. validate();\nAnswer: an empty string. A helper call is not the specified sink API.\nNow I will give you the program. Please list all the names of sinks and the line numbers.The line numbers should indicate the line of the call that consumes the value.\nDo not add extra explanations.Just list the pairs of variable/expression and line number line by line.Each line should start with -.If there is no variable as sink, just output an empty string.\nHere are several examples:\nExample 1:\n- Sink name: a, Line number: 2\nExample 2:\n- Sink name: (prefix + name), Line number: 3\nHere is the program:\n```\n1. private void readZipInfo() throws ZipException {\n2. \t\t\n3. \t\tif (!Zip4jUtil.checkFileExists(file)) {\n4. \t\t\tthrow new ZipException(\"zip file does not exist\");\n5. \t\t}\n6. \t\t\n7. \t\tif (!Zip4jUtil.checkFileReadAccess(this.file)) {\n8. \t\t\tthrow new ZipException(\"no read access for the input zip file\");\n9. \t\t}\n10. \t\t\n11. \t\tif (this.mode != InternalZipConstants.MODE_UNZIP) {\n12. \t\t\tthrow new ZipException(\"Invalid mode\");\n13. \t\t}\n14. \t\t\n15. \t\tRandomAccessFile raf = null;\n16. \t\ttry {\n17. \t\t\traf = new RandomAccessFile(new File(file), InternalZipConstants.READ_MODE);\n18. \t\t\t\n19. \t\t\tif (zipModel == null) {\n20. \t\t\t\t\n21. \t\t\t\tHeaderReader headerReader = new HeaderReader(raf);\n22. \t\t\t\tzipModel = headerReader.readAllHeaders(this.fileNameCharset);\n23. \t\t\t\tif (zipModel != null) {\n24. \t\t\t\t\tzipModel.setZipFile(file);\n25. \t\t\t\t}\n26. \t\t\t}\n27. \t\t} catch (FileNotFoundException e) {\n28. \t\t\tthrow new ZipException(e);\n29. \t\t} finally {\n30. \t\t\tif (raf != null) {\n31. \t\t\t\ttry {\n32. \t\t\t\t\traf.close();\n33. \t\t\t\t} catch (IOException e) {\n34. \t\t\t\t\t\n35. \t\t\t\t}\n36. \t\t\t}\n37. \t\t}\n38. \t}\n```\n"
+    }
+  ]
+}

@@ -1,0 +1,169 @@
+{
+  "request": {
+    "model": "typesafe/jev-1.13",
+    "state": {
+      "task": "Java code that a taint analysis reported as a possible path traversal (CWE-22). The questions are about the method under review.",
+      "code": "// File: src/main/java/net/lingala/zip4j/unzip/Unzip.java\n// Method under review: Unzip.initExtractFile\n\tprivate ZipModel zipModel;\n\n\tpublic Unzip(ZipModel zipModel) throws ZipException {\r\n\t\t\r\n\t\tif (zipModel == null) {\r\n\t\t\tthrow new ZipException(\"ZipModel is null\");\r\n\t\t}\r\n\t\t\r\n\t\tthis.zipModel = zipModel;\r\n\t}\n\n\tprivate void initExtractFile(FileHeader fileHeader, String outPath,\r\n\t\t\tUnzipParameters unzipParameters, String newFileName, ProgressMonitor progressMonitor) throws ZipException {\r\n\r\n\t\tif (fileHeader == null) {\r\n\t\t\tthrow new ZipException(\"fileHeader is null\");\r\n\t\t}\r\n\t\t\r\n\t\ttry {\r\n\t\t\tprogressMonitor.setFileName(fileHeader.getFileName());\r\n\t\t\t\r\n\t\t\tif (!outPath.endsWith(InternalZipConstants.FILE_SEPARATOR)) {\r\n\t\t\t\toutPath += InternalZipConstants.FILE_SEPARATOR;\r\n\t\t\t}\r\n\r\n\t\t\t// make sure no file is extracted outside of the target directory (a.k.a zip slip)\r\n\t\t\tString fileName = fileHeader.getFileName();\r\n\t\t\tString completePath = outPath + fileName;\r\n\t\t\tif (!new File(completePath).getCanonicalPath().startsWith(new File(outPath).getCanonicalPath())) {\r\n\t\t\t\tthrow new ZipException(\r\n\t\t\t\t\t\t\"illegal file name that breaks out of the target directory: \" + fileHeader.getFileName());\r\n\t\t\t}\r\n\r\n\t\t\t// If file header is a directory, then check if the directory exists\r\n\t\t\t// If not then create a directory and return\r\n\t\t\tif (fileHeader.isDirectory()) {\r\n\t\t\t\ttry {\r\n\t\t\t\t\tif (!Zip4jUtil.isStringNotNullAndNotEmpty(fileName)) {\r\n\t\t\t\t\t\treturn;\r\n\t\t\t\t\t}\r\n\t\t\t\t\tFile file = new File(completePath);\r\n\t\t\t\t\tif (!file.exists()) {\r\n\t\t\t\t\t\tfile.mkdirs();\r\n\t\t\t\t\t}\r\n\t\t\t\t} catch (Exception e) {\r\n\t\t\t\t\tprogressMonitor.endProgressMonitorError(e);\r\n\t\t\t\t\tthrow new ZipException(e);\r\n\t\t\t\t}\r\n\t\t\t} else {\r\n\t\t\t\t//Create Directories\r\n\t\t\t\tcheckOutputDirectoryStructure(fileHeader, outPath, newFileName);\r\n\t\t\t\t\r\n\t\t\t\tUnzipEngine unzipEngine = new UnzipEngine(zipModel, fileHeader);\r\n\t\t\t\ttry {\r\n\t\t\t\t\tunzipEngine.unzipFile(progressMonitor, outPath, newFileName, unzipParameters);\r\n\t\t\t\t} catch (Exception e) {\r\n\t\t\t\t\tprogressMonitor.endProgressMonitorError(e);\r\n\t\t\t\t\tthrow new ZipException(e);\r\n\t\t\t\t}\r\n\t\t\t}\r\n\t\t} catch (ZipException e) {\r\n\t\t\tprogressMonitor.endProgressMonitorError(e);\r\n\t\t\tthrow e;\r\n\t\t} catch (Exception e) {\r\n\t\t\tprogressMonitor.endProgressMonitorError(e);\r\n\t\t\tthrow new ZipException(e);\r\n\t\t}\r\n\t}\n\n\tprivate void checkOutputDirectoryStructure(FileHeader fileHeader, String outPath, String newFileName) throws ZipException {\r\n\t\tif (fileHeader == null || !Zip4jUtil.isStringNotNullAndNotEmpty(outPath)) {\r\n\t\t\tthrow new ZipException(\"Cannot check output directory structure...one of the parameters was null\");\r\n\t\t}\r\n\t\t\r\n\t\tString fileName = fileHeader.getFileName();\r\n\t\t\r\n\t\tif (Zip4jUtil.isStringNotNullAndNotEmpty(newFileName)) {\r\n\t\t\tfileName = newFileName;\r\n\t\t}\r\n\t\t\r\n\t\tif (!Zip4jUtil.isStringNotNullAndNotEmpty(fileName)) {\r\n\t\t\t// Do nothing\r\n\t\t\treturn;\r\n\t\t}\r\n\t\t\r\n\t\tString compOutPath = outPath + fileName;\r\n\t\ttry {\r\n\t\t\tFile file = new File(compOutPath);\r\n\t\t\tString parentDir = file.getParent();\r\n\t\t\tFile parentDirFile = new File(parentDir);\r\n\t\t\tif (!parentDirFile.exists()) {\r\n\t\t\t\tparentDirFile.mkdirs();\r\n\t\t\t}\r\n\t\t} catch (Exception e) {\r\n\t\t\tthrow new ZipException(e);\r\n\t\t}\r\n\t}"
+    },
+    "questions": {
+      "p1_c1": {
+        "type": "noul",
+        "instructions": "True if the answer to this question is yes: Does the method use a hardcoded mapping (e.g., a Map, array, or switch statement) that maps the user input to a predetermined file name or path component?"
+      },
+      "p1_c2": {
+        "type": "noul",
+        "instructions": "True if the answer to this question is yes: Are all file name values in that mapping simple names that contain no path separators ('/' or '\\\\') and are not equal to '.' or '..'?"
+      },
+      "p1_c3": {
+        "type": "noul",
+        "instructions": "True if the answer to this question is yes: Does the method use the mapped value as the complete final filename without further concatenation with any part of the user input?"
+      },
+      "p2_c1": {
+        "type": "noul",
+        "instructions": "True if the answer to this question is yes: Does the method construct a java.io.File object using a fixed base directory and the user-provided path component?"
+      },
+      "p2_c2": {
+        "type": "noul",
+        "instructions": "True if the answer to this question is yes: Is the base directory obtained from a constant or trusted source, not incorporating any part of the user input?"
+      },
+      "p2_c3": {
+        "type": "noul",
+        "instructions": "True if the answer to this question is yes: Does the method call getCanonicalPath() on both the base directory File and the constructed File?"
+      },
+      "p2_c4": {
+        "type": "noul",
+        "instructions": "True if the answer to this question is yes: Does the method verify that the constructed file's canonical path starts with the base directory's canonical path followed by the system file separator (i.e., baseCanonicalPath + File.separator)?"
+      },
+      "p3_c1": {
+        "type": "noul",
+        "instructions": "True if the answer to this question is yes: Does the method use java.nio.file.Path.of() or Paths.get() to obtain the base directory path, and resolve the user input against it using resolve()?"
+      },
+      "p3_c2": {
+        "type": "noul",
+        "instructions": "True if the answer to this question is yes: Is the base directory path defined using only hardcoded strings or trusted configuration, not incorporating any part of the user input?"
+      },
+      "p3_c3": {
+        "type": "noul",
+        "instructions": "True if the answer to this question is yes: Does the method call toRealPath() on both the base directory Path and the resolved Path?"
+      },
+      "p3_c4": {
+        "type": "noul",
+        "instructions": "True if the answer to this question is yes: Does the method use startsWith(baseRealPath) to verify that the real path of the constructed file is a descendant of the base directory's real path?"
+      },
+      "p4_c1": {
+        "type": "noul",
+        "instructions": "True if the answer to this question is yes: Does the method use `new java.io.File(userInput).getName()` or `Path.of(userInput).getFileName()` to extract only the last path component (the simple file name) from the user input?"
+      },
+      "p4_c2": {
+        "type": "noul",
+        "instructions": "True if the answer to this question is yes: Does the method validate that the extracted file name is not null, not empty, not equal to `.`, not equal to `..`, and does not contain any occurrence of '/' or '\\\\' characters?"
+      },
+      "p4_c3": {
+        "type": "noul",
+        "instructions": "True if the answer to this question is yes: Does the method then combine this validated file name with a fixed base directory to construct the final path, without further incorporating the original user input?"
+      },
+      "p5_c1": {
+        "type": "noul",
+        "instructions": "True if the answer to this question is yes: Does the method use java.nio.file.Path to represent a fixed base directory, and resolve the user input against it using resolve()?"
+      },
+      "p5_c2": {
+        "type": "noul",
+        "instructions": "True if the answer to this question is yes: Is the base directory path defined using only hardcoded strings or trusted configuration, not incorporating any part of the user input?"
+      },
+      "p5_c3": {
+        "type": "noul",
+        "instructions": "True if the answer to this question is yes: Does the method call normalize() on the resulting path?"
+      },
+      "p5_c4": {
+        "type": "noul",
+        "instructions": "True if the answer to this question is yes: Does the method check that the normalized path starts with the normalized base path by calling startsWith(basePath.normalize())?"
+      }
+    }
+  },
+  "response": {
+    "model": "typesafe/jev-1.13-20260917",
+    "answers": {
+      "p1_c1": {
+        "type": "noul",
+        "noul": 0.05
+      },
+      "p1_c2": {
+        "type": "noul",
+        "noul": 0.18
+      },
+      "p1_c3": {
+        "type": "noul",
+        "noul": 0.46
+      },
+      "p2_c1": {
+        "type": "noul",
+        "noul": 0.87
+      },
+      "p2_c2": {
+        "type": "noul",
+        "noul": 0.52
+      },
+      "p2_c3": {
+        "type": "noul",
+        "noul": 0.93
+      },
+      "p2_c4": {
+        "type": "noul",
+        "noul": 0.1
+      },
+      "p3_c1": {
+        "type": "noul",
+        "noul": 0.02
+      },
+      "p3_c2": {
+        "type": "noul",
+        "noul": 0.49
+      },
+      "p3_c3": {
+        "type": "noul",
+        "noul": 0.03
+      },
+      "p3_c4": {
+        "type": "noul",
+        "noul": 0.94
+      },
+      "p4_c1": {
+        "type": "noul",
+        "noul": 0.06
+      },
+      "p4_c2": {
+        "type": "noul",
+        "noul": 0.05
+      },
+      "p4_c3": {
+        "type": "noul",
+        "noul": 0.56
+      },
+      "p5_c1": {
+        "type": "noul",
+        "noul": 0.02
+      },
+      "p5_c2": {
+        "type": "noul",
+        "noul": 0.47
+      },
+      "p5_c3": {
+        "type": "noul",
+        "noul": 0.16
+      },
+      "p5_c4": {
+        "type": "noul",
+        "noul": 0.19
+      }
+    },
+    "usage": {
+      "input_tokens": 2122,
+      "output_tokens": 346,
+      "cost": 8.9124e-05
+    },
+    "id": "gen-dec-1792545480-ZYs7LlT6l9I8yrGRjBxF",
+    "provider": "TypeSafe"
+  },
+  "attempts": 1,
+  "seconds": 0.76
+}

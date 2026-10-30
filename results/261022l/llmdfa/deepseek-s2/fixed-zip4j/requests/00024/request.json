@@ -1,0 +1,18 @@
+{
+  "model": "deepseek/deepseek-v4-pro",
+  "temperature": 0,
+  "max_tokens": 16000,
+  "reasoning": {
+    "effort": "low"
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are a Java programmer and very good at analyzing Java code."
+    },
+    {
+      "role": "user",
+      "content": "Please identify the source values for path traversal (CWE-22) according to the following instructions. The sources indicate attacker-controlled data\n- If a variable is assigned the return value of a method named `getFileName` (called on a `FileHeader`, yielding an archive entry's filename), it is a source value.\nExample (illustrative only; report values from the program below):\n1. String entryName = entry.getFileName();\n- Src name: entryName, Line number: 1\nNegative example: 1. validate();\nAnswer: an empty string. Never copy example identifiers into the answer.\nNow I will give you the program. Please list all the names of sources and the line numbers.The line numbers should indicate the line where the values of variables can be attacker-controlled.A variable can occur multiple times if it is assigned by different statements.\nDo not add extra explanations.Just list the pairs of variable and line number (where the variable has an attacker-controlled value) line by line.Each line should start with -.If there is no variable as source, just output an empty string.\nHere are several examples:\nExample 1:\n- Src name: x, Line number: 1\n- Src name: x, Line number: 4\nExample 2:\n- Src name: y, Line number: 3\nHere is the program:\n```\n1. public void unzipFile(ProgressMonitor progressMonitor, \n2. \t\t\tString outPath, String newFileName, UnzipParameters unzipParameters) throws ZipException {\n3. \t\tif (zipModel == null || fileHeader == null || !Zip4jUtil.isStringNotNullAndNotEmpty(outPath)) {\n4. \t\t\tthrow new ZipException(\"Invalid parameters passed during unzipping file. One or more of the parameters were null\");\n5. \t\t}\n6. \t\tInputStream is = null;\n7. \t\tOutputStream os = null;\n8. \t\ttry {\n9. \t\t\tbyte[] buff = new byte[InternalZipConstants.BUFF_SIZE];\n10. \t\t\tint readLength = -1;\n11. \t\t\t\n12. \t\t\tis = getInputStream();\n13. \t\t\tos = getOutputStream(outPath, newFileName);\n14. \t\t\t\n15. \t\t\twhile ((readLength = is.read(buff)) != -1) {\n16. \t\t\t\tos.write(buff, 0, readLength);\n17. \t\t\t\tprogressMonitor.updateWorkCompleted(readLength);\n18. \t\t\t\tif (progressMonitor.isCancelAllTasks()) {\n19. \t\t\t\t\tprogressMonitor.setResult(ProgressMonitor.RESULT_CANCELLED);\n20. \t\t\t\t\tprogressMonitor.setState(ProgressMonitor.STATE_READY);\n21. \t\t\t\t\treturn;\n22. \t\t\t\t}\n23. \t\t\t}\n24. \t\t\t\n25. \t\t\tcloseStreams(is, os);\n26. \t\t\t\n27. \t\t\tUnzipUtil.applyFileAttributes(fileHeader, new File(getOutputFileNameWithPath(outPath, newFileName)), unzipParameters);\n28. \t\t\t\n29. \t\t} catch (IOException e) {\n30. \t\t\tthrow new ZipException(e);\n31. \t\t} catch (Exception e) {\n32. \t\t\tthrow new ZipException(e);\n33. \t\t} finally {\n34. \t\t\tcloseStreams(is, os);\n35. \t\t}\n36. \t}\n```\n"
+    }
+  ]
+}

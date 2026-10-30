@@ -1,0 +1,46 @@
+{
+  "id": "gen-1792659199-uJZu4gdMGFYRisIFgSg6",
+  "object": "chat.completion",
+  "created": 1792659199,
+  "model": "qwen/qwen3-coder-30b-a3b-instruct",
+  "provider": "Amazon Bedrock",
+  "system_fingerprint": null,
+  "service_tier": null,
+  "choices": [
+    {
+      "index": 0,
+      "logprobs": null,
+      "finish_reason": "stop",
+      "native_finish_reason": "end_turn",
+      "message": {
+        "role": "assistant",
+        "content": "Looking at this complex path analysis, I need to trace through the execution flow and check variable values at each step.\n\nLet me trace the path step by step:\n\n1. **Line 12 in iterate**: `if (!namesSet.contains(entry.getName()))` - This checks if the entry name is NOT in the set\n2. **Line 17 in iterate**: `action.process(in, entry)` - This calls the process method\n3. **Line 1 in process**: `if (name.equals(zipEntry.getName()))` - This checks if name equals the entry name\n4. **Line 4 in process**: `action.process(in, zipEntry)` - This calls process again\n5. **Line 1 in process**: `String name = mapper.map(zipEntry.getName())` - This maps the entry name\n6. **Line 25 in process**: `FileUtils.copy(in, file)` - This copies the file\n\nFor this path to be reachable, several conditions must be met:\n- Line 12: `!namesSet.contains(entry.getName())` must be false, meaning `namesSet.contains(entry.getName())` must be true\n- Line 17: The action.process call must execute\n- Line 1 in process: The condition `name.equals(zipEntry.getName())` must be true\n- Line 4 in process: The action.process call must execute\n- Line 1 in process: The name mapping must happen\n- Line 25 in process: The condition `name != null` must be true AND `zipEntry.isDirectory()` must be false\n\nHowever, looking at the code structure, when we're in the `iterate` function, the `action` parameter is passed from outside. The path assumes that `action.process()` will be called and will eventually lead to the `process` method where `name` is mapped. But there's a critical issue:\n\nIn the `iterate` function, the `action` parameter is a `ZipEntryCallback` that gets called at line 17. The `process` method being called at line 4 is likely a different method than the one shown in the code snippets, but the key issue is that the `name` variable in the process method context would need to be properly initialized.\n\nLooking more carefully at the code structure, the path involves multiple function calls and the `name` variable needs to be properly set up. However, the path assumes that `name` is already defined and valid when reaching line 4 in the process method, but there's no clear initialization of `name` in the path leading to this point.\n\nThe path requires that `name` is not null (line 25 condition) and that `zipEntry.isDirectory()` is false (line 25 is in else branch), but the actual execution flow and variable initialization makes this path highly unlikely to be executable under normal circumstances.\n\nAnswer: No",
+        "refusal": null,
+        "reasoning": null
+      }
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 3009,
+    "completion_tokens": 594,
+    "total_tokens": 3603,
+    "cost": 0.00080775,
+    "is_byok": false,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0,
+      "video_tokens": 0
+    },
+    "cost_details": {
+      "upstream_inference_cost": 0.00080775,
+      "upstream_inference_prompt_cost": 0.00045135,
+      "upstream_inference_completions_cost": 0.0003564
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "image_tokens": 0,
+      "audio_tokens": 0
+    }
+  }
+}

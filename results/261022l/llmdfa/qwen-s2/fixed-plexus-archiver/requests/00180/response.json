@@ -1,0 +1,46 @@
+{
+  "id": "gen-1792658928-lUqedd4fwv0x49VuadcN",
+  "object": "chat.completion",
+  "created": 1792658928,
+  "model": "qwen/qwen3-coder-30b-a3b-instruct",
+  "provider": "Amazon Bedrock",
+  "system_fingerprint": null,
+  "service_tier": null,
+  "choices": [
+    {
+      "index": 0,
+      "logprobs": null,
+      "finish_reason": "stop",
+      "native_finish_reason": "end_turn",
+      "message": {
+        "role": "assistant",
+        "content": "Looking at the code, I need to trace the flow from line 29 (where `tmp11` is assigned) to line 28 (where `in` is used).\n\nLet me trace through the relevant lines:\n\nLine 29: `final tmp11 = ze.getName();`\nLine 28: `extractFileIfIncluded( tmp10, outputDirectory, in,`\n\nAt line 28, `tmp11` is not directly used as an argument to `extractFileIfIncluded`. Looking more carefully at the code structure, I can see that:\n\n- Line 27: `final tmp10 = getSourceFile();`\n- Line 28-37: `extractFileIfIncluded( tmp10, outputDirectory, in, ... )` - where `in` is passed as the 4th parameter\n- Lines 29-37: The parameters for `extractFileIfIncluded` include `tmp11`, `new Date(tmp12)`, `tmp13`, etc.\n\nThe variable `in` is used at line 28 as the 4th argument to `extractFileIfIncluded`, but it's not dependent on `tmp11` which is used as the 7th argument. The `in` variable is assigned earlier at line 25: `in = zipFile.getInputStream( ze );`.\n\nThe value of `tmp11` (which is `ze.getName()`) is computed at line 29 and used later in the `extractFileIfIncluded` call, but it doesn't affect the value of `in` that was already set at line 25.\n\nExplanation: The variable `in` is assigned at line 25 with `zipFile.getInputStream( ze )` and then used at line 28 as an argument to `extractFileIfIncluded`. The variable `tmp11` is assigned at line 29 with `ze.getName()` and is used as a separate argument to the same function call. These are independent assignments - the value of `in` is determined by the input stream from the zip file entry, while `tmp11` is determined by the name of the zip entry. There is no dependency between these two variables.\n\nAnswer: No",
+        "refusal": null,
+        "reasoning": null
+      }
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 1480,
+    "completion_tokens": 469,
+    "total_tokens": 1949,
+    "cost": 0.0005034,
+    "is_byok": false,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0,
+      "video_tokens": 0
+    },
+    "cost_details": {
+      "upstream_inference_cost": 0.0005034,
+      "upstream_inference_prompt_cost": 0.000222,
+      "upstream_inference_completions_cost": 0.0002814
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "image_tokens": 0,
+      "audio_tokens": 0
+    }
+  }
+}

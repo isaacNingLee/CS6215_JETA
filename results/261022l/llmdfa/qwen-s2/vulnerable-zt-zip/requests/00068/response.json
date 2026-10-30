@@ -1,0 +1,46 @@
+{
+  "id": "gen-1792655470-COEncXqtkOP5AOPZnVnG",
+  "object": "chat.completion",
+  "created": 1792655470,
+  "model": "qwen/qwen3-coder-30b-a3b-instruct",
+  "provider": "Amazon Bedrock",
+  "system_fingerprint": null,
+  "service_tier": null,
+  "choices": [
+    {
+      "index": 0,
+      "logprobs": null,
+      "finish_reason": "stop",
+      "native_finish_reason": "end_turn",
+      "message": {
+        "role": "assistant",
+        "content": "Explanation: Let me trace through the execution step by step to determine if the value of `file` at line 15 depends on `zipEntry.getName()` at line 11.\n\nAt line 2: `final tmp1 = zipEntry.getName();`\nAt line 11: `String name = mapper.map(getUnrootedName(root, zipEntry.getName()));`\nAt line 13: `File file = new File(outputDir, name);`\n\nThe key connection is that `zipEntry.getName()` is used in two places:\n1. Line 2: `tmp1 = zipEntry.getName()` - stores the result in tmp1\n2. Line 11: `getUnrootedName(root, zipEntry.getName())` - uses zipEntry.getName() as an argument\n\nThe value of `name` (line 11) depends on `zipEntry.getName()` because it's passed as an argument to `getUnrootedName()`. Then `file` (line 13) is constructed using `name`, which means `file` indirectly depends on the value of `zipEntry.getName()`.\n\nHowever, looking more carefully at the actual dependency chain:\n- Line 11: `name = mapper.map(getUnrootedName(root, zipEntry.getName()))`\n- Line 13: `file = new File(outputDir, name)`\n\nThe `file` variable is created using `name`, and `name` is computed from `zipEntry.getName()`. Therefore, the value of `file` does depend on the value of `zipEntry.getName()`.\n\nAnswer: Yes",
+        "refusal": null,
+        "reasoning": null
+      }
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 1208,
+    "completion_tokens": 330,
+    "total_tokens": 1538,
+    "cost": 0.0003792,
+    "is_byok": false,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0,
+      "video_tokens": 0
+    },
+    "cost_details": {
+      "upstream_inference_cost": 0.0003792,
+      "upstream_inference_prompt_cost": 0.0001812,
+      "upstream_inference_completions_cost": 0.000198
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "image_tokens": 0,
+      "audio_tokens": 0
+    }
+  }
+}

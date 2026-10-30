@@ -1,0 +1,46 @@
+{
+  "id": "gen-1792655708-rdagTvhe5jKS5E8HnMvh",
+  "object": "chat.completion",
+  "created": 1792655708,
+  "model": "qwen/qwen3-coder-30b-a3b-instruct",
+  "provider": "Amazon Bedrock",
+  "system_fingerprint": null,
+  "service_tier": null,
+  "choices": [
+    {
+      "index": 0,
+      "logprobs": null,
+      "finish_reason": "stop",
+      "native_finish_reason": "end_turn",
+      "message": {
+        "role": "assistant",
+        "content": "Looking at the code, I need to trace the dependency between `offsetStartOfData` at line 48 and `fileHeader.getFileName()` at line 42.\n\nLet me trace the execution:\n\n1. Line 18: `long offsetStartOfData = localFileHeader.getOffsetStartOfData();` - This assigns `offsetStartOfData` from `localFileHeader.getOffsetStartOfData()`\n\n2. Lines 20-34: These handle encryption method checks and modify `comprSize` and `offsetStartOfData` based on encryption method, but they don't use `fileHeader.getFileName()`\n\n3. Line 42: `throw new ZipException(\"AESExtraDataRecord does not exist for AES encrypted file: \" + fileHeader.getFileName());` - This line throws an exception and uses `fileHeader.getFileName()` in the error message, but it's inside an exception case that only executes if `fileHeader.getAesExtraDataRecord() == null`\n\n4. Line 48: `return new ZipInputStream(new PartInputStream(raf, offsetStartOfData, comprSize, this));` - This uses `offsetStartOfData` as a parameter\n\nThe key insight is that `offsetStartOfData` is set once at line 18 and then potentially modified in lines 25-26 and 33-34, but none of these modifications depend on `fileHeader.getFileName()`. The `fileHeader.getFileName()` is only used in a string concatenation for an exception message at line 42, which doesn't affect the value of `offsetStartOfData`.\n\nThe value of `offsetStartOfData` is determined by `localFileHeader.getOffsetStartOfData()` at line 18, and any subsequent modifications to it (lines 25-26, 33-34) are based on encryption method properties, not on `fileHeader.getFileName()`.\n\nExplanation: The variable `offsetStartOfData` is initialized from `localFileHeader.getOffsetStartOfData()` at line 18 and then modified in lines 25-26 and 33-34 based on encryption method properties. The `fileHeader.getFileName()` at line 42 is only used in an exception message and never affects the computation of `offsetStartOfData`. There is no data flow path from `fileHeader.getFileName()` to `offsetStartOfData`.\n\nAnswer: No",
+        "refusal": null,
+        "reasoning": null
+      }
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 1804,
+    "completion_tokens": 515,
+    "total_tokens": 2319,
+    "cost": 0.0005796,
+    "is_byok": false,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0,
+      "video_tokens": 0
+    },
+    "cost_details": {
+      "upstream_inference_cost": 0.0005796,
+      "upstream_inference_prompt_cost": 0.0002706,
+      "upstream_inference_completions_cost": 0.000309
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "image_tokens": 0,
+      "audio_tokens": 0
+    }
+  }
+}

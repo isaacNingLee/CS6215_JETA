@@ -1,0 +1,46 @@
+{
+  "id": "gen-1792655416-s3vpSNezWGGfmpmw1Fwx",
+  "object": "chat.completion",
+  "created": 1792655416,
+  "model": "qwen/qwen3-coder-30b-a3b-instruct",
+  "provider": "Amazon Bedrock",
+  "system_fingerprint": null,
+  "service_tier": null,
+  "choices": [
+    {
+      "index": 0,
+      "logprobs": null,
+      "finish_reason": "stop",
+      "native_finish_reason": "end_turn",
+      "message": {
+        "role": "assistant",
+        "content": "Looking at the code, I need to trace the flow from line 9 to line 44 to see if `progressMonitor` depends on `fileHeader.getFileName()`.\n\nAt line 9: `progressMonitor.setFileName(fileHeader.getFileName());`\nThis sets the filename on the progressMonitor using the result of `fileHeader.getFileName()`.\n\nAt line 44: `unzipEngine.unzipFile(progressMonitor, outPath, newFileName, unzipParameters);`\nThis passes the `progressMonitor` object as the first parameter to the `unzipFile` method.\n\nHowever, the question asks whether the value of `progressMonitor` used at line 44 depends on the value of `fileHeader.getFileName()` at line 9. \n\nThe `progressMonitor` object itself is passed as-is to the `unzipFile` method at line 44. While `progressMonitor.setFileName(fileHeader.getFileName())` was called at line 9, this only sets a property of the `progressMonitor` object. The `progressMonitor` object's identity and structure remain unchanged - it's still the same object reference. The `unzipFile` method receives the same `progressMonitor` object that was modified at line 9, but the question is asking about the dependency between the value of `progressMonitor` at line 44 and the value of `fileHeader.getFileName()` at line 9.\n\nSince the `progressMonitor` object is passed directly without any transformation based on `fileHeader.getFileName()`, and we're told to ignore side effects of functions, the value of `progressMonitor` used at line 44 does not depend on the value of `fileHeader.getFileName()` at line 9 in terms of being constructed from that value.\n\nAnswer: No",
+        "refusal": null,
+        "reasoning": null
+      }
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 1507,
+    "completion_tokens": 367,
+    "total_tokens": 1874,
+    "cost": 0.00044625,
+    "is_byok": false,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0,
+      "video_tokens": 0
+    },
+    "cost_details": {
+      "upstream_inference_cost": 0.00044625,
+      "upstream_inference_prompt_cost": 0.00022605,
+      "upstream_inference_completions_cost": 0.0002202
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "image_tokens": 0,
+      "audio_tokens": 0
+    }
+  }
+}

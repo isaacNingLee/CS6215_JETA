@@ -1,0 +1,46 @@
+{
+  "id": "gen-1792655048-IPbHC00KlDUrPKXpsnYb",
+  "object": "chat.completion",
+  "created": 1792655048,
+  "model": "qwen/qwen3-coder-30b-a3b-instruct",
+  "provider": "SiliconFlow",
+  "system_fingerprint": null,
+  "service_tier": null,
+  "choices": [
+    {
+      "index": 0,
+      "logprobs": null,
+      "finish_reason": "stop",
+      "native_finish_reason": "stop",
+      "message": {
+        "role": "assistant",
+        "content": "Looking at the code, I need to trace the relationship between `tmp11` at line 29 and `fileInfo` at line 18.\n\nLet me trace the execution:\n\n1. Line 15: `final ZipArchiveEntry ze = (ZipArchiveEntry) e.nextElement();`\n2. Line 16: `final ZipEntryFileInfo fileInfo = new ZipEntryFileInfo( zipFile, ze );`\n3. Line 17: `final tmp9 = ze.getName();`\n4. Line 18: `if ( !isSelected( tmp9, fileInfo ) )` - Here `fileInfo` is used\n5. Line 29: `final tmp11 = ze.getName();`\n6. Line 32: `tmp11, new Date( tmp12 ), tmp13, ...` - Here `tmp11` is used in a function call\n\nThe key insight is that `fileInfo` is created at line 16 using `ze` as an argument, and `tmp11` is assigned `ze.getName()` at line 29. However, `fileInfo` is used at line 18, which is before line 29 where `tmp11` is assigned.\n\nLooking more carefully at the code structure:\n- Line 16: `fileInfo` is created with `ze` as parameter\n- Line 17: `tmp9` gets `ze.getName()`\n- Line 18: `fileInfo` is used in `isSelected(tmp9, fileInfo)`\n- Line 29: `tmp11` gets `ze.getName()` (same as line 17)\n\nThe `fileInfo` variable is created from `ze` at line 16, and `tmp11` is assigned `ze.getName()` at line 29. Since `fileInfo` is used at line 18 (before line 29), and `fileInfo` was constructed from `ze` which is the same object that provides the name used in `tmp11`, there is no direct dependency between the value of `fileInfo` at line 18 and the value of `tmp11` at line 29.\n\nThe `fileInfo` variable is used in the `isSelected` method call at line 18, but this usage doesn't depend on `tmp11` which is assigned later at line 29. The `fileInfo` is constructed from `ze` and used in a condition, while `tmp11` is assigned from `ze.getName()` and used in a function call later.\n\nExplanation: The variable `fileInfo` is created at line 16 using `ze` as a parameter, and it's used at line 18 in the `isSelected` method call. The variable `tmp11` is assigned at line 29 from `ze.getName()`. Since `fileInfo` is used before `tmp11` is assigned, and the `isSelected` method call doesn't depend on `tmp11`, there is no dependency between the value of `fileInfo` at line 18 and the value of `tmp11` at line 29.\n\nAnswer: No",
+        "refusal": null,
+        "reasoning": null
+      }
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 1482,
+    "completion_tokens": 670,
+    "total_tokens": 2152,
+    "cost": 0.00029134,
+    "is_byok": false,
+    "prompt_tokens_details": {
+      "cached_tokens": 736,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0,
+      "video_tokens": 0
+    },
+    "cost_details": {
+      "upstream_inference_cost": 0.00029134,
+      "upstream_inference_prompt_cost": 0.00010374,
+      "upstream_inference_completions_cost": 0.0001876
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "image_tokens": 0,
+      "audio_tokens": 0
+    }
+  }
+}

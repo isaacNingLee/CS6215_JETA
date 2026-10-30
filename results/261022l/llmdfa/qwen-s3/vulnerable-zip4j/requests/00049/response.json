@@ -1,0 +1,46 @@
+{
+  "id": "gen-1792655570-w1hd2g0PoyC0kcGpuvbZ",
+  "object": "chat.completion",
+  "created": 1792655570,
+  "model": "qwen/qwen3-coder-30b-a3b-instruct",
+  "provider": "Amazon Bedrock",
+  "system_fingerprint": null,
+  "service_tier": null,
+  "choices": [
+    {
+      "index": 0,
+      "logprobs": null,
+      "finish_reason": "stop",
+      "native_finish_reason": "end_turn",
+      "message": {
+        "role": "assistant",
+        "content": "Explanation: Looking at the code, I need to trace the flow of the `raf` variable from line 8 to line 48. \n\nAt line 8: `raf = createFileHandler(InternalZipConstants.READ_MODE);`\nThis assigns the result of `createFileHandler()` to `raf`.\n\nAt line 15: `init(raf);`\nThis passes `raf` as an argument to the `init` method, but according to the instructions, I should ignore side effects of functions, so this doesn't change the value of `raf`.\n\nAt lines 17-18: `long comprSize = localFileHeader.getCompressedSize();` and `long offsetStartOfData = localFileHeader.getOffsetStartOfData();`\nThese lines read from `localFileHeader` but don't modify `raf`.\n\nAt lines 20-34: Various conditional blocks that adjust `comprSize` and `offsetStartOfData` based on encryption methods, but again these don't affect `raf`.\n\nAt line 45: `raf.seek(offsetStartOfData);`\nThis is where `raf` is actually used - it calls the `seek` method on the `raf` object. However, since we're told to ignore side effects of functions, the `seek` operation doesn't change the value of `raf` itself (it changes the file pointer position, but `raf` remains the same reference).\n\nAt lines 48 and 50: `return new ZipInputStream(new PartInputStream(raf, offsetStartOfData, comprSize, this));` and `return new ZipInputStream(new InflaterInputStream(raf, offsetStartOfData, comprSize, this));`\nBoth of these pass `raf` as an argument to constructors. Since we ignore side effects, `raf` maintains its value throughout.\n\nThe variable `raf` is assigned once at line 8 and then used multiple times later in the function without being reassigned. Therefore, the value of `raf` at line 48 (when it's passed to the constructor) depends on the value of `raf` at line 8 (which was assigned from `createFileHandler()`).\n\nAnswer: Yes",
+        "refusal": null,
+        "reasoning": null
+      }
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 1792,
+    "completion_tokens": 454,
+    "total_tokens": 2246,
+    "cost": 0.0005412,
+    "is_byok": false,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0,
+      "video_tokens": 0
+    },
+    "cost_details": {
+      "upstream_inference_cost": 0.0005412,
+      "upstream_inference_prompt_cost": 0.0002688,
+      "upstream_inference_completions_cost": 0.0002724
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "image_tokens": 0,
+      "audio_tokens": 0
+    }
+  }
+}

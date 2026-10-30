@@ -1,0 +1,69 @@
+{
+  "model": "qwen/qwen3-coder-30b-a3b-instruct",
+  "mode": "vanilla",
+  "project": "zip4j",
+  "variant": "vulnerable",
+  "sample": 3,
+  "request": {
+    "model": "qwen/qwen3-coder-30b-a3b-instruct",
+    "temperature": 0,
+    "max_tokens": 8000,
+    "reasoning": {
+      "effort": "low"
+    },
+    "messages": [
+      {
+        "role": "user",
+        "content": "You are reviewing one Java source file for security vulnerabilities as part of a manual code audit. Do not assume any particular vulnerability class in advance; look for anything a careful reviewer would flag.\n\nReport every vulnerability you find. Respond with ONLY a JSON object, no prose outside it, in this exact shape:\n{\"findings\": [{\"cwe\": \"CWE-XX\", \"class\": \"EnclosingClassName\", \"method\": \"methodName\", \"explanation\": \"one paragraph\"}]}\nUse the class's simple name (no package, no outer class prefix) and the method name as written in the source (for a constructor, use the class name, matching Java convention). If you find nothing worth reporting, return {\"findings\": []}.\n\nFile: src/main/java/net/lingala/zip4j/unzip/Unzip.java\n```java\n/*\n* Copyright 2010 Srikanth Reddy Lingala  \n* \n* Licensed under the Apache License, Version 2.0 (the \"License\"); \n* you may not use this file except in compliance with the License. \n* You may obtain a copy of the License at \n* \n* http://www.apache.org/licenses/LICENSE-2.0 \n* \n* Unless required by applicable law or agreed to in writing, \n* software distributed under the License is distributed on an \"AS IS\" BASIS, \n* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. \n* See the License for the specific language governing permissions and \n* limitations under the License. \n*/\n\npackage net.lingala.zip4j.unzip;\n\nimport java.io.File;\nimport java.util.ArrayList;\n\nimport net.lingala.zip4j.exception.ZipException;\nimport net.lingala.zip4j.io.ZipInputStream;\nimport net.lingala.zip4j.model.CentralDirectory;\nimport net.lingala.zip4j.model.FileHeader;\nimport net.lingala.zip4j.model.UnzipParameters;\nimport net.lingala.zip4j.model.ZipModel;\nimport net.lingala.zip4j.progress.ProgressMonitor;\nimport net.lingala.zip4j.util.InternalZipConstants;\nimport net.lingala.zip4j.util.Zip4jUtil;\n\npublic class Unzip {\n\t\n\tprivate ZipModel zipModel;\n\t\n\tpublic Unzip(ZipModel zipModel) throws ZipException {\n\t\t\n\t\tif (zipModel == null) {\n\t\t\tthrow new ZipException(\"ZipModel is null\");\n\t\t}\n\t\t\n\t\tthis.zipModel = zipModel;\n\t}\n\t\n\tpublic void extractAll(final UnzipParameters unzipParameters, final String outPath,\n\t\t\tfinal ProgressMonitor progressMonitor, boolean runInThread) throws ZipException {\n\t\t\n\t\tCentralDirectory centralDirectory = zipModel.getCentralDirectory();\n\t\t\n\t\tif (centralDirectory == null || \n\t\t\t\tcentralDirectory.getFileHeaders() == null) {\n\t\t\tthrow new ZipException(\"invalid central directory in zipModel\");\n\t\t}\n\t\t\n\t\tfinal ArrayList fileHeaders = centralDirectory.getFileHeaders();\n\t\t\n\t\tprogressMonitor.setCurrentOperation(ProgressMonitor.OPERATION_EXTRACT);\n\t\tprogressMonitor.setTotalWork(calculateTotalWork(fileHeaders));\n\t\tprogressMonitor.setState(ProgressMonitor.STATE_BUSY);\n\t\t\n\t\tif (runInThread) {\n\t\t\tThread thread = new Thread(InternalZipConstants.THREAD_NAME) {\n\t\t\t\tpublic void run() {\n\t\t\t\t\ttry {\n\t\t\t\t\t\tinitExtractAll(fileHeaders, unzipParameters, progressMonitor, outPath);\n\t\t\t\t\t\tprogressMonitor.endProgressMonitorSuccess();\n\t\t\t\t\t} catch (ZipException e) {\n\t\t\t\t\t}\n\t\t\t\t}\n\t\t\t};\n\t\t\tthread.start();\n\t\t} else {\n\t\t\tinitExtractAll(fileHeaders, unzipParameters, progressMonitor, outPath);\n\t\t}\n\t\t\n\t}\n\t\n\tprivate void initExtractAll(ArrayList fileHeaders, UnzipParameters unzipParameters, \n\t\t\tProgressMonitor progressMonitor, String outPath) throws ZipException {\n\t\t\n\t\tfor (int i = 0; i < fileHeaders.size(); i++) {\n\t\t\tFileHeader fileHeader = (FileHeader)fileHeaders.get(i);\n\t\t\tinitExtractFile(fileHeader, outPath, unzipParameters, null, progressMonitor);\n\t\t\tif (progressMonitor.isCancelAllTasks()) {\n\t\t\t\tprogressMonitor.setResult(ProgressMonitor.RESULT_CANCELLED);\n\t\t\t\tprogressMonitor.setState(ProgressMonitor.STATE_READY);\n\t\t\t\treturn;\n\t\t\t}\n\t\t}\n\t}\n\t\n\tpublic void extractFile(final FileHeader fileHeader, final String outPath,\n\t\t\tfinal UnzipParameters unzipParameters, final String newFileName, \n\t\t\tfinal ProgressMonitor progressMonitor, boolean runInThread) throws ZipException {\n\t\tif (fileHeader == null) {\n\t\t\tthrow new ZipException(\"fileHeader is null\");\n\t\t}\n\t\t\n\t\tprogressMonitor.setCurrentOperation(ProgressMonitor.OPERATION_EXTRACT);\n\t\tprogressMonitor.setTotalWork(fileHeader.getCompressedSize());\n\t\tprogressMonitor.setState(ProgressMonitor.STATE_BUSY);\n\t\tprogressMonitor.setPercentDone(0);\n\t\tprogressMonitor.setFileName(fileHeader.getFileName());\n\t\t\n\t\tif (runInThread) {\n\t\t\tThread thread = new Thread(InternalZipConstants.THREAD_NAME) {\n\t\t\t\tpublic void run() {\n\t\t\t\t\ttry {\n\t\t\t\t\t\tinitExtractFile(fileHeader, outPath, unzipParameters, newFileName, progressMonitor);\n\t\t\t\t\t\tprogressMonitor.endProgressMonitorSuccess();\n\t\t\t\t\t} catch (ZipException e) {\n\t\t\t\t\t}\n\t\t\t\t}\n\t\t\t};\n\t\t\tthread.start();\n\t\t} else {\n\t\t\tinitExtractFile(fileHeader, outPath, unzipParameters, newFileName, progressMonitor);\n\t\t\tprogressMonitor.endProgressMonitorSuccess();\n\t\t}\n\t\t\n\t}\n\t\n\tprivate void initExtractFile(FileHeader fileHeader, String outPath,\n\t\t\tUnzipParameters unzipParameters, String newFileName, ProgressMonitor progressMonitor) throws ZipException {\n\n\t\tif (fileHeader == null) {\n\t\t\tthrow new ZipException(\"fileHeader is null\");\n\t\t}\n\t\t\n\t\ttry {\n\t\t\tprogressMonitor.setFileName(fileHeader.getFileName());\n\t\t\t\n\t\t\tif (!outPath.endsWith(InternalZipConstants.FILE_SEPARATOR)) {\n\t\t\t\toutPath += InternalZipConstants.FILE_SEPARATOR;\n\t\t\t}\n\t\t\t\n\t\t\t// If file header is a directory, then check if the directory exists\n\t\t\t// If not then create a directory and return\n\t\t\tif (fileHeader.isDirectory()) {\n\t\t\t\ttry {\n\t\t\t\t\tString fileName = fileHeader.getFileName();\n\t\t\t\t\tif (!Zip4jUtil.isStringNotNullAndNotEmpty(fileName)) {\n\t\t\t\t\t\treturn;\n\t\t\t\t\t}\n\t\t\t\t\tString completePath = outPath + fileName;\n\t\t\t\t\tFile file = new File(completePath);\n\t\t\t\t\tif (!file.exists()) {\n\t\t\t\t\t\tfile.mkdirs();\n\t\t\t\t\t}\n\t\t\t\t} catch (Exception e) {\n\t\t\t\t\tprogressMonitor.endProgressMonitorError(e);\n\t\t\t\t\tthrow new ZipException(e);\n\t\t\t\t}\n\t\t\t} else {\n\t\t\t\t//Create Directories\n\t\t\t\tcheckOutputDirectoryStructure(fileHeader, outPath, newFileName);\n\t\t\t\t\n\t\t\t\tUnzipEngine unzipEngine = new UnzipEngine(zipModel, fileHeader);\n\t\t\t\ttry {\n\t\t\t\t\tunzipEngine.unzipFile(progressMonitor, outPath, newFileName, unzipParameters);\n\t\t\t\t} catch (Exception e) {\n\t\t\t\t\tprogressMonitor.endProgressMonitorError(e);\n\t\t\t\t\tthrow new ZipException(e);\n\t\t\t\t}\n\t\t\t}\n\t\t} catch (ZipException e) {\n\t\t\tprogressMonitor.endProgressMonitorError(e);\n\t\t\tthrow e;\n\t\t} catch (Exception e) {\n\t\t\tprogressMonitor.endProgressMonitorError(e);\n\t\t\tthrow new ZipException(e);\n\t\t}\n\t}\n\t\n\tpublic ZipInputStream getInputStream(FileHeader fileHeader) throws ZipException {\n\t\tUnzipEngine unzipEngine = new UnzipEngine(zipModel, fileHeader);\n\t\treturn unzipEngine.getInputStream();\n\t}\n\t\n\tprivate void checkOutputDirectoryStructure(FileHeader fileHeader, String outPath, String newFileName) throws ZipException {\n\t\tif (fileHeader == null || !Zip4jUtil.isStringNotNullAndNotEmpty(outPath)) {\n\t\t\tthrow new ZipException(\"Cannot check output directory structure...one of the parameters was null\");\n\t\t}\n\t\t\n\t\tString fileName = fileHeader.getFileName();\n\t\t\n\t\tif (Zip4jUtil.isStringNotNullAndNotEmpty(newFileName)) {\n\t\t\tfileName = newFileName;\n\t\t}\n\t\t\n\t\tif (!Zip4jUtil.isStringNotNullAndNotEmpty(fileName)) {\n\t\t\t// Do nothing\n\t\t\treturn;\n\t\t}\n\t\t\n\t\tString compOutPath = outPath + fileName;\n\t\ttry {\n\t\t\tFile file = new File(compOutPath);\n\t\t\tString parentDir = file.getParent();\n\t\t\tFile parentDirFile = new File(parentDir);\n\t\t\tif (!parentDirFile.exists()) {\n\t\t\t\tparentDirFile.mkdirs();\n\t\t\t}\n\t\t} catch (Exception e) {\n\t\t\tthrow new ZipException(e);\n\t\t}\n\t}\n\t\n\tprivate long calculateTotalWork(ArrayList fileHeaders) throws ZipException {\n\t\t\n\t\tif (fileHeaders == null) {\n\t\t\tthrow new ZipException(\"fileHeaders is null, cannot calculate total work\");\n\t\t}\n\t\t\n\t\tlong totalWork = 0;\n\t\t\n\t\tfor (int i = 0; i < fileHeaders.size(); i++) {\n\t\t\tFileHeader fileHeader = (FileHeader)fileHeaders.get(i);\n\t\t\tif (fileHeader.getZip64ExtendedInfo() != null && \n\t\t\t\t\tfileHeader.getZip64ExtendedInfo().getUnCompressedSize() > 0) {\n\t\t\t\ttotalWork += fileHeader.getZip64ExtendedInfo().getCompressedSize();\n\t\t\t} else {\n\t\t\t\ttotalWork += fileHeader.getCompressedSize();\n\t\t\t}\n\t\t\t\n\t\t}\n\t\t\n\t\treturn totalWork;\n\t}\n\t\n}\n\n```"
+      }
+    ]
+  },
+  "response": {
+    "id": "gen-1792474263-lGjHWUCoDD0OHDtlJzP3",
+    "object": "chat.completion",
+    "created": 1792474263,
+    "model": "qwen/qwen3-coder-30b-a3b-instruct",
+    "provider": "SiliconFlow",
+    "system_fingerprint": null,
+    "service_tier": null,
+    "choices": [
+      {
+        "index": 0,
+        "logprobs": null,
+        "finish_reason": "stop",
+        "native_finish_reason": "stop",
+        "message": {
+          "role": "assistant",
+          "content": "{\n  \"findings\": [\n    {\n      \"cwe\": \"CWE-22\",\n      \"class\": \"Unzip\",\n      \"method\": \"initExtractFile\",\n      \"explanation\": \"The code is vulnerable to directory traversal attacks because it directly uses file names from ZIP archives without proper validation. When extracting files, the code constructs paths by concatenating the output path with the file name from the archive (e.g., 'outPath + fileName'), which can allow attackers to write files outside the intended directory by using relative paths like '../evil_file.txt'. This is particularly dangerous when extracting directories or files with names that contain parent directory references.\"\n    },\n    {\n      \"cwe\": \"CWE-703\",\n      \"class\": \"Unzip\",\n      \"method\": \"initExtractFile\",\n      \"explanation\": \"The method catches generic Exception types and rethrows them as ZipException, but it also catches and silently swallows ZipException in the thread's run method. This can mask important error information and make debugging difficult. Additionally, the catch block in the thread's run method does not handle the exception properly, potentially leading to unhandled exceptions that could crash the application or leave the progress monitor in an inconsistent state.\"\n    },\n    {\n      \"cwe\": \"CWE-400\",\n      \"class\": \"Unzip\",\n      \"method\": \"extractAll\",\n      \"explanation\": \"The code creates threads without proper thread management or lifecycle control. The thread created in the extractAll method runs in the background but there is no mechanism to ensure proper cleanup or termination of these threads. This could lead to resource leaks or uncontrolled thread proliferation if the extraction process is repeated multiple times or if the application is used in a long-running environment.\"\n    },\n    {\n      \"cwe\": \"CWE-20\",\n      \"class\": \"Unzip\",\n      \"method\": \"initExtractFile\",\n      \"explanation\": \"The code does not validate or sanitize the file names extracted from the ZIP archive before using them to create file system paths. This can lead to path traversal vulnerabilities where an attacker can specify file paths that resolve outside the intended extraction directory. The code does not check for special characters or sequences like '..' that could be used to navigate up the directory tree.\"\n    }\n  ]\n}",
+          "refusal": null,
+          "reasoning": null
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 1952,
+      "completion_tokens": 478,
+      "total_tokens": 2430,
+      "cost": 0.00027048,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 1216,
+        "cache_write_tokens": 0,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 0.00027048,
+        "upstream_inference_prompt_cost": 0.00013664,
+        "upstream_inference_completions_cost": 0.00013384
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 0,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    }
+  },
+  "attempts": 1,
+  "seconds": 16.26
+}

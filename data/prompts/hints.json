@@ -1,0 +1,29 @@
+{
+  "hints": {
+    "mpxj": "A static taint analysis is configured for this project with: entry point `InputStreamHelper.writeZipStreamToTempDir(InputStream)`; SOURCE = each `ZipEntry.getName()` result (an archive entry's filename), treated as attacker-controlled; SINK = argument 0 of a `FileOutputStream(File)` constructor call (the file being opened for writing). Manual rules also propagate taint through `File(File,String)` (argument 1 to the constructed object) and `File(String)` (argument 0 to the constructed object). This is the CWE-22 path-traversal source/sink pairing used for this project's known CVE.",
+    "zip4j": "A static taint analysis is configured for this project with: entry point `ZipFile.extractAll` (synchronous mode); SOURCE = each `FileHeader.getFileName()` result (an archive entry's filename), treated as attacker-controlled; SINK = argument 0 of a `FileOutputStream(File)` constructor call (the file being opened for writing). A manual rule also propagates taint through `File(String)`: argument 0 to the constructed object. This is the CWE-22 path-traversal source/sink pairing used for this project's known CVE.",
+    "zt-zip": "A static taint analysis is configured for this project with: entry point `ZipUtil.unpack(File,File)`; SOURCE = each `ZipEntry.getName()` result (an archive entry's filename), treated as attacker-controlled; SINK = argument 0 of a `FileOutputStream(File)` constructor call (the file being opened for writing). Manual rules also propagate taint through `File(File,String)` (argument 1 to the constructed object) and `File(String)` (argument 0 to the constructed object). This is the CWE-22 path-traversal source/sink pairing used for this project's known CVE.",
+    "spark": "A static taint analysis is configured for this project with: entry point `new ClassPathResource(path).getInputStream()`, where `path` is the result of `System.getenv(...)` in this project's test entry adapter; SOURCE = that `System.getenv(...)` result, modeling an untrusted resource path; SINK = argument 0 of a `ClassLoader` (or subtype) or `Class` `getResourceAsStream(String)` call. This is the CWE-22 path-traversal source/sink pairing used for this project's known CVE.",
+    "plexus-archiver": "A static taint analysis is configured for this project with: entry point `ZipUnArchiver.extract()`; SOURCE = each archive entry's `ZipArchiveEntry.getName()` result, treated as attacker-controlled; SINK = argument 0 of a `FileOutputStream(File)` constructor call (the file being opened for writing). A manual rule also propagates taint through `File(String)` and `File(File,String)`: the path-string argument to the constructed object. This is the CWE-22 path-traversal source/sink pairing used for this project's known CVE.",
+    "plexus-utils": "A static taint analysis is configured for this project with: entry point `Expand.execute()`; SOURCE = each archive entry's `ZipEntry.getName()` result, treated as attacker-controlled; SINK = argument 0 of a `FileOutputStream(File)` constructor call (the file being opened for writing). A manual rule also propagates taint through `File(String)` and `File(File,String)`: the path-string argument to the constructed object. This is the CWE-22 path-traversal source/sink pairing used for this project's known CVE."
+  },
+  "sink_files": {
+    "mpxj": [],
+    "zip4j": [
+      "src/main/java/net/lingala/zip4j/unzip/UnzipEngine.java"
+    ],
+    "zt-zip": [
+      "src/main/java/org/zeroturnaround/zip/commons/FileUtils.java"
+    ],
+    "spark": [],
+    "plexus-archiver": [],
+    "plexus-utils": []
+  },
+  "path_traversal_keywords": [
+    "cwe-22",
+    "path traversal",
+    "directory traversal",
+    "zip slip",
+    "path manipulation"
+  ]
+}

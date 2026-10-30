@@ -1,0 +1,68 @@
+{
+  "request": {
+    "model": "qwen/qwen3-coder-30b-a3b-instruct",
+    "temperature": 0,
+    "max_tokens": 8000,
+    "reasoning": {
+      "effort": "low"
+    },
+    "messages": [
+      {
+        "role": "system",
+        "content": "Classify candidate taint SOURCES for a Java CWE-22 (path traversal) static analysis.\nA source is a method call whose RETURNED value can carry data that an external\nattacker controls and that may be used to name a file or resource path, such as\nnames read from an archive or upload, request parameters, environment or\ncommand-line input. Values the program computes or chooses itself, or that a\ntrusted caller supplies, are not sources. For each candidate decide\nsource | not_source | unknown. Cite at least one supplied call-site ID (K...)\nshowing how the value is obtained or used. Do not decide from the method name\nalone; if the supplied code is insufficient, answer unknown. Labels, versions\nand fix locations are unavailable.\nReturn ONLY JSON: {\"sources\":[{\"id\":\"C01\",\"decision\":\"source|not_source|unknown\",\n\"reason\":\"at most 30 words\",\"evidence\":[\"K1\"]}]}. Return every candidate exactly once.\n"
+      },
+      {
+        "role": "user",
+        "content": "{\"scope\": \"Java CWE-22 source selection; candidates already reach a path sink in a static run\", \"project_label\": \"subject\", \"candidates\": [{\"id\": \"C01\", \"signature\": \"<net.lingala.zip4j.crypto.PBKDF2.PBKDF2Parameters: java.lang.String getHashAlgorithm()>\", \"declared_in_project\": true, \"call_sites\": [{\"id\": \"K1\", \"caller\": \"<net.lingala.zip4j.crypto.PBKDF2.PBKDF2Engine: void assertPRF(byte[])>\", \"line\": 103, \"code\": \"98: \\n99:     protected void assertPRF(byte[] P)\\n100:     {\\n101:         if (prf == null)\\n102:         {\\n103:             prf = new MacBasedPRF(parameters.getHashAlgorithm());\\n104:         }\\n105:         prf.init(P);\\n106:     }\\n107: \\n108:     public PRF getPseudoRandomFunction()\"}]}, {\"id\": \"C02\", \"signature\": \"<net.lingala.zip4j.model.FileHeader: java.lang.String getFileName()>\", \"declared_in_project\": true, \"call_sites\": [{\"id\": \"K2\", \"caller\": \"<net.lingala.zip4j.core.HeaderReader: net.lingala.zip4j.model.LocalFileHeader readLocalFileHeader(net.lingala.zip4j.model.FileHeader)>\", \"line\": 858, \"code\": \"853: \\t\\t\\t\\n854: \\t\\t\\t//signature\\n855: \\t\\t\\treadIntoBuff(zip4jRaf, intBuff);\\n856: \\t\\t\\tint sig = Raw.readIntLittleEndian(intBuff, 0);\\n857: \\t\\t\\tif (sig != InternalZipConstants.LOCSIG) {\\n858: \\t\\t\\t\\tthrow new ZipException(\\\"invalid local header signature for file: \\\" + fileHeader.getFileName());\\n859: \\t\\t\\t}\\n860: \\t\\t\\tlocalFileHeader.setSignature(sig);\\n861: \\t\\t\\tlength += 4;\\n862: \\t\\t\\t\\n863: \\t\\t\\t//version needed to extract\"}, {\"id\": \"K3\", \"caller\": \"<net.lingala.zip4j.unzip.Unzip: void checkOutputDirectoryStructure(net.lingala.zip4j.model.FileHeader,java.lang.String,java.lang.String)>\", \"line\": 185, \"code\": \"180: \\tprivate void checkOutputDirectoryStructure(FileHeader fileHeader, String outPath, String newFileName) throws ZipException {\\n181: \\t\\tif (fileHeader == null || !Zip4jUtil.isStringNotNullAndNotEmpty(outPath)) {\\n182: \\t\\t\\tthrow new ZipException(\\\"Cannot check output directory structure...one of the parameters was null\\\");\\n183: \\t\\t}\\n184: \\t\\t\\n185: \\t\\tString fileName = fileHeader.getFileName();\\n186: \\t\\t\\n187: \\t\\tif (Zip4jUtil.isStringNotNullAndNotEmpty(newFileName)) {\\n188: \\t\\t\\tfileName = newFileName;\\n189: \\t\\t}\\n190: \\t\\t\"}, {\"id\": \"K4\", \"caller\": \"<net.lingala.zip4j.unzip.Unzip: void initExtractFile(net.lingala.zip4j.model.FileHeader,java.lang.String,net.lingala.zip4j.model.UnzipParameters,java.lang.String,net.lingala.zip4j.progress.ProgressMonitor)>\", \"line\": 131, \"code\": \"126: \\t\\tif (fileHeader == null) {\\n127: \\t\\t\\tthrow new ZipException(\\\"fileHeader is null\\\");\\n128: \\t\\t}\\n129: \\t\\t\\n130: \\t\\ttry {\\n131: \\t\\t\\tprogressMonitor.setFileName(fileHeader.getFileName());\\n132: \\t\\t\\t\\n133: \\t\\t\\tif (!outPath.endsWith(InternalZipConstants.FILE_SEPARATOR)) {\\n134: \\t\\t\\t\\toutPath += InternalZipConstants.FILE_SEPARATOR;\\n135: \\t\\t\\t}\\n136: \\t\\t\\t\"}]}, {\"id\": \"C03\", \"signature\": \"<net.lingala.zip4j.model.LocalFileHeader: java.lang.String getFileName()>\", \"declared_in_project\": true, \"call_sites\": [{\"id\": \"K5\", \"caller\": \"<net.lingala.zip4j.crypto.AESDecrypter: void init(byte[],byte[])>\", \"line\": 95, \"code\": \"90: \\t\\t\\tKEY_LENGTH = 32;\\n91: \\t\\t\\tMAC_LENGTH = 32;\\n92: \\t\\t\\tSALT_LENGTH = 16;\\n93: \\t\\t\\tbreak;\\n94: \\t\\tdefault:\\n95: \\t\\t\\tthrow new ZipException(\\\"invalid aes key strength for file: \\\" + localFileHeader.getFileName());\\n96: \\t\\t}\\n97: \\t\\t\\n98: \\t\\tif (localFileHeader.getPassword() == null || localFileHeader.getPassword().length <= 0) {\\n99: \\t\\t\\tthrow new ZipException(\\\"empty or null password provided for AES Decryptor\\\");\\n100: \\t\\t}\"}, {\"id\": \"K6\", \"caller\": \"<net.lingala.zip4j.crypto.AESDecrypter: void init(byte[],byte[])>\", \"line\": 121, \"code\": \"116: \\t\\tif (derivedPasswordVerifier == null) {\\n117: \\t\\t\\tthrow new ZipException(\\\"invalid derived password verifier for AES\\\");\\n118: \\t\\t}\\n119: \\t\\t\\n120: \\t\\tif (!Arrays.equals(passwordVerifier, derivedPasswordVerifier)) {\\n121: \\t\\t\\tthrow new ZipException(\\\"Wrong Password for file: \\\" + localFileHeader.getFileName(), ZipExceptionConstants.WRONG_PASSWORD);\\n122: \\t\\t}\\n123: \\t\\t\\n124: \\t\\taesEngine = new AESEngine(aesKey);\\n125: \\t\\tmac = new MacBasedPRF(\\\"HmacSHA1\\\");\\n126: \\t\\tmac.init(macKey);\"}]}, {\"id\": \"C04\", \"signature\": \"<net.lingala.zip4j.model.ZipModel: java.lang.String getFileNameCharset()>\", \"declared_in_project\": true, \"call_sites\": [{\"id\": \"K7\", \"caller\": \"<net.lingala.zip4j.core.HeaderReader: net.lingala.zip4j.model.CentralDirectory readCentralDirectory()>\", \"line\": 316, \"code\": \"311: \\t\\t\\t\\t\\t// Modified as per http://www.lingala.net/zip4j/forum/index.php?topic=41.0\\n312: //\\t\\t\\t\\t\\tString fileName = Zip4jUtil.getCp850EncodedString(fileNameBuf);\\n313: \\t\\t\\t\\t\\t\\n314: \\t\\t\\t\\t\\tString fileName = null;\\n315: \\t\\t\\t\\t\\t\\n316: \\t\\t\\t\\t\\tif (Zip4jUtil.isStringNotNullAndNotEmpty(zipModel.getFileNameCharset())) {\\n317: \\t\\t\\t\\t\\t\\tfileName = new String(fileNameBuf, zipModel.getFileNameCharset());\\n318: \\t\\t\\t\\t\\t} else {\\n319: \\t\\t\\t\\t\\t\\tfileName = Zip4jUtil.decodeFileName(fileNameBuf, fileHeader.isFileNameUTF8Encoded());\\n320: \\t\\t\\t\\t\\t}\\n321: \\t\\t\\t\\t\\t\"}, {\"id\": \"K8\", \"caller\": \"<net.lingala.zip4j.core.HeaderReader: net.lingala.zip4j.model.CentralDirectory readCentralDirectory()>\", \"line\": 317, \"code\": \"312: //\\t\\t\\t\\t\\tString fileName = Zip4jUtil.getCp850EncodedString(fileNameBuf);\\n313: \\t\\t\\t\\t\\t\\n314: \\t\\t\\t\\t\\tString fileName = null;\\n315: \\t\\t\\t\\t\\t\\n316: \\t\\t\\t\\t\\tif (Zip4jUtil.isStringNotNullAndNotEmpty(zipModel.getFileNameCharset())) {\\n317: \\t\\t\\t\\t\\t\\tfileName = new String(fileNameBuf, zipModel.getFileNameCharset());\\n318: \\t\\t\\t\\t\\t} else {\\n319: \\t\\t\\t\\t\\t\\tfileName = Zip4jUtil.decodeFileName(fileNameBuf, fileHeader.isFileNameUTF8Encoded());\\n320: \\t\\t\\t\\t\\t}\\n321: \\t\\t\\t\\t\\t\\n322: \\t\\t\\t\\t\\tif (fileName == null) {\"}]}, {\"id\": \"C05\", \"signature\": \"<net.lingala.zip4j.model.ZipModel: java.lang.String getZipFile()>\", \"declared_in_project\": true, \"call_sites\": [{\"id\": \"K9\", \"caller\": \"<net.lingala.zip4j.unzip.UnzipEngine: boolean checkLocalHeader()>\", \"line\": 329, \"code\": \"324: \\t\\tRandomAccessFile rafForLH = null;\\n325: \\t\\ttry {\\n326: \\t\\t\\trafForLH = checkSplitFile();\\n327: \\t\\t\\t\\n328: \\t\\t\\tif (rafForLH == null) {\\n329: \\t\\t\\t\\trafForLH = new RandomAccessFile(new File(this.zipModel.getZipFile()), InternalZipConstants.READ_MODE);\\n330: \\t\\t\\t}\\n331: \\t\\t\\t\\n332: \\t\\t\\tHeaderReader headerReader = new HeaderReader(rafForLH);\\n333: \\t\\t\\tthis.localFileHeader = headerReader.readLocalFileHeader(fileHeader);\\n334: \\t\\t\\t\"}, {\"id\": \"K10\", \"caller\": \"<net.lingala.zip4j.unzip.UnzipEngine: java.io.RandomAccessFile checkSplitFile()>\", \"line\": 364, \"code\": \"359: \\t\\n360: \\tprivate RandomAccessFile checkSplitFile() throws ZipException {\\n361: \\t\\tif (zipModel.isSplitArchive()) {\\n362: \\t\\t\\tint diskNumberStartOfFile = fileHeader.getDiskNumberStart();\\n363: \\t\\t\\tcurrSplitFileCounter = diskNumberStartOfFile + 1;\\n364: \\t\\t\\tString curZipFile = zipModel.getZipFile();\\n365: \\t\\t\\tString partFile = null;\\n366: \\t\\t\\tif (diskNumberStartOfFile == zipModel.getEndCentralDirRecord().getNoOfThisDisk()) {\\n367: \\t\\t\\t\\tpartFile = zipModel.getZipFile();\\n368: \\t\\t\\t} else {\\n369: \\t\\t\\t\\tif (diskNumberStartOfFile >= 9) {\"}, {\"id\": \"K11\", \"caller\": \"<net.lingala.zip4j.unzip.UnzipEngine: java.io.RandomAccessFile checkSplitFile()>\", \"line\": 367, \"code\": \"362: \\t\\t\\tint diskNumberStartOfFile = fileHeader.getDiskNumberStart();\\n363: \\t\\t\\tcurrSplitFileCounter = diskNumberStartOfFile + 1;\\n364: \\t\\t\\tString curZipFile = zipModel.getZipFile();\\n365: \\t\\t\\tString partFile = null;\\n366: \\t\\t\\tif (diskNumberStartOfFile == zipModel.getEndCentralDirRecord().getNoOfThisDisk()) {\\n367: \\t\\t\\t\\tpartFile = zipModel.getZipFile();\\n368: \\t\\t\\t} else {\\n369: \\t\\t\\t\\tif (diskNumberStartOfFile >= 9) {\\n370: \\t\\t\\t\\t\\tpartFile = curZipFile.substring(0, curZipFile.lastIndexOf(\\\".\\\")) + \\\".z\\\" + (diskNumberStartOfFile+ 1);\\n371: \\t\\t\\t\\t} else{\\n372: \\t\\t\\t\\t\\tpartFile = curZipFile.substring(0, curZipFile.lastIndexOf(\\\".\\\")) + \\\".z0\\\" + (diskNumberStartOfFile+ 1);\"}]}]}"
+      }
+    ]
+  },
+  "response": {
+    "id": "gen-1792477808-jmhyulCR5D4pAkxEeTbs",
+    "object": "chat.completion",
+    "created": 1792477808,
+    "model": "qwen/qwen3-coder-30b-a3b-instruct",
+    "provider": "SiliconFlow",
+    "system_fingerprint": null,
+    "service_tier": null,
+    "choices": [
+      {
+        "index": 0,
+        "logprobs": null,
+        "finish_reason": "stop",
+        "native_finish_reason": "stop",
+        "message": {
+          "role": "assistant",
+          "content": "{\n  \"sources\": [\n    {\n      \"id\": \"C01\",\n      \"decision\": \"not_source\",\n      \"reason\": \"The hash algorithm name is typically a fixed constant, not controlled by external input.\",\n      \"evidence\": [\"K1\"]\n    },\n    {\n      \"id\": \"C02\",\n      \"decision\": \"source\",\n      \"reason\": \"File names from archive headers can be controlled by attackers during zip file creation.\",\n      \"evidence\": [\"K2\", \"K3\", \"K4\"]\n    },\n    {\n      \"id\": \"C03\",\n      \"decision\": \"source\",\n      \"reason\": \"Local file names are extracted from zip archives and can be attacker-controlled.\",\n      \"evidence\": [\"K5\", \"K6\"]\n    },\n    {\n      \"id\": \"C04\",\n      \"decision\": \"not_source\",\n      \"reason\": \"Character encoding name is usually a fixed value, not derived from external input.\",\n      \"evidence\": [\"K7\", \"K8\"]\n    },\n    {\n      \"id\": \"C05\",\n      \"decision\": \"source\",\n      \"reason\": \"Zip file path can be controlled by an attacker if it's derived from user input.\",\n      \"evidence\": [\"K9\", \"K10\", \"K11\"]\n    }\n  ]\n}",
+          "refusal": null,
+          "reasoning": null
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 3128,
+      "completion_tokens": 284,
+      "total_tokens": 3412,
+      "cost": 0.00029848,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 256,
+        "cache_write_tokens": 0,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 0.00029848,
+        "upstream_inference_prompt_cost": 0.00021896,
+        "upstream_inference_completions_cost": 7.952e-05
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 0,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    }
+  },
+  "attempts": 1,
+  "seconds": 13.36
+}

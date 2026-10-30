@@ -1,0 +1,68 @@
+{
+  "request": {
+    "model": "qwen/qwen3-coder-30b-a3b-instruct",
+    "temperature": 0,
+    "max_tokens": 8000,
+    "reasoning": {
+      "effort": "low"
+    },
+    "messages": [
+      {
+        "role": "system",
+        "content": "Classify candidate taint SOURCES for a Java CWE-22 (path traversal) static analysis.\nA source is a method call whose RETURNED value can carry data that an external\nattacker controls and that may be used to name a file or resource path, such as\nnames read from an archive or upload, request parameters, environment or\ncommand-line input. Values the program computes or chooses itself, or that a\ntrusted caller supplies, are not sources. For each candidate decide\nsource | not_source | unknown. Cite at least one supplied call-site ID (K...)\nshowing how the value is obtained or used. Do not decide from the method name\nalone; if the supplied code is insufficient, answer unknown. Labels, versions\nand fix locations are unavailable.\nReturn ONLY JSON: {\"sources\":[{\"id\":\"C01\",\"decision\":\"source|not_source|unknown\",\n\"reason\":\"at most 30 words\",\"evidence\":[\"K1\"]}]}. Return every candidate exactly once.\n"
+      },
+      {
+        "role": "user",
+        "content": "{\"scope\": \"Java CWE-22 source selection; candidates already reach a path sink in a static run\", \"project_label\": \"subject\", \"candidates\": [{\"id\": \"C01\", \"signature\": \"<org.apache.commons.compress.archivers.zip.ZipFile: java.lang.String getUnixSymlink(org.apache.commons.compress.archivers.zip.ZipArchiveEntry)>\", \"declared_in_project\": false, \"call_sites\": [{\"id\": \"K1\", \"caller\": \"<org.codehaus.plexus.archiver.zip.AbstractZipUnArchiver: java.lang.String resolveSymlink(org.apache.commons.compress.archivers.zip.ZipFile,org.apache.commons.compress.archivers.zip.ZipArchiveEntry)>\", \"line\": 209, \"code\": \"204:     private String resolveSymlink( ZipFile zf, ZipArchiveEntry ze )\\n205:         throws IOException\\n206:     {\\n207:         if ( ze.isUnixSymlink() )\\n208:         {\\n209:             return zf.getUnixSymlink( ze );\\n210:         }\\n211:         else\\n212:         {\\n213:             return null;\\n214:         }\"}]}, {\"id\": \"C02\", \"signature\": \"<org.codehaus.plexus.archiver.AbstractUnArchiver: java.io.File getDestDirectory()>\", \"declared_in_project\": true, \"call_sites\": [{\"id\": \"K2\", \"caller\": \"<org.codehaus.plexus.archiver.zip.AbstractZipUnArchiver: void execute()>\", \"line\": 163, \"code\": \"158: \\n159:     @Override\\n160:     protected void execute()\\n161:         throws ArchiverException\\n162:     {\\n163:         getLogger().debug( \\\"Expanding: \\\" + getSourceFile() + \\\" into \\\" + getDestDirectory() );\\n164:         org.apache.commons.compress.archivers.zip.ZipFile zf = null;\\n165:         InputStream in = null;\\n166:         try\\n167:         {\\n168:             zf = new org.apache.commons.compress.archivers.zip.ZipFile( getSourceFile(), encoding, true );\"}, {\"id\": \"K3\", \"caller\": \"<org.codehaus.plexus.archiver.zip.AbstractZipUnArchiver: void execute()>\", \"line\": 178, \"code\": \"173:                 final ZipEntryFileInfo fileInfo = new ZipEntryFileInfo( zf, ze );\\n174:                 if ( isSelected( fileInfo.getName(), fileInfo ) )\\n175:                 {\\n176:                     in = zf.getInputStream( ze );\\n177: \\n178:                     extractFileIfIncluded( getSourceFile(), getDestDirectory(), in, fileInfo.getName(),\\n179:                                            new Date( ze.getTime() ), ze.isDirectory(),\\n180:                                            ze.getUnixMode() != 0 ? ze.getUnixMode() : null,\\n181:                                            resolveSymlink( zf, ze ) );\\n182: \\n183:                     in.close();\"}]}, {\"id\": \"C03\", \"signature\": \"<org.codehaus.plexus.archiver.AbstractUnArchiver: java.io.File getSourceFile()>\", \"declared_in_project\": true, \"call_sites\": [{\"id\": \"K4\", \"caller\": \"<org.codehaus.plexus.archiver.zip.AbstractZipUnArchiver: void execute()>\", \"line\": 163, \"code\": \"158: \\n159:     @Override\\n160:     protected void execute()\\n161:         throws ArchiverException\\n162:     {\\n163:         getLogger().debug( \\\"Expanding: \\\" + getSourceFile() + \\\" into \\\" + getDestDirectory() );\\n164:         org.apache.commons.compress.archivers.zip.ZipFile zf = null;\\n165:         InputStream in = null;\\n166:         try\\n167:         {\\n168:             zf = new org.apache.commons.compress.archivers.zip.ZipFile( getSourceFile(), encoding, true );\"}, {\"id\": \"K5\", \"caller\": \"<org.codehaus.plexus.archiver.zip.AbstractZipUnArchiver: void execute()>\", \"line\": 168, \"code\": \"163:         getLogger().debug( \\\"Expanding: \\\" + getSourceFile() + \\\" into \\\" + getDestDirectory() );\\n164:         org.apache.commons.compress.archivers.zip.ZipFile zf = null;\\n165:         InputStream in = null;\\n166:         try\\n167:         {\\n168:             zf = new org.apache.commons.compress.archivers.zip.ZipFile( getSourceFile(), encoding, true );\\n169:             final Enumeration e = zf.getEntriesInPhysicalOrder();\\n170:             while ( e.hasMoreElements() )\\n171:             {\\n172:                 final ZipArchiveEntry ze = (ZipArchiveEntry) e.nextElement();\\n173:                 final ZipEntryFileInfo fileInfo = new ZipEntryFileInfo( zf, ze );\"}, {\"id\": \"K6\", \"caller\": \"<org.codehaus.plexus.archiver.zip.AbstractZipUnArchiver: void execute()>\", \"line\": 178, \"code\": \"173:                 final ZipEntryFileInfo fileInfo = new ZipEntryFileInfo( zf, ze );\\n174:                 if ( isSelected( fileInfo.getName(), fileInfo ) )\\n175:                 {\\n176:                     in = zf.getInputStream( ze );\\n177: \\n178:                     extractFileIfIncluded( getSourceFile(), getDestDirectory(), in, fileInfo.getName(),\\n179:                                            new Date( ze.getTime() ), ze.isDirectory(),\\n180:                                            ze.getUnixMode() != 0 ? ze.getUnixMode() : null,\\n181:                                            resolveSymlink( zf, ze ) );\\n182: \\n183:                     in.close();\"}]}, {\"id\": \"C04\", \"signature\": \"<org.codehaus.plexus.archiver.zip.AbstractZipUnArchiver$ZipEntryFileInfo: java.lang.String getName()>\", \"declared_in_project\": true, \"call_sites\": [{\"id\": \"K7\", \"caller\": \"<org.codehaus.plexus.archiver.AbstractUnArchiver: boolean isSelected(java.lang.String,org.codehaus.plexus.components.io.resources.PlexusIoResource)>\", \"line\": 252, \"code\": \"247:                     }\\n248:                 }\\n249:                 catch ( final IOException e )\\n250:                 {\\n251:                     throw new ArchiverException(\\n252:                         \\\"Failed to check, whether \\\" + fileInfo.getName() + \\\" is selected: \\\" + e.getMessage(), e );\\n253:                 }\\n254:             }\\n255:         }\\n256:         return true;\\n257:     }\"}, {\"id\": \"K8\", \"caller\": \"<org.codehaus.plexus.archiver.zip.AbstractZipUnArchiver: void execute()>\", \"line\": 174, \"code\": \"169:             final Enumeration e = zf.getEntriesInPhysicalOrder();\\n170:             while ( e.hasMoreElements() )\\n171:             {\\n172:                 final ZipArchiveEntry ze = (ZipArchiveEntry) e.nextElement();\\n173:                 final ZipEntryFileInfo fileInfo = new ZipEntryFileInfo( zf, ze );\\n174:                 if ( isSelected( fileInfo.getName(), fileInfo ) )\\n175:                 {\\n176:                     in = zf.getInputStream( ze );\\n177: \\n178:                     extractFileIfIncluded( getSourceFile(), getDestDirectory(), in, fileInfo.getName(),\\n179:                                            new Date( ze.getTime() ), ze.isDirectory(),\"}, {\"id\": \"K9\", \"caller\": \"<org.codehaus.plexus.archiver.zip.AbstractZipUnArchiver: void execute()>\", \"line\": 178, \"code\": \"173:                 final ZipEntryFileInfo fileInfo = new ZipEntryFileInfo( zf, ze );\\n174:                 if ( isSelected( fileInfo.getName(), fileInfo ) )\\n175:                 {\\n176:                     in = zf.getInputStream( ze );\\n177: \\n178:                     extractFileIfIncluded( getSourceFile(), getDestDirectory(), in, fileInfo.getName(),\\n179:                                            new Date( ze.getTime() ), ze.isDirectory(),\\n180:                                            ze.getUnixMode() != 0 ? ze.getUnixMode() : null,\\n181:                                            resolveSymlink( zf, ze ) );\\n182: \\n183:                     in.close();\"}]}, {\"id\": \"C05\", \"signature\": \"<org.codehaus.plexus.archiver.zip.AbstractZipUnArchiver: java.lang.String resolveSymlink(org.apache.commons.compress.archivers.zip.ZipFile,org.apache.commons.compress.archivers.zip.ZipArchiveEntry)>\", \"declared_in_project\": true, \"call_sites\": [{\"id\": \"K10\", \"caller\": \"<org.codehaus.plexus.archiver.zip.AbstractZipUnArchiver: void execute()>\", \"line\": 178, \"code\": \"173:                 final ZipEntryFileInfo fileInfo = new ZipEntryFileInfo( zf, ze );\\n174:                 if ( isSelected( fileInfo.getName(), fileInfo ) )\\n175:                 {\\n176:                     in = zf.getInputStream( ze );\\n177: \\n178:                     extractFileIfIncluded( getSourceFile(), getDestDirectory(), in, fileInfo.getName(),\\n179:                                            new Date( ze.getTime() ), ze.isDirectory(),\\n180:                                            ze.getUnixMode() != 0 ? ze.getUnixMode() : null,\\n181:                                            resolveSymlink( zf, ze ) );\\n182: \\n183:                     in.close();\"}]}, {\"id\": \"C06\", \"signature\": \"<org.codehaus.plexus.components.io.fileselectors.FileInfo: java.lang.String getName()>\", \"declared_in_project\": false, \"call_sites\": [{\"id\": \"K11\", \"caller\": \"<org.codehaus.plexus.archiver.AbstractUnArchiver: boolean isSelected(java.lang.String,org.codehaus.plexus.components.io.resources.PlexusIoResource)>\", \"line\": 252, \"code\": \"247:                     }\\n248:                 }\\n249:                 catch ( final IOException e )\\n250:                 {\\n251:                     throw new ArchiverException(\\n252:                         \\\"Failed to check, whether \\\" + fileInfo.getName() + \\\" is selected: \\\" + e.getMessage(), e );\\n253:                 }\\n254:             }\\n255:         }\\n256:         return true;\\n257:     }\"}]}]}"
+      }
+    ]
+  },
+  "response": {
+    "id": "gen-1792477808-HNLFt8cMSEjqV3G0dcPd",
+    "object": "chat.completion",
+    "created": 1792477808,
+    "model": "qwen/qwen3-coder-30b-a3b-instruct",
+    "provider": "Amazon Bedrock",
+    "system_fingerprint": null,
+    "service_tier": null,
+    "choices": [
+      {
+        "index": 0,
+        "logprobs": null,
+        "finish_reason": "stop",
+        "native_finish_reason": "end_turn",
+        "message": {
+          "role": "assistant",
+          "content": "{\n  \"sources\": [\n    {\n      \"id\": \"C01\",\n      \"decision\": \"source\",\n      \"reason\": \"Returns symlink target from zip entry, potentially controlled by attacker.\",\n      \"evidence\": [\"K1\"]\n    },\n    {\n      \"id\": \"C02\",\n      \"decision\": \"not_source\",\n      \"reason\": \"Returns destination directory, configured by user, not directly from untrusted input.\",\n      \"evidence\": [\"K2\"]\n    },\n    {\n      \"id\": \"C03\",\n      \"decision\": \"source\",\n      \"reason\": \"Returns source file path, likely from untrusted input like request parameter.\",\n      \"evidence\": [\"K4\"]\n    },\n    {\n      \"id\": \"C04\",\n      \"decision\": \"source\",\n      \"reason\": \"Returns file name from zip entry, which can be attacker-controlled.\",\n      \"evidence\": [\"K8\"]\n    },\n    {\n      \"id\": \"C05\",\n      \"decision\": \"unknown\",\n      \"reason\": \"Method calls C01, but its behavior depends on C01's return value.\",\n      \"evidence\": [\"K10\"]\n    },\n    {\n      \"id\": \"C06\",\n      \"decision\": \"source\",\n      \"reason\": \"Returns file name from FileInfo, potentially from untrusted archive entry.\",\n      \"evidence\": [\"K11\"]\n    }\n  ]\n}",
+          "refusal": null,
+          "reasoning": null
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 2674,
+      "completion_tokens": 302,
+      "total_tokens": 2976,
+      "cost": 0.0005823,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 0,
+        "cache_write_tokens": 0,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 0.0005823,
+        "upstream_inference_prompt_cost": 0.0004011,
+        "upstream_inference_completions_cost": 0.0001812
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 0,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    }
+  },
+  "attempts": 1,
+  "seconds": 2.12
+}

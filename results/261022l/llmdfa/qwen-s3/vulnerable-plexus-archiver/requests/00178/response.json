@@ -1,0 +1,46 @@
+{
+  "id": "gen-1792658973-C7oMVxdizA0TiSvUNmWS",
+  "object": "chat.completion",
+  "created": 1792658973,
+  "model": "qwen/qwen3-coder-30b-a3b-instruct",
+  "provider": "Amazon Bedrock",
+  "system_fingerprint": null,
+  "service_tier": null,
+  "choices": [
+    {
+      "index": 0,
+      "logprobs": null,
+      "finish_reason": "stop",
+      "native_finish_reason": "end_turn",
+      "message": {
+        "role": "assistant",
+        "content": "Looking at the code, I need to trace the flow from line 31 to line 28 to see if the value of `in` at line 28 depends on the value of `tmp11` at line 31.\n\nLet me trace through the execution:\n\n1. Line 25: `in = zipFile.getInputStream( ze );` - This assigns the input stream to `in`\n2. Line 27: `final tmp10 = getSourceFile();` - This creates tmp10 but doesn't use it directly in the function call\n3. Line 28: `extractFileIfIncluded( tmp10, outputDirectory, in, ...)` - Here `in` is passed as an argument\n4. Lines 29-37: Various tmp variables are created including `tmp11 = ze.getName()` at line 29\n5. Line 31: `final tmp12 = ze.getTime();` - This creates tmp12\n6. Line 32: `tmp11, new Date( tmp12 ), tmp13, ...` - Here `tmp11` is used as an argument\n7. Line 33: `final tmp14 = ze.getUnixMode();` - Creates tmp14\n8. Line 34: `final tmp15 = ze.getUnixMode();` - Creates tmp15\n9. Line 35: `tmp14 != 0 ? tmp14 : null,` - Uses tmp14\n10. Line 36: `final tmp16 = resolveSymlink( zipFile, ze );` - Creates tmp16\n11. Line 37: `tmp16 );` - Uses tmp16\n\nThe key point is that `in` is assigned at line 25 and then passed as an argument to `extractFileIfIncluded` at line 28. The value of `tmp11` (which comes from `ze.getName()`) is used at line 32 within the same function call, but this doesn't affect the value of `in` that was already assigned at line 25.\n\nThe variable `in` gets its value from `zipFile.getInputStream( ze )` at line 25, and this assignment happens before line 28 where `in` is used. The value of `tmp11` at line 31 is completely independent of the value of `in` at line 28.\n\nAnswer: No",
+        "refusal": null,
+        "reasoning": null
+      }
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 1472,
+    "completion_tokens": 531,
+    "total_tokens": 2003,
+    "cost": 0.0005394,
+    "is_byok": false,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0,
+      "video_tokens": 0
+    },
+    "cost_details": {
+      "upstream_inference_cost": 0.0005394,
+      "upstream_inference_prompt_cost": 0.0002208,
+      "upstream_inference_completions_cost": 0.0003186
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "image_tokens": 0,
+      "audio_tokens": 0
+    }
+  }
+}

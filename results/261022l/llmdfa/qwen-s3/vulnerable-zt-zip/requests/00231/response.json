@@ -1,0 +1,46 @@
+{
+  "id": "gen-1792658744-gMCjmbumPyjA4gVdyLBO",
+  "object": "chat.completion",
+  "created": 1792658744,
+  "model": "qwen/qwen3-coder-30b-a3b-instruct",
+  "provider": "Amazon Bedrock",
+  "system_fingerprint": null,
+  "service_tier": null,
+  "choices": [
+    {
+      "index": 0,
+      "logprobs": null,
+      "finish_reason": "stop",
+      "native_finish_reason": "end_turn",
+      "message": {
+        "role": "assistant",
+        "content": "Looking at this path analysis, I need to trace through each step and determine if the path is reachable.\n\nLet me analyze each transition in the path:\n\n1. **Line 12 in iterate → Line 17 in iterate**: \n   - Line 12: `if (!namesSet.contains(entry.getName()))` \n   - Line 17: `action.process(in, entry)`\n   - For this path to be taken, the condition at line 12 must be FALSE (so that we don't continue and reach line 17)\n   - This means `namesSet.contains(entry.getName())` must be TRUE\n   - This is possible and reachable\n\n2. **Line 17 in iterate → Line 1 in process**:\n   - Line 17: `action.process(in, entry)` calls the process method\n   - This is a direct method call, so it's reachable\n\n3. **Line 1 in process → Line 27 in process**:\n   - Line 1: `String name = mapper.map(zipEntry.getName());`\n   - Line 27: `FileUtils.copy(in, destFile);`\n   - For this path to be taken, we need to reach line 27\n   - Line 27 is in the true branch of the if-statement at line 14: `if (name.indexOf('\\\\') != -1)`\n   - For line 27 to execute, `name.indexOf('\\\\') != -1` must be TRUE\n   - This means `name` contains a backslash character\n   - Since `name` comes from `mapper.map(zipEntry.getName())`, this is possible\n\n4. **Line 27 in process → Line 1 in copy**:\n   - Line 27: `FileUtils.copy(in, destFile);`\n   - This calls the copy method, which is reachable\n\n5. **Line 1 in copy → Line 2 in copy**:\n   - Line 1: `OutputStream out = new BufferedOutputStream(new FileOutputStream(file));`\n   - Line 2: This is the beginning of the copy method where the OutputStream is created\n   - This is a normal execution path\n\nThe key question is whether all these conditions can be satisfied simultaneously:\n- The entry name must be in namesSet (so we don't continue)\n- The mapper must return a non-null name\n- The name must contain a backslash character\n- All the file operations must succeed\n\nSince all these conditions can be met in a valid program execution, this path is reachable.\n\nAnswer: Yes",
+        "refusal": null,
+        "reasoning": null
+      }
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 2763,
+    "completion_tokens": 533,
+    "total_tokens": 3296,
+    "cost": 0.00073425,
+    "is_byok": false,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0,
+      "video_tokens": 0
+    },
+    "cost_details": {
+      "upstream_inference_cost": 0.00073425,
+      "upstream_inference_prompt_cost": 0.00041445,
+      "upstream_inference_completions_cost": 0.0003198
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "image_tokens": 0,
+      "audio_tokens": 0
+    }
+  }
+}

@@ -1,0 +1,54 @@
+{
+  "id": "gen-1792661363-9otlX6yCehVmqYliBct1",
+  "object": "chat.completion",
+  "created": 1792661363,
+  "model": "deepseek/deepseek-v4-pro",
+  "provider": "Alibaba",
+  "system_fingerprint": null,
+  "service_tier": null,
+  "choices": [
+    {
+      "index": 0,
+      "logprobs": null,
+      "finish_reason": "stop",
+      "native_finish_reason": "stop",
+      "message": {
+        "role": "assistant",
+        "content": "",
+        "refusal": null,
+        "reasoning": "We need to identify source values for path traversal (CWE-22) based on the instructions. The instructions say: \"If a variable is assigned the return value of a method named `getFileName` (called on a `FileHeader`, yielding an archive entry's filename), it is a source value.\" The example: `String entryName = entry.getFileName();` is a source. We must list all pairs of variable name and line number where the variable has an attacker-controlled value from such a method call. The program provided does not contain any call to `getFileName` on a `FileHeader`. The only method that might be relevant is `headerReader.readLocalFileHeader(fileHeader)`, but that returns a LocalFileHeader, not a filename. `fileHeader` is used but not defined; it's probably a field. No explicit `getFileName` call. So there are no sources. The answer should be an empty string.\n\nBut we need to check carefully: The program shows a method `checkLocalHeader()`, using `fileHeader` which is likely a `FileHeader` instance. There's no assignment from `getFileName` anywhere. So no sources. The answer will be empty.",
+        "reasoning_details": [
+          {
+            "type": "reasoning.text",
+            "text": "We need to identify source values for path traversal (CWE-22) based on the instructions. The instructions say: \"If a variable is assigned the return value of a method named `getFileName` (called on a `FileHeader`, yielding an archive entry's filename), it is a source value.\" The example: `String entryName = entry.getFileName();` is a source. We must list all pairs of variable name and line number where the variable has an attacker-controlled value from such a method call. The program provided does not contain any call to `getFileName` on a `FileHeader`. The only method that might be relevant is `headerReader.readLocalFileHeader(fileHeader)`, but that returns a LocalFileHeader, not a filename. `fileHeader` is used but not defined; it's probably a field. No explicit `getFileName` call. So there are no sources. The answer should be an empty string.\n\nBut we need to check carefully: The program shows a method `checkLocalHeader()`, using `fileHeader` which is likely a `FileHeader` instance. There's no assignment from `getFileName` anywhere. So no sources. The answer will be empty.",
+            "format": "unknown",
+            "index": 0
+          }
+        ]
+      }
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 637,
+    "completion_tokens": 247,
+    "total_tokens": 884,
+    "cost": 0.00176436,
+    "is_byok": false,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0,
+      "video_tokens": 0
+    },
+    "cost_details": {
+      "upstream_inference_cost": 0.00176436,
+      "upstream_inference_prompt_cost": 0.00099372,
+      "upstream_inference_completions_cost": 0.00077064
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 246,
+      "image_tokens": 0,
+      "audio_tokens": 0
+    }
+  }
+}

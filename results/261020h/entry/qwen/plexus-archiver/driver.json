@@ -1,0 +1,68 @@
+{
+  "request": {
+    "model": "qwen/qwen3-coder-30b-a3b-instruct",
+    "temperature": 0,
+    "max_tokens": 8000,
+    "reasoning": {
+      "effort": "low"
+    },
+    "messages": [
+      {
+        "role": "system",
+        "content": "Write a minimal Java entry program for whole-program static analysis; it is\nnever executed. Requirements:\n- One public class AutoEntry in the default package with\n  public static void main(String[] args) throws Exception.\n- Call the public operations of the supplied classes that process externally\n  supplied files, directories, archives, streams or resource names, in a\n  realistic order (construct, configure, then run the operation).\n- Use literal placeholder paths such as \"analysis-input\" and \"analysis-output\"\n  for files and directories that the calling application chooses itself.\n- For any String that an untrusted party would supply directly (for example a\n  requested resource name), use System.getenv(\"UNTRUSTED_INPUT\").\n- Use only the constructors and methods in the supplied signatures, with fully\n  qualified names or imports. Do not use reflection.\nReturn ONLY the Java source in one ```java code block."
+      },
+      {
+        "role": "user",
+        "content": "Classes and public signatures:\nCompiled from \"ArchiverManager.java\"\npublic interface org.codehaus.plexus.archiver.manager.ArchiverManager {\n  public static final java.lang.String ROLE;\n  public abstract org.codehaus.plexus.archiver.Archiver getArchiver(java.lang.String) throws org.codehaus.plexus.archiver.manager.NoSuchArchiverException;\n  public abstract org.codehaus.plexus.archiver.Archiver getArchiver(java.io.File) throws org.codehaus.plexus.archiver.manager.NoSuchArchiverException;\n  public abstract org.codehaus.plexus.archiver.UnArchiver getUnArchiver(java.lang.String) throws org.codehaus.plexus.archiver.manager.NoSuchArchiverException;\n  public abstract org.codehaus.plexus.archiver.UnArchiver getUnArchiver(java.io.File) throws org.codehaus.plexus.archiver.manager.NoSuchArchiverException;\n  public abstract org.codehaus.plexus.components.io.resources.PlexusIoResourceCollection getResourceCollection(java.io.File) throws org.codehaus.plexus.archiver.manager.NoSuchArchiverException;\n  public abstract org.codehaus.plexus.components.io.resources.PlexusIoResourceCollection getResourceCollection(java.lang.String) throws org.codehaus.plexus.archiver.manager.NoSuchArchiverException;\n}\nCompiled from \"Archiver.java\"\npublic interface org.codehaus.plexus.archiver.Archiver {\n  public static final int DEFAULT_DIR_MODE;\n  public static final int DEFAULT_FILE_MODE;\n  public static final int DEFAULT_SYMLILNK_MODE;\n  public static final java.lang.String ROLE;\n  public static final java.lang.String DUPLICATES_ADD;\n  public static final java.lang.String DUPLICATES_PRESERVE;\n  public static final java.lang.String DUPLICATES_SKIP;\n  public static final java.lang.String DUPLICATES_FAIL;\n  public static final java.util.Set<java.lang.String> DUPLICATES_VALID_BEHAVIORS;\n  public abstract void createArchive() throws org.codehaus.plexus.archiver.ArchiverException, java.io.IOException;\n  public abstract void addDirectory(java.io.File) throws org.codehaus.plexus.archiver.ArchiverException;\n  public abstract void addDirectory(java.io.File, java.lang.String) throws org.codehaus.plexus.archiver.ArchiverException;\n  public abstract void addDirectory(java.io.File, java.lang.String[], java.lang.String[]) throws org.codehaus.plexus.archiver.ArchiverException;\n  public abstract void addDirectory(java.io.File, java.lang.String, java.lang.String[], java.lang.String[]) throws org.codehaus.plexus.archiver.ArchiverException;\n  public abstract void addFileSet(org.codehaus.plexus.archiver.FileSet) throws org.codehaus.plexus.archiver.ArchiverException;\n  public abstract void addSymlink(java.lang.String, java.lang.String) throws org.codehaus.plexus.archiver.ArchiverException;\n  public abstract void addSymlink(java.lang.String, int, java.lang.String) throws org.codehaus.plexus.archiver.ArchiverException;\n  public abstract void addFile(java.io.File, java.lang.String) throws org.codehaus.plexus.archiver.ArchiverException;\n  public abstract void addFile(java.io.File, java.lang.String, int) throws org.codehaus.plexus.archiver.ArchiverException;\n  public abstract void addArchivedFileSet(java.io.File) throws org.codehaus.plexus.archiver.ArchiverException;\n  public abstract void addArchivedFileSet(java.io.File, java.lang.String) throws org.codehaus.plexus.archiver.ArchiverException;\n  public abstract void addArchivedFileSet(java.io.File, java.lang.String[], java.lang.String[]) throws org.codehaus.plexus.archiver.ArchiverException;\n  public abstract void addArchivedFileSet(java.io.File, java.lang.String, java.lang.String[], java.lang.String[]) throws org.codehaus.plexus.archiver.ArchiverException;\n  public abstract void addArchivedFileSet(org.codehaus.plexus.archiver.ArchivedFileSet) throws org.codehaus.plexus.archiver.ArchiverException;\n  public abstract void addArchivedFileSet(org.codehaus.plexus.archiver.ArchivedFileSet, java.nio.charset.Charset) throws org.codehaus.plexus.archiver.ArchiverException;\n  public abstract void addResource(org.codehaus.plexus.components.io.resources.PlexusIoResource, java.lang.String, int) throws org.codehaus.plexus.archiver.ArchiverException;\n  public abstract void addResources(org.codehaus.plexus.components.io.resources.PlexusIoResourceCollection) throws org.codehaus.plexus.archiver.ArchiverException;\n  public abstract java.io.File getDestFile();\n  public abstract void setDestFile(java.io.File);\n  public abstract void setFileMode(int);\n  public abstract int getFileMode();\n  public abstract int getOverrideFileMode();\n  public abstract void setDefaultFileMode(int);\n  public abstract int getDefaultFileMode();\n  public abstract void setDirectoryMode(int);\n  public abstract int getDirectoryMode();\n  public abstract int getOverrideDirectoryMode();\n  public abstract void setDefaultDirectoryMode(int);\n  public abstract int getDefaultDirectoryMode();\n  public abstract boolean getIncludeEmptyDirs();\n  public abstract void setIncludeEmptyDirs(boolean);\n  public abstract void setDotFileDirectory(java.io.File);\n  public abstract org.codehaus.plexus.archiver.ResourceIterator getResources() throws org.codehaus.plexus.archiver.ArchiverException;\n  public abstract java.util.Map<java.lang.String, org.codehaus.plexus.archiver.ArchiveEntry> getFiles();\n  public abstract boolean isForced();\n  public abstract void setForced(boolean);\n  public abstract boolean isSupportingForced();\n  public abstract java.lang.String getDuplicateBehavior();\n  public abstract void setDuplicateBehavior(java.lang.String);\n  public abstract void setUseJvmChmod(boolean);\n  public abstract boolean isUseJvmChmod();\n  public abstract boolean isIgnorePermissions();\n  public abstract void setIgnorePermissions(boolean);\n}\nCompiled from \"UnArchiver.java\"\npublic interface org.codehaus.plexus.archiver.UnArchiver {\n  public static final java.lang.String ROLE;\n  public abstract void extract() throws org.codehaus.plexus.archiver.ArchiverException;\n  public abstract void extract(java.lang.String, java.io.File) throws org.codehaus.plexus.archiver.ArchiverException;\n  public abstract java.io.File getDestDirectory();\n  public abstract void setDestDirectory(java.io.File);\n  public abstract java.io.File getDestFile();\n  public abstract void setDestFile(java.io.File);\n  public abstract java.io.File getSourceFile();\n  public abstract void setSourceFile(java.io.File);\n  public abstract boolean isOverwrite();\n  public abstract void setOverwrite(boolean);\n  public abstract void setFileSelectors(org.codehaus.plexus.components.io.fileselectors.FileSelector[]);\n  public abstract org.codehaus.plexus.components.io.fileselectors.FileSelector[] getFileSelectors();\n  public abstract void setUseJvmChmod(boolean);\n  public abstract boolean isUseJvmChmod();\n  public abstract boolean isIgnorePermissions();\n  public abstract void setIgnorePermissions(boolean);\n}\nCompiled from \"ZipUnArchiver.java\"\npublic class org.codehaus.plexus.archiver.zip.ZipUnArchiver extends org.codehaus.plexus.archiver.zip.AbstractZipUnArchiver {\n  public org.codehaus.plexus.archiver.zip.ZipUnArchiver();\n  public org.codehaus.plexus.archiver.zip.ZipUnArchiver(java.io.File);\n}\nCompiled from \"TarUnArchiver.java\"\npublic class org.codehaus.plexus.archiver.tar.TarUnArchiver extends org.codehaus.plexus.archiver.AbstractUnArchiver {\n  public org.codehaus.plexus.archiver.tar.TarUnArchiver();\n  public org.codehaus.plexus.archiver.tar.TarUnArchiver(java.io.File);\n  public void setCompression(org.codehaus.plexus.archiver.tar.TarUnArchiver$UntarCompressionMethod);\n  public void setEncoding(java.lang.String);\n}\n"
+      }
+    ]
+  },
+  "response": {
+    "id": "gen-1792477908-MgypzsuhzjS88g7879q1",
+    "object": "chat.completion",
+    "created": 1792477908,
+    "model": "qwen/qwen3-coder-30b-a3b-instruct",
+    "provider": "SiliconFlow",
+    "system_fingerprint": null,
+    "service_tier": null,
+    "choices": [
+      {
+        "index": 0,
+        "logprobs": null,
+        "finish_reason": "stop",
+        "native_finish_reason": "stop",
+        "message": {
+          "role": "assistant",
+          "content": "```java\npublic class AutoEntry {\n    public static void main(String[] args) throws Exception {\n        // Simulate a realistic workflow for static analysis\n        org.codehaus.plexus.archiver.manager.ArchiverManager archiverManager = \n            new org.codehaus.plexus.archiver.manager.DefaultArchiverManager();\n        \n        // Configure and create an archive\n        org.codehaus.plexus.archiver.Archiver archiver = \n            archiverManager.getArchiver(\"jar\");\n        archiver.setDestFile(new java.io.File(\"analysis-output.jar\"));\n        archiver.addDirectory(new java.io.File(\"analysis-input\"));\n        archiver.createArchive();\n        \n        // Configure and extract an archive\n        org.codehaus.plexus.archiver.UnArchiver unarchiver = \n            archiverManager.getUnArchiver(\"zip\");\n        unarchiver.setSourceFile(new java.io.File(\"analysis-input.zip\"));\n        unarchiver.setDestDirectory(new java.io.File(\"analysis-output\"));\n        unarchiver.extract();\n        \n        // Process resource collections\n        org.codehaus.plexus.components.io.resources.PlexusIoResourceCollection resourceCollection = \n            archiverManager.getResourceCollection(System.getenv(\"UNTRUSTED_INPUT\"));\n        archiver.addResources(resourceCollection);\n        \n        // Use a specific unarchiver with additional configuration\n        org.codehaus.plexus.archiver.zip.ZipUnArchiver zipUnarchiver = \n            new org.codehaus.plexus.archiver.zip.ZipUnArchiver();\n        zipUnarchiver.setSourceFile(new java.io.File(\"analysis-input.zip\"));\n        zipUnarchiver.setDestDirectory(new java.io.File(\"analysis-output\"));\n        zipUnarchiver.extract();\n        \n        // Use tar unarchiver with compression\n        org.codehaus.plexus.archiver.tar.TarUnArchiver tarUnarchiver = \n            new org.codehaus.plexus.archiver.tar.TarUnArchiver();\n        tarUnarchiver.setSourceFile(new java.io.File(\"analysis-input.tar\"));\n        tarUnarchiver.setDestDirectory(new java.io.File(\"analysis-output\"));\n        tarUnarchiver.setCompression(org.codehaus.plexus.archiver.tar.TarUnArchiver.UntarCompressionMethod.GZIP);\n        tarUnarchiver.extract();\n    }\n}\n```",
+          "refusal": null,
+          "reasoning": null
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 1824,
+      "completion_tokens": 460,
+      "total_tokens": 2284,
+      "cost": 0.00025648,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 0,
+        "cache_write_tokens": 0,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 0.00025648,
+        "upstream_inference_prompt_cost": 0.00012768,
+        "upstream_inference_completions_cost": 0.0001288
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 0,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    }
+  },
+  "attempts": 1,
+  "seconds": 16.81
+}

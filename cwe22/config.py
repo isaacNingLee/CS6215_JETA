@@ -43,14 +43,17 @@ MODELS = {
 }
 MODES = ["vanilla", "hinted"]
 SAMPLES = 3  # independent LLM requests per cell
-# Fixed max_tokens per request. Qwen keeps the original CS6215_proj budget; DeepSeek's
-# reasoning tokens count against it, and at 8,000 it often stopped before answering.
-MAX_TOKENS = {"qwen": 8000, "deepseek": 16000}
+# Fixed max_tokens per request, as the saved runs used them. The readers and every hint-relaxation
+# step used 8,000 for both models. The later blind-checklist writer and LLMDFA give DeepSeek 16,000,
+# since its reasoning tokens count against the budget and at 8,000 it often stopped before answering.
+MAX_TOKENS = {"qwen": 8000, "deepseek": 8000}
+LONG_MAX_TOKENS = {"qwen": 8000, "deepseek": 16000}
 
 
-def max_tokens(model):
-    """Budget for an OpenRouter model ID."""
-    return next(MAX_TOKENS[short] for short, name in MODELS.items() if name == model)
+def max_tokens(model, long=False):
+    """Budget for an OpenRouter model ID (``long``: the checklist writer's and LLMDFA's)."""
+    budgets = LONG_MAX_TOKENS if long else MAX_TOKENS
+    return next(budgets[short] for short, name in MODELS.items() if name == model)
 
 
 def require_data():

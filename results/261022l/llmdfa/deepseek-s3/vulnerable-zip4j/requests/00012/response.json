@@ -1,0 +1,54 @@
+{
+  "id": "gen-1792660899-peZSkWM38URh5mObF0to",
+  "object": "chat.completion",
+  "created": 1792660899,
+  "model": "deepseek/deepseek-v4-pro",
+  "provider": "Azure",
+  "system_fingerprint": null,
+  "service_tier": null,
+  "choices": [
+    {
+      "index": 0,
+      "logprobs": null,
+      "finish_reason": "stop",
+      "native_finish_reason": "stop",
+      "message": {
+        "role": "assistant",
+        "content": "",
+        "refusal": null,
+        "reasoning": "We need to analyze the given program and identify sink values for path traversal according to CWE-22. The task is to find calls where a variable/expression is used as argument 0 of a `FileOutputStream` constructor call, i.e., the file being opened for writing, which is a sink for path traversal. We need to output pairs of sink name and line number. If none, output empty string.\n\nLooking at the provided program:\n\n```\n1. private void initExtractAll(ArrayList fileHeaders, UnzipParameters unzipParameters, \n2. \t\t\tProgressMonitor progressMonitor, String outPath) throws ZipException {\n3. \t\t\n4. \t\tfor (int i = 0; i < fileHeaders.size(); i++) {\n5. \t\t\tFileHeader fileHeader = (FileHeader)fileHeaders.get(i);\n6. \t\t\tinitExtractFile(fileHeader, outPath, unzipParameters, null, progressMonitor);\n7. \t\t\tif (progressMonitor.isCancelAllTasks()) {\n8. \t\t\t\tprogressMonitor.setResult(ProgressMonitor.RESULT_CANCELLED);\n9. \t\t\t\tprogressMonitor.setState(ProgressMonitor.STATE_READY);\n10. \t\t\t\treturn;\n11. \t\t\t}\n12. \t\t}\n13. \t}\n```\n\nThere is no explicit `FileOutputStream` constructor call in this code. The only method invocation is `initExtractFile(...)`. That's not a sink for FileOutputStream. So, there are no sink instances in this snippet. The answer should be an empty string.",
+        "reasoning_details": [
+          {
+            "type": "reasoning.text",
+            "text": "We need to analyze the given program and identify sink values for path traversal according to CWE-22. The task is to find calls where a variable/expression is used as argument 0 of a `FileOutputStream` constructor call, i.e., the file being opened for writing, which is a sink for path traversal. We need to output pairs of sink name and line number. If none, output empty string.\n\nLooking at the provided program:\n\n```\n1. private void initExtractAll(ArrayList fileHeaders, UnzipParameters unzipParameters, \n2. \t\t\tProgressMonitor progressMonitor, String outPath) throws ZipException {\n3. \t\t\n4. \t\tfor (int i = 0; i < fileHeaders.size(); i++) {\n5. \t\t\tFileHeader fileHeader = (FileHeader)fileHeaders.get(i);\n6. \t\t\tinitExtractFile(fileHeader, outPath, unzipParameters, null, progressMonitor);\n7. \t\t\tif (progressMonitor.isCancelAllTasks()) {\n8. \t\t\t\tprogressMonitor.setResult(ProgressMonitor.RESULT_CANCELLED);\n9. \t\t\t\tprogressMonitor.setState(ProgressMonitor.STATE_READY);\n10. \t\t\t\treturn;\n11. \t\t\t}\n12. \t\t}\n13. \t}\n```\n\nThere is no explicit `FileOutputStream` constructor call in this code. The only method invocation is `initExtractFile(...)`. That's not a sink for FileOutputStream. So, there are no sink instances in this snippet. The answer should be an empty string.",
+            "format": "unknown",
+            "index": 0
+          }
+        ]
+      }
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 432,
+    "completion_tokens": 324,
+    "total_tokens": 756,
+    "cost": 0.00161804,
+    "is_byok": false,
+    "prompt_tokens_details": {
+      "cached_tokens": 256,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0,
+      "video_tokens": 0
+    },
+    "cost_details": {
+      "upstream_inference_cost": 0.00161804,
+      "upstream_inference_prompt_cost": 0.00037712,
+      "upstream_inference_completions_cost": 0.00124092
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 330,
+      "image_tokens": 0,
+      "audio_tokens": 0
+    }
+  }
+}

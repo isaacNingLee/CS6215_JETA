@@ -1,0 +1,54 @@
+{
+  "id": "gen-1792660440-63tLDp2rtHE5jWDJEYww",
+  "object": "chat.completion",
+  "created": 1792660440,
+  "model": "deepseek/deepseek-v4-pro",
+  "provider": "GMICloud",
+  "system_fingerprint": null,
+  "service_tier": "default",
+  "choices": [
+    {
+      "index": 0,
+      "logprobs": null,
+      "finish_reason": "stop",
+      "native_finish_reason": "stop",
+      "message": {
+        "role": "assistant",
+        "content": "Explanation: The variable `tmp2` is assigned at line 18 from `file.getParentFile()`. The `file` object is created at line 13 using `outputDir` and `name`. The value of `name` is derived from `root` and `zipEntry.getName()`, and `root` is derived from `zipEntry.getName()` as well. None of these values depend on the parameter `in`. The parameter `in` is only used later at line 25 in `FileUtils.copy(in, file)`, which does not affect the value of `tmp2` at line 19. Therefore, the value of `tmp2` before line 19 does not depend on the value of `in` after line 1.\n\nAnswer: No",
+        "refusal": null,
+        "reasoning": "We need answer question: Does value of tmp2 used at line 19 depend on value of in at line 1? Need analyze Java code. We ignore side effects of functions, all functions do not change values of their arguments. Need determine dependency from parameter `in` at line 1 to variable `tmp2` before/at line 19.\n\nWe need simulate dataflow. Code:\n1. public void process(InputStream in, ZipEntry zipEntry) throws IOException {\n2.       final tmp1 = zipEntry.getName();\n3.       String root = getRootName(tmp1);\n4.       if (rootDir == null) {\n5.         rootDir = root;\n6.       }\n7.       else if (!rootDir.equals(root)) {\n8.         throw new ZipException(\"Unwrapping with multiple roots is not supported, roots: \" + rootDir + \", \" + root);\n9.       }\n10.\n11.       String name = mapper.map(getUnrootedName(root, zipEntry.getName()));\n12.       if (name != null) {\n13.         File file = new File(outputDir, name);\n14.         if (zipEntry.isDirectory()) {\n15.           FileUtils.forceMkdir(file);\n16.         }\n17.         else {\n18.           File tmp2 = file.getParentFile();\n19.           FileUtils.forceMkdir(tmp2);\n20.\n21.           if (log.isDebugEnabled() && file.exists()) {\n22.             log.debug(\"Overwriting file '{}'.\", zipEntry.getName());\n23.           }\n24.\n25.           FileUtils.copy(in, file);\n26.         }\n27.       }\n28.     }\n\nQuestion specifically: Does value of `tmp2` used at line 19 depend on value of `in` at line 1? `in` and `tmp2` different. Ignore side effects.\n\ntmp2 assigned at line 18 from `file.getParentFile()`. `file` is new File(outputDir, name) at line 13. `name` from mapper.map(getUnrootedName(root, zipEntry.getName())) at line 11. `root` from getRootName(tmp1) at line3. tmp1 from zipEntry.getName() line2. None of these use `in`. Line 19 uses tmp2. So no dependency. The only usage of `in` is line 25 FileUtils.copy(in, file), after line 19. Does the value of tmp2 used at 19 depend on `in`? No, because computation of tmp2 independent from in. Even if `in` may affect side effects? We ignore side effects, and also in is not used to assign tmp2. So answer No.\n\nNeed provide reasoning and one word. Ensure format. We need maybe mention line 19 before in used at 25 and no data dependency.\n\nNeed obey: first line process reasoning and explanations, second line one word Yes/No. Example has Explanation: ... Answer: Yes. We'll produce:\n\nExplanation: The variable tmp2 is assigned at line 18 from file.getParentFile(). The file object is created at line 13 from outputDir and name. name is derived from root and zipEntry.getName(), root from tmp1, tmp1 from zipEntry.getName(); none of these depend on in. The parameter in is only used later at line 25 in FileUtils.copy, which does not affect tmp2. Therefore, the value of tmp2 before line 19 does not depend on in after line 1.\n\nAnswer: No\n\nNeed ensure no side effects considered. Good.",
+        "reasoning_details": [
+          {
+            "type": "reasoning.text",
+            "text": "We need answer question: Does value of tmp2 used at line 19 depend on value of in at line 1? Need analyze Java code. We ignore side effects of functions, all functions do not change values of their arguments. Need determine dependency from parameter `in` at line 1 to variable `tmp2` before/at line 19.\n\nWe need simulate dataflow. Code:\n1. public void process(InputStream in, ZipEntry zipEntry) throws IOException {\n2.       final tmp1 = zipEntry.getName();\n3.       String root = getRootName(tmp1);\n4.       if (rootDir == null) {\n5.         rootDir = root;\n6.       }\n7.       else if (!rootDir.equals(root)) {\n8.         throw new ZipException(\"Unwrapping with multiple roots is not supported, roots: \" + rootDir + \", \" + root);\n9.       }\n10.\n11.       String name = mapper.map(getUnrootedName(root, zipEntry.getName()));\n12.       if (name != null) {\n13.         File file = new File(outputDir, name);\n14.         if (zipEntry.isDirectory()) {\n15.           FileUtils.forceMkdir(file);\n16.         }\n17.         else {\n18.           File tmp2 = file.getParentFile();\n19.           FileUtils.forceMkdir(tmp2);\n20.\n21.           if (log.isDebugEnabled() && file.exists()) {\n22.             log.debug(\"Overwriting file '{}'.\", zipEntry.getName());\n23.           }\n24.\n25.           FileUtils.copy(in, file);\n26.         }\n27.       }\n28.     }\n\nQuestion specifically: Does value of `tmp2` used at line 19 depend on value of `in` at line 1? `in` and `tmp2` different. Ignore side effects.\n\ntmp2 assigned at line 18 from `file.getParentFile()`. `file` is new File(outputDir, name) at line 13. `name` from mapper.map(getUnrootedName(root, zipEntry.getName())) at line 11. `root` from getRootName(tmp1) at line3. tmp1 from zipEntry.getName() line2. None of these use `in`. Line 19 uses tmp2. So no dependency. The only usage of `in` is line 25 FileUtils.copy(in, file), after line 19. Does the value of tmp2 used at 19 depend on `in`? No, because computation of tmp2 independent from in. Even if `in` may affect side effects? We ignore side effects, and also in is not used to assign tmp2. So answer No.\n\nNeed provide reasoning and one word. Ensure format. We need maybe mention line 19 before in used at 25 and no data dependency.\n\nNeed obey: first line process reasoning and explanations, second line one word Yes/No. Example has Explanation: ... Answer: Yes. We'll produce:\n\nExplanation: The variable tmp2 is assigned at line 18 from file.getParentFile(). The file object is created at line 13 from outputDir and name. name is derived from root and zipEntry.getName(), root from tmp1, tmp1 from zipEntry.getName(); none of these depend on in. The parameter in is only used later at line 25 in FileUtils.copy, which does not affect tmp2. Therefore, the value of tmp2 before line 19 does not depend on in after line 1.\n\nAnswer: No\n\nNeed ensure no side effects considered. Good.",
+            "format": "unknown",
+            "index": 0
+          }
+        ]
+      }
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 1257,
+    "completion_tokens": 905,
+    "total_tokens": 2162,
+    "cost": 0.002935119,
+    "is_byok": false,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0,
+      "video_tokens": 0
+    },
+    "cost_details": {
+      "upstream_inference_cost": 0.002935119,
+      "upstream_inference_prompt_cost": 0.001202949,
+      "upstream_inference_completions_cost": 0.00173217
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 747,
+      "image_tokens": 0,
+      "audio_tokens": 0
+    }
+  }
+}

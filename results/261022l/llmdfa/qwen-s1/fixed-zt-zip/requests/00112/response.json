@@ -1,0 +1,46 @@
+{
+  "id": "gen-1792654058-xZvI12F0CdNaxMMeSi1B",
+  "object": "chat.completion",
+  "created": 1792654058,
+  "model": "qwen/qwen3-coder-30b-a3b-instruct",
+  "provider": "Amazon Bedrock",
+  "system_fingerprint": null,
+  "service_tier": null,
+  "choices": [
+    {
+      "index": 0,
+      "logprobs": null,
+      "finish_reason": "stop",
+      "native_finish_reason": "end_turn",
+      "message": {
+        "role": "assistant",
+        "content": "Explanation: Let me trace through the code to determine if `charset` used at line 9 depends on `entry.getName()` at line 20.\n\nLine 9: `in = newCloseShieldZipInputStream(is, charset);`\nThis line calls `newCloseShieldZipInputStream` with `charset` as the second parameter.\n\nLine 20: `entry.getName()` - this is called inside a catch block when handling a ZipException, and it's part of string concatenation in the exception message.\n\nLooking at the flow:\n1. `charset` is passed as a parameter to `newCloseShieldZipInputStream` at line 9\n2. `entry.getName()` is called at line 20, but this happens inside a try-catch block where the exception is being handled\n3. The `entry.getName()` call at line 20 is completely independent of the `charset` parameter used at line 9\n4. These are two completely separate operations that don't share any data dependencies\n\nThe `charset` parameter is used to create the ZipInputStream, while `entry.getName()` is used only for error reporting purposes in the exception handler. There is no data flow or dependency between these two expressions.\n\nAnswer: No",
+        "refusal": null,
+        "reasoning": null
+      }
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 1248,
+    "completion_tokens": 251,
+    "total_tokens": 1499,
+    "cost": 0.0003378,
+    "is_byok": false,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0,
+      "video_tokens": 0
+    },
+    "cost_details": {
+      "upstream_inference_cost": 0.0003378,
+      "upstream_inference_prompt_cost": 0.0001872,
+      "upstream_inference_completions_cost": 0.0001506
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "image_tokens": 0,
+      "audio_tokens": 0
+    }
+  }
+}

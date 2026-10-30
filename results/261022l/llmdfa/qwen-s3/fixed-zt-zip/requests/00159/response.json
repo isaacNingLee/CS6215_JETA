@@ -1,0 +1,46 @@
+{
+  "id": "gen-1792658469-PSORItYBuL2kxPrD4z95",
+  "object": "chat.completion",
+  "created": 1792658469,
+  "model": "qwen/qwen3-coder-30b-a3b-instruct",
+  "provider": "SiliconFlow",
+  "system_fingerprint": null,
+  "service_tier": null,
+  "choices": [
+    {
+      "index": 0,
+      "logprobs": null,
+      "finish_reason": "stop",
+      "native_finish_reason": "stop",
+      "message": {
+        "role": "assistant",
+        "content": "Explanation: Let me trace through the execution flow step by step. At line 1, we have the parameter `charset` and `is` (InputStream). At line 2, `in` is created as `new BufferedInputStream(new CloseShieldInputStream(is))` - this uses the `is` parameter but doesn't use `charset`. At line 3, we check `if (charset == null)`. This is where `charset` is actually used - it's being compared to null. At line 6, `ZipFileUtil.createZipInputStream(in, charset)` is called, which uses both `in` (which depends on `is`) and `charset`. However, the question asks if the value of `charset` at line 6 depends on the value of `InputStream` at line 1. The `charset` parameter is used in the conditional check at line 3 and then passed to the function call at line 6, but it's not constructed or modified based on the `InputStream` value. The `charset` parameter is independent of the `InputStream` parameter - they are separate parameters that happen to be used in the same method. The `InputStream` is used to create `in`, but `charset` is not derived from or dependent on the `InputStream` value.\n\nAnswer: No",
+        "refusal": null,
+        "reasoning": null
+      }
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 996,
+    "completion_tokens": 267,
+    "total_tokens": 1263,
+    "cost": 0.00014448,
+    "is_byok": false,
+    "prompt_tokens_details": {
+      "cached_tokens": 800,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0,
+      "video_tokens": 0
+    },
+    "cost_details": {
+      "upstream_inference_cost": 0.00014448,
+      "upstream_inference_prompt_cost": 6.972e-05,
+      "upstream_inference_completions_cost": 7.476e-05
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "image_tokens": 0,
+      "audio_tokens": 0
+    }
+  }
+}

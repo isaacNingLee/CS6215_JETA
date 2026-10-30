@@ -1,6 +1,7 @@
-"""Command line: python3 -m cwe22 {setup,taie,llm,score,relax,agree,pipeline,llmdfa,paper}.
+"""JETA experiment command line: python3 -m cwe22 {setup,taie,llm,score,relax,agree,pipeline,llmdfa,paper}.
 
-Each step is resumable: completed cells in a run directory are skipped.
+Each step is resumable: completed cells in a run directory are skipped, and a saved model answer is
+never requested again. See README.md for the order and the run names behind each paper result.
 """
 import argparse
 import sys
@@ -50,14 +51,14 @@ def main(argv=None):
     p_relax.add_argument("--score", action="store_true", help="only write metrics.json and REPORT.md")
     p_relax.add_argument("--baseline", default=relax.BASELINE, help="baseline run whose hinted arm is the first level")
 
-    p_agree = with_run(sub.add_parser("agree", help="agreement guard on every relaxation level, both revisions"))
+    p_agree = with_run(sub.add_parser("agree", help="JETA stages 1-2 (agreement guard) on every hint level, both revisions"))
     p_agree.add_argument("--relax-run", default="261020h", help="hint-relaxation run with the Tai-e flows")
     p_agree.add_argument("--readers", default="261021b", help="baseline run with the vanilla readers")
     p_agree.add_argument("--models", nargs="+", choices=list(config.MODELS), default=list(config.MODELS),
                          help="selection/driver models of the H2b and E configurations")
     p_agree.add_argument("--samples", type=int, default=config.SAMPLES, help="reader samples")
 
-    p_pipe = sub.add_parser("pipeline", help="proposed pipeline: agreement guard -> Jev judge -> blind checklist")
+    p_pipe = sub.add_parser("pipeline", help="JETA stages 3-4: Jev judge and blind checklist on the agreement guard")
     p_pipe.add_argument("--run", default="261021c", help="run name under results/")
     p_pipe.add_argument("--agreement-run", default="261021g", help="agreement run whose guard tier is filtered")
     p_pipe.add_argument("--relax-run", default="261020h", help="hint-relaxation run with the hinted answers")
@@ -79,8 +80,8 @@ def main(argv=None):
     p_dfa.add_argument("--dry-run", action="store_true", help="write the plans and list the cases; no API calls")
     p_dfa.add_argument("--score", action="store_true", help="only write metrics.json and REPORT.md")
 
-    p_paper = sub.add_parser("paper", help="LaTeX tables for the paper from saved runs")
-    p_paper.add_argument("--out", default="paper", help="directory under results/ for the .tex files")
+    p_paper = sub.add_parser("paper", help="every table, figure and quoted number of the report, from saved runs")
+    p_paper.add_argument("--out", default="paper", help="directory under results/ for the outputs")
     p_paper.add_argument("--baseline", default="261021b")
     p_paper.add_argument("--relax-run", default="261020h")
     p_paper.add_argument("--pipeline-run", default="261021c")
@@ -134,7 +135,7 @@ def main(argv=None):
         return 0 if all(a["summary"] for a in result["arms"]) else 1
     elif args.command == "paper":
         out = paper.write(run_dir(args.out), args.baseline, args.relax_run, args.pipeline_run, args.llmdfa_run)
-        print("wrote {}/paper_tables.tex and paper_tables_main.tex".format(out))
+        print("wrote tables, figures, numbers.json and SUMMARY.md to {}".format(out))
     elif args.command == "score":
         result = report.evaluate(run_dir(args.run), samples=args.samples)
         print((run_dir(args.run) / "REPORT.md").read_text())

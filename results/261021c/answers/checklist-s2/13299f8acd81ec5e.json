@@ -1,0 +1,169 @@
+{
+  "request": {
+    "model": "typesafe/jev-1.13",
+    "state": {
+      "task": "Java code that a taint analysis reported as a possible path traversal (CWE-22). The questions are about the method under review.",
+      "code": "// File: src/main/java/net/sf/mpxj/common/InputStreamHelper.java\n// Method under review: InputStreamHelper.processZipStream\n   private static void processZipStream(File dir, InputStream inputStream) throws IOException\n   {\n      String canonicalDestinationDirPath = dir.getCanonicalPath();\n      ZipInputStream zip = new ZipInputStream(inputStream);\n      while (true)\n      {\n         ZipEntry entry = zip.getNextEntry();\n         if (entry == null)\n         {\n            break;\n         }\n\n         File file = new File(dir, entry.getName());\n\n         // https://snyk.io/research/zip-slip-vulnerability\n         String canonicalDestinationFile = file.getCanonicalPath();\n         if (!canonicalDestinationFile.startsWith(canonicalDestinationDirPath + File.separator))\n         {\n            throw new IOException(\"Entry is outside of the target dir: \" + entry.getName());\n         }\n\n         if (entry.isDirectory())\n         {\n            FileHelper.mkdirsQuietly(file);\n            continue;\n         }\n\n         File parent = file.getParentFile();\n         if (parent != null)\n         {\n            FileHelper.mkdirsQuietly(parent);\n         }\n\n         FileOutputStream fos = new FileOutputStream(file);\n         byte[] bytes = new byte[1024];\n         int length;\n         while ((length = zip.read(bytes)) >= 0)\n         {\n            fos.write(bytes, 0, length);\n         }\n         fos.close();\n      }\n   }"
+    },
+    "questions": {
+      "p1_c1": {
+        "type": "noul",
+        "instructions": "True if the answer to this question is yes: Does the method use a hardcoded mapping (e.g., a Map, array, or switch statement) that maps the user input to a predetermined file name or path component?"
+      },
+      "p1_c2": {
+        "type": "noul",
+        "instructions": "True if the answer to this question is yes: Are all file name values in that mapping simple names that contain no path separators ('/' or '\\\\') and are not equal to '.' or '..'?"
+      },
+      "p1_c3": {
+        "type": "noul",
+        "instructions": "True if the answer to this question is yes: Does the method use the mapped value as the complete final filename without further concatenation with any part of the user input?"
+      },
+      "p2_c1": {
+        "type": "noul",
+        "instructions": "True if the answer to this question is yes: Does the method construct a java.io.File object using a fixed base directory and the user-provided path component?"
+      },
+      "p2_c2": {
+        "type": "noul",
+        "instructions": "True if the answer to this question is yes: Is the base directory obtained from a constant or trusted source, not incorporating any part of the user input?"
+      },
+      "p2_c3": {
+        "type": "noul",
+        "instructions": "True if the answer to this question is yes: Does the method call getCanonicalPath() on both the base directory File and the constructed File?"
+      },
+      "p2_c4": {
+        "type": "noul",
+        "instructions": "True if the answer to this question is yes: Does the method verify that the constructed file's canonical path starts with the base directory's canonical path followed by the system file separator (i.e., baseCanonicalPath + File.separator)?"
+      },
+      "p3_c1": {
+        "type": "noul",
+        "instructions": "True if the answer to this question is yes: Does the method use java.nio.file.Path.of() or Paths.get() to obtain the base directory path, and resolve the user input against it using resolve()?"
+      },
+      "p3_c2": {
+        "type": "noul",
+        "instructions": "True if the answer to this question is yes: Is the base directory path defined using only hardcoded strings or trusted configuration, not incorporating any part of the user input?"
+      },
+      "p3_c3": {
+        "type": "noul",
+        "instructions": "True if the answer to this question is yes: Does the method call toRealPath() on both the base directory Path and the resolved Path?"
+      },
+      "p3_c4": {
+        "type": "noul",
+        "instructions": "True if the answer to this question is yes: Does the method use startsWith(baseRealPath) to verify that the real path of the constructed file is a descendant of the base directory's real path?"
+      },
+      "p4_c1": {
+        "type": "noul",
+        "instructions": "True if the answer to this question is yes: Does the method use `new java.io.File(userInput).getName()` or `Path.of(userInput).getFileName()` to extract only the last path component (the simple file name) from the user input?"
+      },
+      "p4_c2": {
+        "type": "noul",
+        "instructions": "True if the answer to this question is yes: Does the method validate that the extracted file name is not null, not empty, not equal to `.`, not equal to `..`, and does not contain any occurrence of '/' or '\\\\' characters?"
+      },
+      "p4_c3": {
+        "type": "noul",
+        "instructions": "True if the answer to this question is yes: Does the method then combine this validated file name with a fixed base directory to construct the final path, without further incorporating the original user input?"
+      },
+      "p5_c1": {
+        "type": "noul",
+        "instructions": "True if the answer to this question is yes: Does the method use java.nio.file.Path to represent a fixed base directory, and resolve the user input against it using resolve()?"
+      },
+      "p5_c2": {
+        "type": "noul",
+        "instructions": "True if the answer to this question is yes: Is the base directory path defined using only hardcoded strings or trusted configuration, not incorporating any part of the user input?"
+      },
+      "p5_c3": {
+        "type": "noul",
+        "instructions": "True if the answer to this question is yes: Does the method call normalize() on the resulting path?"
+      },
+      "p5_c4": {
+        "type": "noul",
+        "instructions": "True if the answer to this question is yes: Does the method check that the normalized path starts with the normalized base path by calling startsWith(basePath.normalize())?"
+      }
+    }
+  },
+  "response": {
+    "model": "typesafe/jev-1.13-20260917",
+    "answers": {
+      "p1_c1": {
+        "type": "noul",
+        "noul": 0.04
+      },
+      "p1_c2": {
+        "type": "noul",
+        "noul": 0.16
+      },
+      "p1_c3": {
+        "type": "noul",
+        "noul": 0.66
+      },
+      "p2_c1": {
+        "type": "noul",
+        "noul": 0.96
+      },
+      "p2_c2": {
+        "type": "noul",
+        "noul": 0.69
+      },
+      "p2_c3": {
+        "type": "noul",
+        "noul": 0.97
+      },
+      "p2_c4": {
+        "type": "noul",
+        "noul": 0.97
+      },
+      "p3_c1": {
+        "type": "noul",
+        "noul": 0.02
+      },
+      "p3_c2": {
+        "type": "noul",
+        "noul": 0.68
+      },
+      "p3_c3": {
+        "type": "noul",
+        "noul": 0.04
+      },
+      "p3_c4": {
+        "type": "noul",
+        "noul": 0.92
+      },
+      "p4_c1": {
+        "type": "noul",
+        "noul": 0.07
+      },
+      "p4_c2": {
+        "type": "noul",
+        "noul": 0.04
+      },
+      "p4_c3": {
+        "type": "noul",
+        "noul": 0.49
+      },
+      "p5_c1": {
+        "type": "noul",
+        "noul": 0.02
+      },
+      "p5_c2": {
+        "type": "noul",
+        "noul": 0.67
+      },
+      "p5_c3": {
+        "type": "noul",
+        "noul": 0.16
+      },
+      "p5_c4": {
+        "type": "noul",
+        "noul": 0.23
+      }
+    },
+    "usage": {
+      "input_tokens": 1476,
+      "output_tokens": 346,
+      "cost": 6.1992e-05
+    },
+    "id": "gen-dec-1792545481-HbjAEfRWiw3nn2LuxjXO",
+    "provider": "TypeSafe"
+  },
+  "attempts": 1,
+  "seconds": 0.52
+}

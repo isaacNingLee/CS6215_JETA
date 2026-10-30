@@ -1,0 +1,18 @@
+{
+  "model": "qwen/qwen3-coder-30b-a3b-instruct",
+  "temperature": 0,
+  "max_tokens": 8000,
+  "reasoning": {
+    "effort": "low"
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are a Java programmer and very good at analyzing Java code."
+    },
+    {
+      "role": "user",
+      "content": "Please identify the sink values for path traversal (CWE-22) according to the following instructions.\n- When a variable/expression is used as argument 0 of a `FileOutputStream` constructor call (the file being opened for writing), it is a sink for path traversal.\nExample (illustrative only; report values from the program below):\n1. Object stream = new FileOutputStream(target);\n- Sink name: target, Line number: 1\nNegative example: 1. validate();\nAnswer: an empty string. A helper call is not the specified sink API.\nNow I will give you the program. Please list all the names of sinks and the line numbers.The line numbers should indicate the line of the call that consumes the value.\nDo not add extra explanations.Just list the pairs of variable/expression and line number line by line.Each line should start with -.If there is no variable as sink, just output an empty string.\nHere are several examples:\nExample 1:\n- Sink name: a, Line number: 2\nExample 2:\n- Sink name: (prefix + name), Line number: 3\nHere is the program:\n```\n1. public void extractAll(final UnzipParameters unzipParameters, final String outPath,\n2. \t\t\tfinal ProgressMonitor progressMonitor, boolean runInThread) throws ZipException {\n3. \t\t\n4. \t\tCentralDirectory centralDirectory = zipModel.getCentralDirectory();\n5. \t\t\n6. \t\tif (centralDirectory == null || \n7. \t\t\t\tcentralDirectory.getFileHeaders() == null) {\n8. \t\t\tthrow new ZipException(\"invalid central directory in zipModel\");\n9. \t\t}\n10. \t\t\n11. \t\tfinal ArrayList fileHeaders = centralDirectory.getFileHeaders();\n12. \t\t\n13. \t\tprogressMonitor.setCurrentOperation(ProgressMonitor.OPERATION_EXTRACT);\n14. \t\tprogressMonitor.setTotalWork(calculateTotalWork(fileHeaders));\n15. \t\tprogressMonitor.setState(ProgressMonitor.STATE_BUSY);\n16. \t\t\n17. \t\tif (runInThread) {\n18. \t\t\tThread thread = new Thread(InternalZipConstants.THREAD_NAME) {\n19. \t\t\t\tpublic void run() {\n20. \t\t\t\t\ttry {\n21. \t\t\t\t\t\tinitExtractAll(fileHeaders, unzipParameters, progressMonitor, outPath);\n22. \t\t\t\t\t\tprogressMonitor.endProgressMonitorSuccess();\n23. \t\t\t\t\t} catch (ZipException e) {\n24. \t\t\t\t\t}\n25. \t\t\t\t}\n26. \t\t\t};\n27. \t\t\tthread.start();\n28. \t\t} else {\n29. \t\t\tinitExtractAll(fileHeaders, unzipParameters, progressMonitor, outPath);\n30. \t\t}\n31. \t\t\n32. \t}\n```\n"
+    }
+  ]
+}

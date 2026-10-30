@@ -1,0 +1,46 @@
+{
+  "id": "gen-1792655731-lz9P6xWtXQjFPkD7QEIA",
+  "object": "chat.completion",
+  "created": 1792655731,
+  "model": "qwen/qwen3-coder-30b-a3b-instruct",
+  "provider": "Amazon Bedrock",
+  "system_fingerprint": null,
+  "service_tier": null,
+  "choices": [
+    {
+      "index": 0,
+      "logprobs": null,
+      "finish_reason": "stop",
+      "native_finish_reason": "end_turn",
+      "message": {
+        "role": "assistant",
+        "content": "Looking at the code, I need to trace the dependency between `raf` at line 50 and `fileHeader.getFileName()` at line 42.\n\nLet me trace through the execution:\n\n1. Line 8: `raf = createFileHandler(InternalZipConstants.READ_MODE);` - This creates the raf object\n2. Line 42: `throw new ZipException(\"AESExtraDataRecord does not exist for AES encrypted file: \" + fileHeader.getFileName());` - This uses `fileHeader.getFileName()` in an exception message\n3. Line 50: `return new ZipInputStream(new InflaterInputStream(raf, offsetStartOfData, comprSize, this));` - This uses `raf` to create a ZipInputStream\n\nThe key insight is that `fileHeader.getFileName()` is only used in a string concatenation for an exception message at line 42. It's not used to compute or modify any values that would affect `raf`. \n\nThe variable `raf` is created at line 8 and is simply passed as a parameter to `InflaterInputStream` at line 50. The value of `raf` is completely independent of the `fileHeader.getFileName()` call at line 42. The `fileHeader.getFileName()` is only used for error reporting purposes and doesn't influence the flow of data or computation that leads to the creation of `raf`.\n\nThe `fileHeader.getFileName()` call at line 42 is part of an exception handling path that occurs when there's an encryption method mismatch, which is a separate code path from where `raf` is used at line 50.\n\nExplanation: The variable `raf` is created at line 8 and used at line 50 in the construction of `InflaterInputStream`. The `fileHeader.getFileName()` call at line 42 is only used in an exception message and does not affect the value or creation of `raf`. These are completely independent operations in different code paths.\n\nAnswer: No",
+        "refusal": null,
+        "reasoning": null
+      }
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 1798,
+    "completion_tokens": 412,
+    "total_tokens": 2210,
+    "cost": 0.0005169,
+    "is_byok": false,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0,
+      "video_tokens": 0
+    },
+    "cost_details": {
+      "upstream_inference_cost": 0.0005169,
+      "upstream_inference_prompt_cost": 0.0002697,
+      "upstream_inference_completions_cost": 0.0002472
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "image_tokens": 0,
+      "audio_tokens": 0
+    }
+  }
+}

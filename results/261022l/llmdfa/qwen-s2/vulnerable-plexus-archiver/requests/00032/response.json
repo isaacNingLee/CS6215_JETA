@@ -1,0 +1,46 @@
+{
+  "id": "gen-1792655274-aFeL8Cv5vb3zsNgUzRZR",
+  "object": "chat.completion",
+  "created": 1792655274,
+  "model": "qwen/qwen3-coder-30b-a3b-instruct",
+  "provider": "Amazon Bedrock",
+  "system_fingerprint": null,
+  "service_tier": null,
+  "choices": [
+    {
+      "index": 0,
+      "logprobs": null,
+      "finish_reason": "stop",
+      "native_finish_reason": "end_turn",
+      "message": {
+        "role": "assistant",
+        "content": "Looking at the code, I need to trace the flow from line 16 to line 31:\n\nLine 16: `final tmp0 = fileInfo.getName();`\nLine 17: `if ( isSelected( tmp0, fileInfo ) )`\nLine 18: `{`\nLine 19: `in = zf.getInputStream( ze );`\nLine 21: `final tmp1 = getSourceFile();`\nLine 22: `final tmp2 = getDestDirectory();`\nLine 23: `final tmp3 = fileInfo.getName();`\nLine 24: `extractFileIfIncluded( tmp1, tmp2, in, tmp3,`\nLine 25: `final tmp4 = ze.getTime();`\nLine 26: `final tmp5 = ze.isDirectory();`\nLine 27: `new Date( tmp4 ), tmp5,`\nLine 28: `final tmp6 = ze.getUnixMode();`\nLine 29: `final tmp7 = ze.getUnixMode();`\nLine 30: `tmp6 != 0 ? tmp6 : null,`\nLine 31: `final tmp8 = resolveSymlink( zf, ze );`\nLine 32: `tmp8 );`\n\nThe variable `ze` is defined in line 14: `final ZipArchiveEntry ze = (ZipArchiveEntry) e.nextElement();`\n\nLooking at the usage pattern:\n- Line 14: `ze` is created from `e.nextElement()` \n- Line 19: `zf.getInputStream( ze )` - uses `ze`\n- Line 25: `ze.getTime()` - uses `ze`\n- Line 26: `ze.isDirectory()` - uses `ze`\n- Line 28: `ze.getUnixMode()` - uses `ze`\n- Line 29: `ze.getUnixMode()` - uses `ze`\n- Line 31: `resolveSymlink( zf, ze )` - uses `ze`\n\nThe variable `tmp0` is assigned from `fileInfo.getName()` on line 16, but there's no connection between `tmp0` and `ze`. The `ze` variable is completely independent of `tmp0` - it's just a different variable that happens to be used in the same scope.\n\nThe value of `ze` at line 31 does not depend on the value of `tmp0` at line 16 because they are completely separate variables with no data flow relationship.\n\nAnswer: No",
+        "refusal": null,
+        "reasoning": null
+      }
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 1453,
+    "completion_tokens": 525,
+    "total_tokens": 1978,
+    "cost": 0.00053295,
+    "is_byok": false,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0,
+      "video_tokens": 0
+    },
+    "cost_details": {
+      "upstream_inference_cost": 0.00053295,
+      "upstream_inference_prompt_cost": 0.00021795,
+      "upstream_inference_completions_cost": 0.000315
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "image_tokens": 0,
+      "audio_tokens": 0
+    }
+  }
+}

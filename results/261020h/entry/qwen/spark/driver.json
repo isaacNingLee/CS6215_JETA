@@ -1,0 +1,68 @@
+{
+  "request": {
+    "model": "qwen/qwen3-coder-30b-a3b-instruct",
+    "temperature": 0,
+    "max_tokens": 8000,
+    "reasoning": {
+      "effort": "low"
+    },
+    "messages": [
+      {
+        "role": "system",
+        "content": "Write a minimal Java entry program for whole-program static analysis; it is\nnever executed. Requirements:\n- One public class AutoEntry in the default package with\n  public static void main(String[] args) throws Exception.\n- Call the public operations of the supplied classes that process externally\n  supplied files, directories, archives, streams or resource names, in a\n  realistic order (construct, configure, then run the operation).\n- Use literal placeholder paths such as \"analysis-input\" and \"analysis-output\"\n  for files and directories that the calling application chooses itself.\n- For any String that an untrusted party would supply directly (for example a\n  requested resource name), use System.getenv(\"UNTRUSTED_INPUT\").\n- Use only the constructors and methods in the supplied signatures, with fully\n  qualified names or imports. Do not use reflection.\nReturn ONLY the Java source in one ```java code block."
+      },
+      {
+        "role": "user",
+        "content": "Classes and public signatures:\nCompiled from \"Request.java\"\npublic class spark.Request {\n  public java.util.Map<java.lang.String, java.lang.String> params();\n  public java.lang.String params(java.lang.String);\n  public java.lang.String[] splat();\n  public java.lang.String requestMethod();\n  public java.lang.String scheme();\n  public java.lang.String host();\n  public java.lang.String userAgent();\n  public int port();\n  public java.lang.String pathInfo();\n  public java.lang.String servletPath();\n  public java.lang.String contextPath();\n  public java.lang.String url();\n  public java.lang.String contentType();\n  public java.lang.String ip();\n  public java.lang.String body();\n  public byte[] bodyAsBytes();\n  public int contentLength();\n  public java.lang.String queryParams(java.lang.String);\n  public java.lang.String queryParamOrDefault(java.lang.String, java.lang.String);\n  public java.lang.String[] queryParamsValues(java.lang.String);\n  public java.lang.String headers(java.lang.String);\n  public java.util.Set<java.lang.String> queryParams();\n  public java.util.Set<java.lang.String> headers();\n  public java.lang.String queryString();\n  public void attribute(java.lang.String, java.lang.Object);\n  public <T> T attribute(java.lang.String);\n  public java.util.Set<java.lang.String> attributes();\n  public javax.servlet.http.HttpServletRequest raw();\n  public spark.QueryParamsMap queryMap();\n  public spark.QueryParamsMap queryMap(java.lang.String);\n  public spark.Session session();\n  public spark.Session session(boolean);\n  public java.util.Map<java.lang.String, java.lang.String> cookies();\n  public java.lang.String cookie(java.lang.String);\n  public java.lang.String uri();\n  public java.lang.String protocol();\n}\nCompiled from \"Response.java\"\npublic class spark.Response {\n  public void status(int);\n  public int status();\n  public void type(java.lang.String);\n  public java.lang.String type();\n  public void body(java.lang.String);\n  public java.lang.String body();\n  public javax.servlet.http.HttpServletResponse raw();\n  public void redirect(java.lang.String);\n  public void redirect(java.lang.String, int);\n  public void header(java.lang.String, java.lang.String);\n  public void cookie(java.lang.String, java.lang.String);\n  public void cookie(java.lang.String, java.lang.String, int);\n  public void cookie(java.lang.String, java.lang.String, int, boolean);\n  public void cookie(java.lang.String, java.lang.String, int, boolean, boolean);\n  public void cookie(java.lang.String, java.lang.String, java.lang.String, int, boolean);\n  public void cookie(java.lang.String, java.lang.String, java.lang.String, int, boolean, boolean);\n  public void cookie(java.lang.String, java.lang.String, java.lang.String, java.lang.String, int, boolean, boolean);\n  public void removeCookie(java.lang.String);\n  public void removeCookie(java.lang.String, java.lang.String);\n}\nCompiled from \"StaticFilesConfiguration.java\"\npublic class spark.staticfiles.StaticFilesConfiguration {\n  public static spark.staticfiles.StaticFilesConfiguration servletInstance;\n  public spark.staticfiles.StaticFilesConfiguration();\n  public boolean consume(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse) throws java.io.IOException;\n  public void clear();\n  public boolean isStaticResourcesSet();\n  public boolean isExternalStaticResourcesSet();\n  public synchronized void configure(java.lang.String);\n  public synchronized void configureExternal(java.lang.String);\n  public static spark.staticfiles.StaticFilesConfiguration create();\n  public void setExpireTimeSeconds(long);\n  public void putCustomHeaders(java.util.Map<java.lang.String, java.lang.String>);\n  public void putCustomHeader(java.lang.String, java.lang.String);\n}\nCompiled from \"ClassPathResourceHandler.java\"\npublic class spark.resource.ClassPathResourceHandler extends spark.resource.AbstractResourceHandler {\n  public spark.resource.ClassPathResourceHandler(java.lang.String);\n  public spark.resource.ClassPathResourceHandler(java.lang.String, java.lang.String);\n}\nCompiled from \"ExternalResourceHandler.java\"\npublic class spark.resource.ExternalResourceHandler extends spark.resource.AbstractResourceHandler {\n  public spark.resource.ExternalResourceHandler(java.lang.String);\n  public spark.resource.ExternalResourceHandler(java.lang.String, java.lang.String);\n}\n"
+      }
+    ]
+  },
+  "response": {
+    "id": "gen-1792477907-wvpzs47azMmEoW8fjXDe",
+    "object": "chat.completion",
+    "created": 1792477907,
+    "model": "qwen/qwen3-coder-30b-a3b-instruct",
+    "provider": "Amazon Bedrock",
+    "system_fingerprint": null,
+    "service_tier": null,
+    "choices": [
+      {
+        "index": 0,
+        "logprobs": null,
+        "finish_reason": "stop",
+        "native_finish_reason": "end_turn",
+        "message": {
+          "role": "assistant",
+          "content": "```java\npublic class AutoEntry {\n    public static void main(String[] args) throws Exception {\n        // Configure static files\n        spark.staticfiles.StaticFilesConfiguration config = spark.staticfiles.StaticFilesConfiguration.create();\n        config.configure(\"analysis-input\");\n        config.configureExternal(\"analysis-output\");\n        config.setExpireTimeSeconds(3600L);\n        \n        // Process external resource\n        spark.resource.ExternalResourceHandler externalHandler = \n            new spark.resource.ExternalResourceHandler(\"analysis-input\", \"text/plain\");\n        \n        // Process classpath resource\n        spark.resource.ClassPathResourceHandler classpathHandler = \n            new spark.resource.ClassPathResourceHandler(\"META-INF\", \"application.properties\");\n        \n        // Handle request and response\n        spark.Request req = new spark.Request() {\n            public java.util.Map<java.lang.String, java.lang.String> params() { return null; }\n            public java.lang.String params(java.lang.String s) { return null; }\n            public java.lang.String[] splat() { return null; }\n            public java.lang.String requestMethod() { return \"GET\"; }\n            public java.lang.String scheme() { return \"http\"; }\n            public java.lang.String host() { return \"localhost\"; }\n            public java.lang.String userAgent() { return \"analysis-tool/1.0\"; }\n            public int port() { return 8080; }\n            public java.lang.String pathInfo() { return \"/test\"; }\n            public java.lang.String servletPath() { return \"/api\"; }\n            public java.lang.String contextPath() { return \"\"; }\n            public java.lang.String url() { return \"http://localhost:8080/test\"; }\n            public java.lang.String contentType() { return \"text/plain\"; }\n            public java.lang.String ip() { return \"127.0.0.1\"; }\n            public java.lang.String body() { return \"test body\"; }\n            public byte[] bodyAsBytes() { return new byte[0]; }\n            public int contentLength() { return 0; }\n            public java.lang.String queryParams(java.lang.String s) { return System.getenv(\"UNTRUSTED_INPUT\"); }\n            public java.lang.String queryParamOrDefault(java.lang.String s, java.lang.String s2) { return s2; }\n            public java.lang.String[] queryParamsValues(java.lang.String s) { return new java.lang.String[0]; }\n            public java.lang.String headers(java.lang.String s) { return null; }\n            public java.util.Set<java.lang.String> queryParams() { return null; }\n            public java.util.Set<java.lang.String> headers() { return null; }\n            public java.lang.String queryString() { return null; }\n            public void attribute(java.lang.String s, java.lang.Object o) {}\n            public <T> T attribute(java.lang.String s) { return null; }\n            public java.util.Set<java.lang.String> attributes() { return null; }\n            public javax.servlet.http.HttpServletRequest raw() { return null; }\n            public spark.QueryParamsMap queryMap() { return null; }\n            public spark.QueryParamsMap queryMap(java.lang.String s) { return null; }\n            public spark.Session session() { return null; }\n            public spark.Session session(boolean b) { return null; }\n            public java.util.Map<java.lang.String, java.lang.String> cookies() { return null; }\n            public java.lang.String cookie(java.lang.String s) { return null; }\n            public java.lang.String uri() { return null; }\n            public java.lang.String protocol() { return null; }\n        };\n        \n        spark.Response res = new spark.Response() {\n            public void status(int i) {}\n            public int status() { return 200; }\n            public void type(java.lang.String s) {}\n            public java.lang.String type() { return \"text/plain\"; }\n            public void body(java.lang.String s) {}\n            public java.lang.String body() { return null; }\n            public javax.servlet.http.HttpServletResponse raw() { return null; }\n            public void redirect(java.lang.String s) {}\n            public void redirect(java.lang.String s, int i) {}\n            public void header(java.lang.String s, java.lang.String s2) {}\n            public void cookie(java.lang.String s, java.lang.String s2) {}\n            public void cookie(java.lang.String s, java.lang.String s2, int i) {}\n            public void cookie(java.lang.String s, java.lang.String s2, int i, boolean b) {}\n            public void cookie(java.lang.String s, java.lang.String s2, int i, boolean b, boolean b2) {}\n            public void cookie(java.lang.String s, java.lang.String s2, java.lang.String s3, int i, boolean b) {}\n            public void cookie(java.lang.String s, java.lang.String s2, java.lang.String s3, int i, boolean b, boolean b2) {}\n            public void cookie(java.lang.String s, java.lang.String s2, java.lang.String s3, java.lang.String s4, int i, boolean b, boolean b2) {}\n            public void removeCookie(java.lang.String s) {}\n            public void removeCookie(java.lang.String s, java.lang.String s2) {}\n        };\n        \n        // Simulate processing\n        config.consume(req.raw(), res.raw());\n    }\n}\n```",
+          "refusal": null,
+          "reasoning": null
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 1043,
+      "completion_tokens": 1097,
+      "total_tokens": 2140,
+      "cost": 0.00081465,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 0,
+        "cache_write_tokens": 0,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 0.00081465,
+        "upstream_inference_prompt_cost": 0.00015645,
+        "upstream_inference_completions_cost": 0.0006582
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 0,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    }
+  },
+  "attempts": 1,
+  "seconds": 2.77
+}

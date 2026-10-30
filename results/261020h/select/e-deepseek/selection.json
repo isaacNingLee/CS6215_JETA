@@ -1,0 +1,77 @@
+{
+  "spark": {
+    "pool": 7,
+    "reaching": [
+      "<java.net.URI: java.lang.String getSchemeSpecificPart()>",
+      "<java.net.URL: java.lang.String getFile()>",
+      "<spark.resource.ExternalResource: java.lang.String getDescription()>",
+      "<spark.resource.Resource: java.lang.String getDescription()>"
+    ],
+    "selected": [
+      "<java.net.URI: java.lang.String getSchemeSpecificPart()>",
+      "<java.net.URL: java.lang.String getFile()>",
+      "<spark.resource.ExternalResource: java.lang.String getDescription()>",
+      "<spark.resource.Resource: java.lang.String getDescription()>"
+    ],
+    "decisions": [
+      {
+        "id": "C03",
+        "decision": "unknown",
+        "reason": "getDescription() implementation unknown; may return attacker-supplied description, but not proven.",
+        "evidence": [
+          "K3"
+        ],
+        "signature": "<spark.resource.ExternalResource: java.lang.String getDescription()>"
+      },
+      {
+        "id": "C04",
+        "decision": "unknown",
+        "reason": "Interface method; actual implementations not shown, could be tainted but unconfirmed.",
+        "evidence": [
+          "K4"
+        ],
+        "signature": "<spark.resource.Resource: java.lang.String getDescription()>"
+      },
+      {
+        "id": "C02",
+        "decision": "unknown",
+        "reason": "Lack of data on resourceUrl provenance; fallback usage does not clarify attacker control.",
+        "evidence": [
+          "K2"
+        ],
+        "signature": "<java.net.URL: java.lang.String getFile()>"
+      },
+      {
+        "id": "C01",
+        "decision": "unknown",
+        "reason": "Insufficient context; URL origin not shown, could be attacker-controlled but not demonstrated.",
+        "evidence": [
+          "K1"
+        ],
+        "signature": "<java.net.URI: java.lang.String getSchemeSpecificPart()>"
+      }
+    ],
+    "errors": [],
+    "valid": 4
+  },
+  "plexus-utils": {
+    "pool": 2,
+    "reaching": [
+      "<java.util.StringTokenizer: java.lang.String nextToken()>"
+    ],
+    "selected": [],
+    "decisions": [
+      {
+        "id": "C01",
+        "decision": "not_source",
+        "reason": "nextToken only splits an existing string parameter into tokens; it does not introduce external attacker-controlled data.",
+        "evidence": [
+          "K1"
+        ],
+        "signature": "<java.util.StringTokenizer: java.lang.String nextToken()>"
+      }
+    ],
+    "errors": [],
+    "valid": 1
+  }
+}

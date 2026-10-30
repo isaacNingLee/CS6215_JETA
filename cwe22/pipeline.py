@@ -1,15 +1,15 @@
-"""The proposed pipeline: agreement guard -> Jev judges the hinted answers -> blind checklist (Jev).
+"""JETA, the proposed pipeline: agreement guard -> Jev judges the hinted answers -> blind checklist (Jev).
 
 For one Tai-e configuration, project, revision and sample k, starting from the agreement
-guard's priority tier (agreement.py, sample k of its readers):
+guard's priority tier (agreement.py, JETA stages 1-2, sample k of its readers):
 
-1. **Judge.** Jev (TypeSafe's decision model, OpenRouter's decisions endpoint) reads both
+3. **Judge.** Jev (TypeSafe's decision model, OpenRouter's decisions endpoint) reads both
    hinted LLMs' answers to the configuration's hinted prompt (sample k) and the code of each
    tier location, and answers one yes/no question per location (JUDGE_QUESTION). A location
    is kept when p >= 0.5. When a model did not answer that configuration in the relaxation
    run (H2b/E, where each model sees its own configuration), it answers the owner's hinted
    prompt here, with its own saved hinted settings.
-2. **Checklist.** DeepSeek writes one CWE-22 checklist per sample from CWE-22's description
+4. **Checklist.** DeepSeek writes one CWE-22 checklist per sample from CWE-22's description
    alone (data/prompts/checklist/blind.txt; no subject, code, fix or result is shown): safe
    patterns, each a list of yes/no conditions. Jev answers checklist k for each location's
    code; a location is dropped when some pattern has every condition at p >= 0.5.
@@ -75,10 +75,10 @@ def content(record):
 
 # ---- guard tier and method contexts ---------------------------------------------------------
 def guard_tier(agreement_run):
-    """(rows by (config, scoped, project, variant, sample), sample count) of the guarded arm."""
+    """(rows by (config, project, variant, sample), sample count) of the agreement guard."""
     predictions = read_json(config.RESULTS / agreement_run / "predictions.json")
-    return ({(r["config"], r["scoped"], r["project"], r["variant"], r["sample"]): r
-             for r in predictions if r["guard"]}, max(r["sample"] for r in predictions))
+    return ({(r["config"], r["project"], r["variant"], r["sample"]): r for r in predictions},
+            max(r["sample"] for r in predictions))
 
 
 def level_configs(levels):
@@ -88,7 +88,7 @@ def level_configs(levels):
 def wanted(index, cfgs):
     """{(project, variant): {(class, method)}} in the priority tier of any configuration in ``cfgs``."""
     found = {}
-    for (cfg, _, project, variant, _), row in index.items():
+    for (cfg, project, variant, _), row in index.items():
         if cfg in cfgs and row["status"] == "predicted":
             found.setdefault((project, variant), set()).update(tuple(x) for x in row["priority"])
     return found
@@ -305,13 +305,12 @@ class Run:
 
 
 def tier_cells(index, n, levels, samples):
-    """(level, cfg, suffix, scoped, project, variant, sample, guard row) for every tier."""
+    """(level, cfg, suffix, project, variant, sample, guard row) for every tier."""
     for level, cfg, suffix in level_configs(levels):
-        for scoped in (False, True):
-            for p in config.PROJECTS:
-                for v in config.VARIANTS:
-                    for k in range(1, samples + 1):
-                        yield level, cfg, suffix, scoped, p, v, k, index.get((cfg, scoped, p, v, min(k, n)))
+        for p in config.PROJECTS:
+            for v in config.VARIANTS:
+                for k in range(1, samples + 1):
+                    yield level, cfg, suffix, p, v, k, index.get((cfg, p, v, min(k, n)))
 
 
 def execute(out, agreement_run="261021g", relax_run="261020h", baseline=relax.BASELINE, samples=config.SAMPLES,
@@ -321,10 +320,10 @@ def execute(out, agreement_run="261021g", relax_run="261020h", baseline=relax.BA
     index, n = guard_tier(agreement_run)
     codes = contexts(out, wanted(index, {c[1] for c in level_configs(levels)}))
     key = None if dry_run else config.secret("OPENROUTER_API_KEY")
-    missing = sum(llm.ask(run.checklist_path(k), llm.request_body(config.MODELS[GENERATOR], fill(BLIND)), key) is None
+    missing = sum(llm.ask(run.checklist_path(k), llm.request_body(config.MODELS[GENERATOR], fill(BLIND), long=True), key) is None
                   for k in range(1, samples + 1))
     cells = [(level, cfg, p, v, k, [tuple(x) for x in row["priority"]])
-             for level, cfg, _, _, p, v, k, row in tier_cells(index, n, levels, samples)
+             for level, cfg, _, p, v, k, row in tier_cells(index, n, levels, samples)
              if row and row["status"] == "predicted" and row["priority"]]
     # In phases, each call once: tiers share hinted answers, judgements and checklist answers.
     with ThreadPoolExecutor(workers) as pool:
@@ -360,8 +359,8 @@ def evaluate(out, agreement_run="261021g", relax_run="261020h", baseline=relax.B
     index, n = guard_tier(agreement_run)
     codes = contexts(out, wanted(index, {c[1] for c in level_configs(levels)}))
     predictions, failures = [], []
-    for level, cfg, suffix, scoped, p, v, k, row in tier_cells(index, n, levels, samples):
-        entry = dict(level=level, config=cfg, scoped=scoped, project=p, variant=v, sample=k)
+    for level, cfg, suffix, p, v, k, row in tier_cells(index, n, levels, samples):
+        entry = dict(level=level, config=cfg, project=p, variant=v, sample=k)
         if row is None or row["status"] == "unscored":
             predictions.append(dict(entry, status="unscored"))
             continue
@@ -373,11 +372,11 @@ def evaluate(out, agreement_run="261021g", relax_run="261020h", baseline=relax.B
     info = manifest()
     check_dataset(info["dataset_commit"])
     labels = {p: fix_labels(info["subjects"][p]["slug"]) for p in projects}
-    by_key = {(r["config"], r["scoped"], r["project"], r["variant"], r["sample"]): r for r in predictions}
+    by_key = {(r["config"], r["project"], r["variant"], r["sample"]): r for r in predictions}
 
-    def loader(cfg, scoped, stage):
+    def loader(cfg, stage):
         def load(p, v, k):
-            r = by_key[cfg, scoped, p, v, k]
+            r = by_key[cfg, p, v, k]
             if r["status"] == "unscored" or r[stage] is None:
                 return None, None
             return [tuple(x) for x in r[stage]], None
@@ -394,12 +393,10 @@ def evaluate(out, agreement_run="261021g", relax_run="261020h", baseline=relax.B
                   prompts=dict(blind_sha256=sha256(BLIND), judge_question=JUDGE_QUESTION),
                   context_sha256=sha256(CONTEXT), arms=[], failures=failures)
     for level, cfg, suffix in level_configs(levels):
-        for scoped in (False, True):
-            for stage, label in STAGES:
-                per_sample = agreement.score_arm(loader(cfg, scoped, stage), samples, projects, labels)
-                result["arms"].append(dict(level=level, config=cfg, scoped=scoped, stage=stage,
-                                           label=label + (" app scope" if scoped else "") + suffix,
-                                           samples=per_sample, summary=agreement.summarise(per_sample, projects)))
+        for stage, label in STAGES:
+            per_sample = agreement.score_arm(loader(cfg, stage), samples, projects, labels)
+            result["arms"].append(dict(level=level, config=cfg, stage=stage, label=label + suffix,
+                                       samples=per_sample, summary=agreement.summarise(per_sample, projects)))
     result["fix_locations"] = fix_locations(predictions, labels)
     result["cost"] = cost(out)
     write_json(out / "metrics.json", result)
@@ -408,10 +405,10 @@ def evaluate(out, agreement_run="261021g", relax_run="261020h", baseline=relax.B
 
 
 def fix_locations(predictions, labels):
-    """Hinted-level, all-flows fate of each fix location in the guard tier, per sample."""
+    """Hinted-level fate of each fix location in the guard tier, per sample."""
     rows = {}
     for r in predictions:
-        if r["level"] != "hinted" or r["scoped"] or r["status"] != "predicted":
+        if r["level"] != "hinted" or r["status"] != "predicted":
             continue
         fixes = {(x["class"], x["method"]) for x in labels[r["project"]]}
         for loc in sorted({tuple(x) for x in r["guard"]} & fixes):
@@ -465,7 +462,7 @@ def render(result, labels):
         lines.append("| {} | {} | {} | {} | {} | {} | {} |".format(
             arm["level"].upper(), name, counts(s["detected"], n), ranged(s["macro_fdr"], pct),
             ranged(s["macro_f1"], f4), counts(s["flagged"], n), counts(s["pair_correct"], n)))
-    lines += ["", "## Fix locations in the guard tier (Hinted level, all flows)", "",
+    lines += ["", "## Fix locations in the guard tier (Hinted level)", "",
               "| Project | Revision | Fix location | Per sample |", "| --- | --- | --- | --- |"]
     lines += ["| {} | {} | `{}` | {} |".format(r["project"], r["variant"], r["location"], "; ".join(r["samples"]))
               for r in result["fix_locations"]]
@@ -482,7 +479,7 @@ def render(result, labels):
     lines += ["| {} | {} | {} | ${:.4f} |".format(k, v["calls"], v["failed"], v["cost"])
               for k, v in sorted(result["cost"].items())]
     lines += ["", "Failures, counted as kept locations:", ""]
-    lines += sorted({"- {} {}{} s{} / {} {}: {}".format(f["level"].upper(), f["config"], " app" if f["scoped"] else "",
-                                                       f["sample"], f["project"], f["variant"], f["reason"])
+    lines += sorted({"- {} {} s{} / {} {}: {}".format(f["level"].upper(), f["config"], f["sample"], f["project"],
+                                                     f["variant"], f["reason"])
                      for f in result["failures"]}) or ["- none"]
     return "\n".join(lines) + "\n"

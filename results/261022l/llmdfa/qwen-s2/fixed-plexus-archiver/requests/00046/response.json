@@ -1,0 +1,46 @@
+{
+  "id": "gen-1792657795-qnslv7Shs8dJJ76p4ONL",
+  "object": "chat.completion",
+  "created": 1792657795,
+  "model": "qwen/qwen3-coder-30b-a3b-instruct",
+  "provider": "Amazon Bedrock",
+  "system_fingerprint": null,
+  "service_tier": null,
+  "choices": [
+    {
+      "index": 0,
+      "logprobs": null,
+      "finish_reason": "stop",
+      "native_finish_reason": "end_turn",
+      "message": {
+        "role": "assistant",
+        "content": "Looking at the code, I need to trace the flow from line 22 to line 24:\n\nLine 22: `final tmp1 = getSourceFile();`\nLine 23: `final tmp2 = getDestDirectory();`\nLine 24: `extractFileIfIncluded( tmp1, tmp2, in, tmp3, ...`\nLine 25-32: Various tmp4, tmp5, tmp6, tmp7, tmp8 assignments\nLine 16: `final tmp0 = fileInfo.getName();`\nLine 17: `if ( isSelected( tmp0, fileInfo ) )`\nLine 23: `final tmp3 = fileInfo.getName();` (this is the tmp3 used at line 24)\n\nThe variable `tmp3` at line 24 is assigned the value of `fileInfo.getName()` at line 23. This assignment happens within the same conditional block where `tmp0` was assigned from `fileInfo.getName()` at line 16. \n\nHowever, looking more carefully, `tmp3` is assigned from `fileInfo.getName()` at line 23, which is the same expression that was used to assign `tmp0` at line 16. But these are separate assignments - `tmp0` is used in the `isSelected` method call, while `tmp3` is used in the `extractFileIfIncluded` method call.\n\nThe key point is that `tmp3` gets its value from `fileInfo.getName()` at line 23, but `tmp1` gets its value from `getSourceFile()` at line 22. These are completely independent assignments - `tmp1` is not used to compute `tmp3`.\n\nThe value of `tmp3` at line 24 depends only on `fileInfo.getName()` which is computed independently of `tmp1` (which comes from `getSourceFile()`).\n\nAnswer: No",
+        "refusal": null,
+        "reasoning": null
+      }
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 1455,
+    "completion_tokens": 399,
+    "total_tokens": 1854,
+    "cost": 0.00045765,
+    "is_byok": false,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0,
+      "video_tokens": 0
+    },
+    "cost_details": {
+      "upstream_inference_cost": 0.00045765,
+      "upstream_inference_prompt_cost": 0.00021825,
+      "upstream_inference_completions_cost": 0.0002394
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "image_tokens": 0,
+      "audio_tokens": 0
+    }
+  }
+}

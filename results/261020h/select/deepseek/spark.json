@@ -1,0 +1,76 @@
+{
+  "request": {
+    "model": "deepseek/deepseek-v4-pro",
+    "temperature": 0,
+    "max_tokens": 8000,
+    "reasoning": {
+      "effort": "low"
+    },
+    "messages": [
+      {
+        "role": "system",
+        "content": "Classify candidate taint SOURCES for a Java CWE-22 (path traversal) static analysis.\nA source is a method call whose RETURNED value can carry data that an external\nattacker controls and that may be used to name a file or resource path, such as\nnames read from an archive or upload, request parameters, environment or\ncommand-line input. Values the program computes or chooses itself, or that a\ntrusted caller supplies, are not sources. For each candidate decide\nsource | not_source | unknown. Cite at least one supplied call-site ID (K...)\nshowing how the value is obtained or used. Do not decide from the method name\nalone; if the supplied code is insufficient, answer unknown. Labels, versions\nand fix locations are unavailable.\nReturn ONLY JSON: {\"sources\":[{\"id\":\"C01\",\"decision\":\"source|not_source|unknown\",\n\"reason\":\"at most 30 words\",\"evidence\":[\"K1\"]}]}. Return every candidate exactly once.\n"
+      },
+      {
+        "role": "user",
+        "content": "{\"scope\": \"Java CWE-22 source selection; candidates already reach a path sink in a static run\", \"project_label\": \"subject\", \"candidates\": [{\"id\": \"C01\", \"signature\": \"<spark.resource.ClassPathResource: java.lang.String getDescription()>\", \"declared_in_project\": true, \"call_sites\": [{\"id\": \"K1\", \"caller\": \"<spark.resource.ClassPathResource: java.io.InputStream getInputStream()>\", \"line\": 144, \"code\": \"139:             is = this.clazz.getResourceAsStream(this.path);\\n140:         } else {\\n141:             is = this.classLoader.getResourceAsStream(this.path);\\n142:         }\\n143:         if (is == null) {\\n144:             throw new FileNotFoundException(getDescription() + \\\" cannot be opened because it does not exist\\\");\\n145:         }\\n146:         return is;\\n147:     }\\n148: \\n149:     /**\"}]}, {\"id\": \"C02\", \"signature\": \"<spark.utils.ClassUtils: java.lang.String classPackageAsResourcePath(java.lang.Class)>\", \"declared_in_project\": true, \"call_sites\": [{\"id\": \"K2\", \"caller\": \"<spark.resource.ClassPathResource: java.lang.String getDescription()>\", \"line\": 208, \"code\": \"203:     @Override\\n204:     public String getDescription() {\\n205:         StringBuilder builder = new StringBuilder(\\\"class path resource [\\\");\\n206:         String pathToUse = path;\\n207:         if (this.clazz != null && !pathToUse.startsWith(\\\"/\\\")) {\\n208:             builder.append(ClassUtils.classPackageAsResourcePath(this.clazz));\\n209:             builder.append('/');\\n210:         }\\n211:         if (pathToUse.startsWith(\\\"/\\\")) {\\n212:             pathToUse = pathToUse.substring(1);\\n213:         }\"}]}]}"
+      }
+    ]
+  },
+  "response": {
+    "id": "gen-1792478392-0PZ8Mseb1tMlKh6wJQ6k",
+    "object": "chat.completion",
+    "created": 1792478392,
+    "model": "deepseek/deepseek-v4-pro",
+    "provider": "Relace",
+    "system_fingerprint": null,
+    "service_tier": null,
+    "choices": [
+      {
+        "index": 0,
+        "logprobs": null,
+        "finish_reason": "stop",
+        "native_finish_reason": "stop",
+        "message": {
+          "role": "assistant",
+          "content": "{\n  \"sources\": [\n    {\n      \"id\": \"C01\",\n      \"decision\": \"not_source\",\n      \"reason\": \"Returned string is used only in an exception message, not as a file path; value derived from internal resource metadata, not attacker input.\",\n      \"evidence\": [\"K1\"]\n    },\n    {\n      \"id\": \"C02\",\n      \"decision\": \"not_source\",\n      \"reason\": \"Takes a Class object (trusted, not attacker-controlled) and returns a package path; used only in a description string, not for file access.\",\n      \"evidence\": [\"K2\"]\n    }\n  ]\n}",
+          "refusal": null,
+          "reasoning": "We are asked to classify candidate taint SOURCES for a Java CWE-22 (path traversal) static analysis. The candidates are methods whose returned value can carry data that an external attacker controls and that may be used to name a file or resource path. We need to decide source, not_source, or unknown for each candidate, citing at least one supplied call-site ID showing how the value is obtained or used. We must not decide from the method name alone; if the supplied code is insufficient, answer unknown.\n\nWe have two candidates: C01 and C02.\n\nC01: signature: <spark.resource.ClassPathResource: java.lang.String getDescription()>\nIt is declared in project. Call site K1: in getInputStream() method, line 144: throw new FileNotFoundException(getDescription() + \" cannot be opened because it does not exist\"); So getDescription() is used to construct an error message. The returned String is used in an exception message, not directly to open a file path. The value of getDescription() is derived from internal state (path, clazz, classLoader). It is not directly attacker-controlled; it's a description of the resource. The method returns a string that describes the resource, not a path that is used to access the file system in a way that could be manipulated. The call site shows it's used in an exception message, not as a file path. So it's not a source of tainted data for path traversal. Decision: not_source.\n\nC02: signature: <spark.utils.ClassUtils: java.lang.String classPackageAsResourcePath(java.lang.Class)>\nIt is declared in project. Call site K2: in getDescription() method, line 208: builder.append(ClassUtils.classPackageAsResourcePath(this.clazz)); This method takes a Class object and returns a resource path string (package name with slashes). The input is a Class object, which is typically a trusted class from the application's own code, not attacker-controlled. The returned string is used to build a description, not to open a file. The method itself computes a path from a class's package, which is determined by the application's structure, not external input. So it's not a source. Decision: not_source.\n\nThus both are not sources. We'll output JSON with both decisions. Provide evidence call-site IDs: for C01, K1; for C02, K2. Reason: brief.",
+          "reasoning_details": [
+            {
+              "type": "reasoning.text",
+              "text": "We are asked to classify candidate taint SOURCES for a Java CWE-22 (path traversal) static analysis. The candidates are methods whose returned value can carry data that an external attacker controls and that may be used to name a file or resource path. We need to decide source, not_source, or unknown for each candidate, citing at least one supplied call-site ID showing how the value is obtained or used. We must not decide from the method name alone; if the supplied code is insufficient, answer unknown.\n\nWe have two candidates: C01 and C02.\n\nC01: signature: <spark.resource.ClassPathResource: java.lang.String getDescription()>\nIt is declared in project. Call site K1: in getInputStream() method, line 144: throw new FileNotFoundException(getDescription() + \" cannot be opened because it does not exist\"); So getDescription() is used to construct an error message. The returned String is used in an exception message, not directly to open a file path. The value of getDescription() is derived from internal state (path, clazz, classLoader). It is not directly attacker-controlled; it's a description of the resource. The method returns a string that describes the resource, not a path that is used to access the file system in a way that could be manipulated. The call site shows it's used in an exception message, not as a file path. So it's not a source of tainted data for path traversal. Decision: not_source.\n\nC02: signature: <spark.utils.ClassUtils: java.lang.String classPackageAsResourcePath(java.lang.Class)>\nIt is declared in project. Call site K2: in getDescription() method, line 208: builder.append(ClassUtils.classPackageAsResourcePath(this.clazz)); This method takes a Class object and returns a resource path string (package name with slashes). The input is a Class object, which is typically a trusted class from the application's own code, not attacker-controlled. The returned string is used to build a description, not to open a file. The method itself computes a path from a class's package, which is determined by the application's structure, not external input. So it's not a source. Decision: not_source.\n\nThus both are not sources. We'll output JSON with both decisions. Provide evidence call-site IDs: for C01, K1; for C02, K2. Reason: brief.",
+              "format": "unknown",
+              "index": 0
+            }
+          ]
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 665,
+      "completion_tokens": 642,
+      "total_tokens": 1307,
+      "cost": 0.0015615,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 0,
+        "cache_write_tokens": 0,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 0.0015615,
+        "upstream_inference_prompt_cost": 0.0005985,
+        "upstream_inference_completions_cost": 0.000963
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 571,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    }
+  },
+  "attempts": 1,
+  "seconds": 8.22
+}

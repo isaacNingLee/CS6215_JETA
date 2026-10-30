@@ -1,0 +1,54 @@
+{
+  "id": "gen-1792656883-UrqP5XNyDNs5n3lAwrP0",
+  "object": "chat.completion",
+  "created": 1792656883,
+  "model": "deepseek/deepseek-v4-pro",
+  "provider": "DigitalOcean",
+  "system_fingerprint": null,
+  "service_tier": null,
+  "choices": [
+    {
+      "index": 0,
+      "logprobs": null,
+      "finish_reason": "stop",
+      "native_finish_reason": "stop",
+      "message": {
+        "role": "assistant",
+        "content": "",
+        "refusal": null,
+        "reasoning": "We are asked: \"Please identify the source values for path traversal (CWE-22) according to the following instructions. The sources indicate attacker-controlled data - If a variable is assigned the return value of a method named `getName` (called on a `ZipEntry`, yielding an archive entry's filename), it is a source value.\"\n\nWe have to look at the given program. The provided code is:\n\n```\n1. public static File writeZipStreamToTempDir(InputStream inputStream) throws IOException\n2.    {\n3.       File dir = FileHelper.createTempDir();\n4. \n5.       try\n6.       {\n7.          processZipStream(dir, inputStream);\n8.       }\n9. \n10.       catch (ZipException ex)\n11.       {\n12.          \n13.          \n14.          \n15.          \n16.          \n17.          \n18.          \n19.          if (!ex.getMessage().equals(\"only DEFLATED entries can have EXT descriptor\"))\n20.          {\n21.             throw ex;\n22.          }\n23.       }\n24. \n25.       return dir;\n26.    }\n```\n\nThere is no line where a variable is assigned the return value of a method named `getName` called on a `ZipEntry`. The code does not contain any `entry.getName()` call. There's only `processZipStream(dir, inputStream);` inside try, but that's a method call, not an assignment. No other variable assignments with `getName`. So no source values according to the given instruction.\n\nThus the answer is an empty string.",
+        "reasoning_details": [
+          {
+            "type": "reasoning.text",
+            "text": "We are asked: \"Please identify the source values for path traversal (CWE-22) according to the following instructions. The sources indicate attacker-controlled data - If a variable is assigned the return value of a method named `getName` (called on a `ZipEntry`, yielding an archive entry's filename), it is a source value.\"\n\nWe have to look at the given program. The provided code is:\n\n```\n1. public static File writeZipStreamToTempDir(InputStream inputStream) throws IOException\n2.    {\n3.       File dir = FileHelper.createTempDir();\n4. \n5.       try\n6.       {\n7.          processZipStream(dir, inputStream);\n8.       }\n9. \n10.       catch (ZipException ex)\n11.       {\n12.          \n13.          \n14.          \n15.          \n16.          \n17.          \n18.          \n19.          if (!ex.getMessage().equals(\"only DEFLATED entries can have EXT descriptor\"))\n20.          {\n21.             throw ex;\n22.          }\n23.       }\n24. \n25.       return dir;\n26.    }\n```\n\nThere is no line where a variable is assigned the return value of a method named `getName` called on a `ZipEntry`. The code does not contain any `entry.getName()` call. There's only `processZipStream(dir, inputStream);` inside try, but that's a method call, not an assignment. No other variable assignments with `getName`. So no source values according to the given instruction.\n\nThus the answer is an empty string.",
+            "format": "unknown",
+            "index": 0
+          }
+        ]
+      }
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 446,
+    "completion_tokens": 327,
+    "total_tokens": 773,
+    "cost": 0.0011484,
+    "is_byok": false,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0,
+      "video_tokens": 0
+    },
+    "cost_details": {
+      "upstream_inference_cost": 0.0011484,
+      "upstream_inference_prompt_cost": 0.000465624,
+      "upstream_inference_completions_cost": 0.000682776
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 323,
+      "image_tokens": 0,
+      "audio_tokens": 0
+    }
+  }
+}

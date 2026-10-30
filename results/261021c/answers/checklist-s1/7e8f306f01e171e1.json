@@ -1,0 +1,169 @@
+{
+  "request": {
+    "model": "typesafe/jev-1.13",
+    "state": {
+      "task": "Java code that a taint analysis reported as a possible path traversal (CWE-22). The questions are about the method under review.",
+      "code": "// File: src/main/java/net/lingala/zip4j/unzip/Unzip.java\n// Method under review: Unzip.checkOutputDirectoryStructure\n\tprivate ZipModel zipModel;\n\n\tpublic Unzip(ZipModel zipModel) throws ZipException {\r\n\t\t\r\n\t\tif (zipModel == null) {\r\n\t\t\tthrow new ZipException(\"ZipModel is null\");\r\n\t\t}\r\n\t\t\r\n\t\tthis.zipModel = zipModel;\r\n\t}\n\n\tprivate void checkOutputDirectoryStructure(FileHeader fileHeader, String outPath, String newFileName) throws ZipException {\r\n\t\tif (fileHeader == null || !Zip4jUtil.isStringNotNullAndNotEmpty(outPath)) {\r\n\t\t\tthrow new ZipException(\"Cannot check output directory structure...one of the parameters was null\");\r\n\t\t}\r\n\t\t\r\n\t\tString fileName = fileHeader.getFileName();\r\n\t\t\r\n\t\tif (Zip4jUtil.isStringNotNullAndNotEmpty(newFileName)) {\r\n\t\t\tfileName = newFileName;\r\n\t\t}\r\n\t\t\r\n\t\tif (!Zip4jUtil.isStringNotNullAndNotEmpty(fileName)) {\r\n\t\t\t// Do nothing\r\n\t\t\treturn;\r\n\t\t}\r\n\t\t\r\n\t\tString compOutPath = outPath + fileName;\r\n\t\ttry {\r\n\t\t\tFile file = new File(compOutPath);\r\n\t\t\tString parentDir = file.getParent();\r\n\t\t\tFile parentDirFile = new File(parentDir);\r\n\t\t\tif (!parentDirFile.exists()) {\r\n\t\t\t\tparentDirFile.mkdirs();\r\n\t\t\t}\r\n\t\t} catch (Exception e) {\r\n\t\t\tthrow new ZipException(e);\r\n\t\t}\r\n\t}"
+    },
+    "questions": {
+      "p1_c1": {
+        "type": "noul",
+        "instructions": "True if the answer to this question is yes: Is the base directory path derived from a trusted source (e.g., a hardcoded string, a final field, or a constructor parameter) and not from user input?"
+      },
+      "p1_c2": {
+        "type": "noul",
+        "instructions": "True if the answer to this question is yes: Does the method obtain the canonical form of the base directory by calling getCanonicalPath() (or getCanonicalFile().getPath()) on a File representing that directory?"
+      },
+      "p1_c3": {
+        "type": "noul",
+        "instructions": "True if the answer to this question is yes: Does the method construct the target path by resolving the user input against the base directory, for example using new File(canonicalBaseDir, userInput)?"
+      },
+      "p1_c4": {
+        "type": "noul",
+        "instructions": "True if the answer to this question is yes: Does the method obtain the canonical form of the target path by calling getCanonicalPath() (or getCanonicalFile().getPath()) on that File?"
+      },
+      "p1_c5": {
+        "type": "noul",
+        "instructions": "True if the answer to this question is yes: Does the method check that the canonical target path starts with the canonical base directory path followed by File.separator (e.g., targetCanonical.startsWith(baseCanonical + File.separator))?"
+      },
+      "p2_c1": {
+        "type": "noul",
+        "instructions": "True if the answer to this question is yes: Is the base directory path trusted (e.g., from a constant, field, or configuration) and not derived from user input?"
+      },
+      "p2_c2": {
+        "type": "noul",
+        "instructions": "True if the answer to this question is yes: Does the method obtain the real path of the base directory by calling Path.toRealPath() (with no arguments) on a Path object for that directory?"
+      },
+      "p2_c3": {
+        "type": "noul",
+        "instructions": "True if the answer to this question is yes: Does the method ensure the user-supplied path is relative (e.g., by checking that it does not start with '/' and does not contain ':') before using it with resolve?"
+      },
+      "p2_c4": {
+        "type": "noul",
+        "instructions": "True if the answer to this question is yes: Does the method resolve the user-relative path against the real base path using Path.resolve()?"
+      },
+      "p2_c5": {
+        "type": "noul",
+        "instructions": "True if the answer to this question is yes: Does the method call Path.normalize() on the resolved path?"
+      },
+      "p2_c6": {
+        "type": "noul",
+        "instructions": "True if the answer to this question is yes: Does the method verify that the normalized path starts with the real base path using Path.startsWith()?"
+      },
+      "p3_c1": {
+        "type": "noul",
+        "instructions": "True if the answer to this question is yes: Is the base directory path trusted (constant, field not from input) and not constructed from user input?"
+      },
+      "p3_c2": {
+        "type": "noul",
+        "instructions": "True if the answer to this question is yes: Does the method validate the user input against a regular expression that permits only safe filename characters (e.g., [a-zA-Z0-9._-]+) and explicitly forbids path separators, '..', and absolute path prefixes?"
+      },
+      "p3_c3": {
+        "type": "noul",
+        "instructions": "True if the answer to this question is yes: Does the method use the validated input solely as the file name component, for instance by passing it to new File(trustedBaseDir, validatedName) or Paths.get(trustedBaseDir, validatedName)?"
+      },
+      "p3_c4": {
+        "type": "noul",
+        "instructions": "True if the answer to this question is yes: Does the method avoid any other transformations of the user input that could introduce path separators after validation?"
+      },
+      "p4_c1": {
+        "type": "noul",
+        "instructions": "True if the answer to this question is yes: Does the method use the user input solely as a key to retrieve a path from a predefined, static mapping (e.g., a Map<String, Path> initialized with constants, or a switch statement returning fixed paths)?"
+      },
+      "p4_c2": {
+        "type": "noul",
+        "instructions": "True if the answer to this question is yes: Are all paths in that mapping hardcoded constants or loaded from a trusted source that is not controllable by the current user?"
+      },
+      "p4_c3": {
+        "type": "noul",
+        "instructions": "True if the answer to this question is yes: Does the method use the retrieved path directly as the file location without subsequently concatenating any user-controlled strings?"
+      }
+    }
+  },
+  "response": {
+    "model": "typesafe/jev-1.13-20260917",
+    "answers": {
+      "p1_c1": {
+        "type": "noul",
+        "noul": 0.29
+      },
+      "p1_c2": {
+        "type": "noul",
+        "noul": 0.03
+      },
+      "p1_c3": {
+        "type": "noul",
+        "noul": 0.13
+      },
+      "p1_c4": {
+        "type": "noul",
+        "noul": 0.02
+      },
+      "p1_c5": {
+        "type": "noul",
+        "noul": 0.03
+      },
+      "p2_c1": {
+        "type": "noul",
+        "noul": 0.49
+      },
+      "p2_c2": {
+        "type": "noul",
+        "noul": 0.02
+      },
+      "p2_c3": {
+        "type": "noul",
+        "noul": 0.04
+      },
+      "p2_c4": {
+        "type": "noul",
+        "noul": 0.03
+      },
+      "p2_c5": {
+        "type": "noul",
+        "noul": 0.03
+      },
+      "p2_c6": {
+        "type": "noul",
+        "noul": 0.03
+      },
+      "p3_c1": {
+        "type": "noul",
+        "noul": 0.3
+      },
+      "p3_c2": {
+        "type": "noul",
+        "noul": 0.03
+      },
+      "p3_c3": {
+        "type": "noul",
+        "noul": 0.17
+      },
+      "p3_c4": {
+        "type": "noul",
+        "noul": 0.61
+      },
+      "p4_c1": {
+        "type": "noul",
+        "noul": 0.02
+      },
+      "p4_c2": {
+        "type": "noul",
+        "noul": 0.13
+      },
+      "p4_c3": {
+        "type": "noul",
+        "noul": 0.1
+      }
+    },
+    "usage": {
+      "input_tokens": 1553,
+      "output_tokens": 346,
+      "cost": 6.5226e-05
+    },
+    "id": "gen-dec-1792545480-KV2s4s0PhNQJZG7wywd3",
+    "provider": "TypeSafe"
+  },
+  "attempts": 1,
+  "seconds": 0.78
+}

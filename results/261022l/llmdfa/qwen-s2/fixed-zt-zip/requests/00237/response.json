@@ -1,0 +1,46 @@
+{
+  "id": "gen-1792656541-VCmMmBurMpuhHeRfHTeX",
+  "object": "chat.completion",
+  "created": 1792656541,
+  "model": "qwen/qwen3-coder-30b-a3b-instruct",
+  "provider": "SiliconFlow",
+  "system_fingerprint": null,
+  "service_tier": null,
+  "choices": [
+    {
+      "index": 0,
+      "logprobs": null,
+      "finish_reason": "stop",
+      "native_finish_reason": "stop",
+      "message": {
+        "role": "assistant",
+        "content": "Explanation: Let me trace through this path step by step.\n\nLine 11: `String name = mapper.map(getUnrootedName(root, zipEntry.getName()));`\nThis line executes and sets the variable `name`.\n\nLine 34: `FileUtils.copy(in, file);` \nAccording to the facts, this line is in the true branch of the if-statement with condition `(zipEntry.isDirectory())` at line 23. This means we are in the else branch of the directory check, so `zipEntry.isDirectory()` must be false, and we are executing the code for regular files.\n\nLine 1: `public static void copy(InputStream in, File file) throws IOException {`\nThis is the method signature and is always reachable when the method is called.\n\nLine 2: `OutputStream out = new BufferedOutputStream(new FileOutputStream(file));`\nThis line executes as part of the copy method.\n\nFor this path to be reachable, we need:\n1. Line 12 condition `(name != null)` to be true (so we enter the if block)\n2. Line 23 condition `(zipEntry.isDirectory())` to be false (so we go to the else branch)\n3. The path from line 11 to line 34 is in the same basic block (lines 11-33), so it's reachable\n\nSince line 11 is in the same basic block as line 34, and the conditions can be satisfied (name can be non-null, and zipEntry can be a file), this path is reachable. The path leads to a file copy operation which could potentially cause an exception if there are issues with file I/O operations.\n\nAnswer: Yes",
+        "refusal": null,
+        "reasoning": null
+      }
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 2507,
+    "completion_tokens": 346,
+    "total_tokens": 2853,
+    "cost": 0.00027237,
+    "is_byok": false,
+    "prompt_tokens_details": {
+      "cached_tokens": 1824,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0,
+      "video_tokens": 0
+    },
+    "cost_details": {
+      "upstream_inference_cost": 0.00027237,
+      "upstream_inference_prompt_cost": 0.00017549,
+      "upstream_inference_completions_cost": 9.688e-05
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "image_tokens": 0,
+      "audio_tokens": 0
+    }
+  }
+}

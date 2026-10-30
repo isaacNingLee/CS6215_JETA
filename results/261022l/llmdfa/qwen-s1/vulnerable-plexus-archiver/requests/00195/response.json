@@ -1,0 +1,46 @@
+{
+  "id": "gen-1792655686-YkM6FCrvOz9NsYZWrDfc",
+  "object": "chat.completion",
+  "created": 1792655686,
+  "model": "qwen/qwen3-coder-30b-a3b-instruct",
+  "provider": "Amazon Bedrock",
+  "system_fingerprint": null,
+  "service_tier": null,
+  "choices": [
+    {
+      "index": 0,
+      "logprobs": null,
+      "finish_reason": "stop",
+      "native_finish_reason": "end_turn",
+      "message": {
+        "role": "assistant",
+        "content": "Looking at this path analysis, I need to trace through each step and determine if the path is reachable.\n\nLet me analyze each segment:\n\n1. **Line 10 in getName** → **Line 10 in getName**: This is the same line, so it's trivially reachable within the same basic block.\n\n2. **Line 10 in getName** → **Line 23 in execute**: For this to be reachable, the condition `isSelected(tmp0, fileInfo)` must be true. This is possible since `isSelected()` could return true for some inputs.\n\n3. **Line 23 in execute** → **Line 24 in execute**: Since line 23 is in the true branch of the if-statement (as stated), and we're following the path where the condition is true, line 24 is reachable.\n\n4. **Line 24 in execute** → **Line 1 in extractFileIfIncluded**: This is a method call, so it's reachable if the previous conditions are met.\n\n5. **Line 1 in extractFileIfIncluded** → **Line 6 in extractFileIfIncluded**: This is also a method call, reachable.\n\n6. **Line 1 in extractFile** → **Line 36 in extractFile**: Line 36 is in the else branch of the if-statement with condition `isDirectory`. For this to be reachable, `isDirectory` must be false. This is possible since `isDirectory` is a parameter that could be false.\n\nHowever, looking more carefully at the path, I notice that the path goes from line 10 in getName (which involves a potential NullPointerException if `unicodePath` is null) to line 36 in extractFile. The key issue is that the path assumes certain conditions hold throughout the execution chain.\n\nThe critical point is that line 10 in getName contains a potential NullPointerException if `unicodePath` is null, but the path assumes this code executes successfully. The path conditions require that:\n- `unicodePath != null` evaluates to true (so line 10 executes)\n- `isSelected(tmp0, fileInfo)` evaluates to true (so lines 23-24 execute)  \n- `isDirectory` evaluates to false (so line 36 executes)\n\nAll these conditions are possible in normal execution scenarios, making the path reachable.\n\nExplanation: The path traces a sequence of operations that can all be executed under normal conditions. The path starts with a valid execution in getName, continues through execute() with a positive isSelected() result, and proceeds to extractFile() where isDirectory is false, allowing the FileOutputStream creation at line 36 to execute. All branch conditions can be satisfied, making this a reachable path.\n\nAnswer: Yes",
+        "refusal": null,
+        "reasoning": null
+      }
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 3452,
+    "completion_tokens": 564,
+    "total_tokens": 4016,
+    "cost": 0.0008562,
+    "is_byok": false,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0,
+      "video_tokens": 0
+    },
+    "cost_details": {
+      "upstream_inference_cost": 0.0008562,
+      "upstream_inference_prompt_cost": 0.0005178,
+      "upstream_inference_completions_cost": 0.0003384
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "image_tokens": 0,
+      "audio_tokens": 0
+    }
+  }
+}

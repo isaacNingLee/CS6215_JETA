@@ -1,0 +1,46 @@
+{
+  "id": "gen-1792657986-EMOlDCiXLM98b71G6dYP",
+  "object": "chat.completion",
+  "created": 1792657986,
+  "model": "qwen/qwen3-coder-30b-a3b-instruct",
+  "provider": "Amazon Bedrock",
+  "system_fingerprint": null,
+  "service_tier": null,
+  "choices": [
+    {
+      "index": 0,
+      "logprobs": null,
+      "finish_reason": "stop",
+      "native_finish_reason": "end_turn",
+      "message": {
+        "role": "assistant",
+        "content": "Looking at the code, I need to trace the dependencies between variables:\n\n1. Line 15: `final ZipEntryFileInfo fileInfo = new ZipEntryFileInfo( zf, ze );`\n2. Line 16: `final tmp0 = fileInfo.getName();`\n3. Line 17: `if ( isSelected( tmp0, fileInfo ) )`\n4. Line 25: `final tmp4 = ze.getTime();`\n5. Line 26: `final tmp5 = ze.isDirectory();`\n\nThe question asks whether the value of `fileInfo` used at line 17 depends on the value of `tmp5` (which comes from `ze.isDirectory()`) at line 26.\n\nLet me trace the flow:\n- `fileInfo` is created at line 15 using `zf` and `ze` as parameters\n- `fileInfo` is used at line 17 in the `isSelected` method call\n- `tmp5` is created at line 26 using `ze.isDirectory()`\n- The `isSelected` method uses both `tmp0` (which is `fileInfo.getName()`) and `fileInfo` as parameters\n\nHowever, looking more carefully:\n- `fileInfo` is created once at line 15 and remains constant throughout the loop iteration\n- `tmp5` is created at line 26 and is independent of `fileInfo` - it's derived from `ze.isDirectory()`\n- The `isSelected` method call at line 17 uses `fileInfo`, but `fileInfo` itself is not constructed from or dependent on `tmp5`\n\nThe value of `fileInfo` is determined entirely by the constructor `new ZipEntryFileInfo(zf, ze)` at line 15, which uses `zf` and `ze`. The value of `tmp5` (from `ze.isDirectory()`) is completely separate and doesn't affect how `fileInfo` was constructed.\n\nExplanation: The variable `fileInfo` is created at line 15 using `zf` and `ze` as parameters, and its value is independent of `tmp5` which is created later at line 26 from `ze.isDirectory()`. The `isSelected` method at line 17 uses `fileInfo` but this usage doesn't depend on the value of `tmp5`.\n\nAnswer: No",
+        "refusal": null,
+        "reasoning": null
+      }
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 1455,
+    "completion_tokens": 484,
+    "total_tokens": 1939,
+    "cost": 0.00050865,
+    "is_byok": false,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0,
+      "video_tokens": 0
+    },
+    "cost_details": {
+      "upstream_inference_cost": 0.00050865,
+      "upstream_inference_prompt_cost": 0.00021825,
+      "upstream_inference_completions_cost": 0.0002904
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "image_tokens": 0,
+      "audio_tokens": 0
+    }
+  }
+}

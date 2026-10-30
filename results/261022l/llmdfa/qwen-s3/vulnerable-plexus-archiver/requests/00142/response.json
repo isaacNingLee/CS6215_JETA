@@ -1,0 +1,46 @@
+{
+  "id": "gen-1792658482-VpiM6kFgJRJ775F4bF8O",
+  "object": "chat.completion",
+  "created": 1792658482,
+  "model": "qwen/qwen3-coder-30b-a3b-instruct",
+  "provider": "Amazon Bedrock",
+  "system_fingerprint": null,
+  "service_tier": null,
+  "choices": [
+    {
+      "index": 0,
+      "logprobs": null,
+      "finish_reason": "stop",
+      "native_finish_reason": "end_turn",
+      "message": {
+        "role": "assistant",
+        "content": "Looking at the code, I need to trace the flow from line 29 (where `tmp11` is defined) to line 28 (where `outputDirectory` is used).\n\nLet me trace the execution:\n- Line 27: `final tmp10 = getSourceFile();` - tmp10 gets the source file\n- Line 28: `extractFileIfIncluded( tmp10, outputDirectory, in, ...` - outputDirectory is passed as an argument\n- Line 29: `final tmp11 = ze.getName();` - tmp11 gets the name from zip entry\n- Line 30: `final tmp12 = ze.getTime();` - tmp12 gets time from zip entry\n- Line 31: `final tmp13 = ze.isDirectory();` - tmp13 gets directory status\n- Line 32: `tmp11, new Date( tmp12 ), tmp13, ...` - tmp11 is passed as an argument to extractFileIfIncluded\n- Line 33: `final tmp14 = ze.getUnixMode();` - tmp14 gets Unix mode\n- Line 34: `final tmp15 = ze.getUnixMode();` - tmp15 gets Unix mode\n- Line 35: `tmp14 != 0 ? tmp14 : null,` - tmp14 is used\n- Line 36: `final tmp16 = resolveSymlink( zipFile, ze );` - tmp16 gets symlink resolution\n- Line 37: `tmp16 );` - tmp16 is passed as an argument\n\nThe key observation is that `outputDirectory` is passed as a parameter to `extractFileIfIncluded` at line 28, but it's not derived from or dependent on `tmp11` which is defined at line 29. These are completely separate variables being passed to the same function call.\n\nLooking more carefully, `outputDirectory` is a parameter of the method (line 2), and it's passed directly to `extractFileIfIncluded` at line 28 without any dependency on `tmp11`. The `tmp11` variable is defined later at line 29 and is used within the same function call but doesn't affect the value of `outputDirectory`.\n\nExplanation: The variable `outputDirectory` is a method parameter that is passed directly to the `extractFileIfIncluded` function at line 28. The variable `tmp11` is defined at line 29 and is used as part of the same function call, but there is no data flow or dependency between `outputDirectory` and `tmp11`. They are independent variables where `outputDirectory` comes from the method signature and `tmp11` is computed from the zip entry information.\n\nAnswer: No",
+        "refusal": null,
+        "reasoning": null
+      }
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 1482,
+    "completion_tokens": 600,
+    "total_tokens": 2082,
+    "cost": 0.0005823,
+    "is_byok": false,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0,
+      "video_tokens": 0
+    },
+    "cost_details": {
+      "upstream_inference_cost": 0.0005823,
+      "upstream_inference_prompt_cost": 0.0002223,
+      "upstream_inference_completions_cost": 0.00036
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "image_tokens": 0,
+      "audio_tokens": 0
+    }
+  }
+}

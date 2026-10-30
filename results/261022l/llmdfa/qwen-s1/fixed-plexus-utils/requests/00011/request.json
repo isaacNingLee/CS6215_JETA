@@ -1,0 +1,18 @@
+{
+  "model": "qwen/qwen3-coder-30b-a3b-instruct",
+  "temperature": 0,
+  "max_tokens": 8000,
+  "reasoning": {
+    "effort": "low"
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are a Java programmer and very good at analyzing Java code."
+    },
+    {
+      "role": "user",
+      "content": "Please identify the sink values for path traversal (CWE-22) according to the following instructions.\n- When a variable/expression is used as argument 0 of a `FileOutputStream` constructor call (the file being opened for writing), it is a sink for path traversal.\nExample (illustrative only; report values from the program below):\n1. Object stream = new FileOutputStream(target);\n- Sink name: target, Line number: 1\nNegative example: 1. validate();\nAnswer: an empty string. A helper call is not the specified sink API.\nNow I will give you the program. Please list all the names of sinks and the line numbers.The line numbers should indicate the line of the call that consumes the value.\nDo not add extra explanations.Just list the pairs of variable/expression and line number line by line.Each line should start with -.If there is no variable as sink, just output an empty string.\nHere are several examples:\nExample 1:\n- Sink name: a, Line number: 2\nExample 2:\n- Sink name: (prefix + name), Line number: 3\nHere is the program:\n```\n1. protected void extractFile( File srcF, File dir, InputStream compressedInputStream, String entryName,\n2.                                 Date entryDate, boolean isDirectory )\n3.         throws Exception\n4.     {\n5.         File f = FileUtils.resolveFile( dir, entryName );\n6. \n7.         if ( !f.getAbsolutePath().startsWith( dir.getAbsolutePath() ) )\n8.         {\n9.             throw new IOException( \"Entry '\" + entryName + \"' outside the target directory.\" );\n10.         }\n11. \n12.         try\n13.         {\n14.             if ( !overwrite && f.exists() && f.lastModified() >= entryDate.getTime() )\n15.             {\n16.                 return;\n17.             }\n18. \n19.             \n20.             File dirF = f.getParentFile();\n21.             dirF.mkdirs();\n22. \n23.             if ( isDirectory )\n24.             {\n25.                 f.mkdirs();\n26.             }\n27.             else\n28.             {\n29.                 byte[] buffer = new byte[ 65536 ];\n30.                 FileOutputStream fos = null;\n31.                 try\n32.                 {\n33.                     fos = new FileOutputStream( f );\n34. \n35.                     for ( int length = compressedInputStream.read( buffer );\n36.                           length >= 0;\n37.                           fos.write( buffer, 0, length ), length = compressedInputStream.read( buffer ) );\n38. \n39.                     fos.close();\n40.                     fos = null;\n41.                 }\n42.                 finally\n43.                 {\n44.                     IOUtil.close( fos );\n45.                 }\n46.             }\n47. \n48.             f.setLastModified( entryDate.getTime() );\n49.         }\n50.         catch ( FileNotFoundException ex )\n51.         {\n52.             throw new Exception( \"Can't extract file \" + srcF.getPath(), ex );\n53.         }\n54. \n55.     }\n```\n"
+    }
+  ]
+}

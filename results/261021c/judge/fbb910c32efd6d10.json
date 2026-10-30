@@ -1,0 +1,39 @@
+{
+  "request": {
+    "model": "typesafe/jev-1.13",
+    "state": {
+      "task": "Two agents analysed Java code for path traversal (CWE-22). Their final answers follow, then the code of each method in question.",
+      "agent_answers": [
+        "{\"findings\": [{\"cwe\": \"CWE-22\", \"class\": \"Expand\", \"method\": \"extractFile\", \"explanation\": \"The extractFile method in Expand class receives an untrusted archive entry name (entryName) from ZipEntry.getName() which is a configured source, and uses it directly to construct a file path with FileUtils.resolveFile(dir, entryName). This path construction can lead to path traversal vulnerabilities because there's no adequate restriction or sanitization of the entryName before it's used to create the file path, allowing an attacker to specify paths that escape the intended destination directory.\"}]}",
+        "{\"findings\":[{\"cwe\":\"CWE-22\",\"class\":\"Expand\",\"method\":\"extractFile\",\"explanation\":\"In extractFile, the attacker-controlled zip entry name (from ZipEntry.getName()) is resolved into a File via FileUtils.resolveFile and then written with FileOutputStream. The only containment check is f.getAbsolutePath().startsWith(dir.getAbsolutePath()), which is inadequate because a path such as a destination child containing ../ escapes the destination directory after OS path resolution while its absolute-path string still starts with the destination prefix.\"}]}"
+      ],
+      "methods": {
+        "Expand.extractFile": "// File: src/main/java/org/codehaus/plexus/util/Expand.java\n// Method under review: Expand.extractFile\n    private File dest;\n\n    private File source;\n\n    private boolean overwrite = true;\n\n    protected void extractFile( File srcF, File dir, InputStream compressedInputStream, String entryName,\n                                Date entryDate, boolean isDirectory )\n        throws Exception\n    {\n        File f = FileUtils.resolveFile( dir, entryName );\n\n        if ( !f.getAbsolutePath().startsWith( dir.getAbsolutePath() ) )\n        {\n            throw new IOException( \"Entry '\" + entryName + \"' outside the target directory.\" );\n        }\n\n        try\n        {\n            if ( !overwrite && f.exists() && f.lastModified() >= entryDate.getTime() )\n            {\n                return;\n            }\n\n            // create intermediary directories - sometimes zip don't add them\n            File dirF = f.getParentFile();\n            dirF.mkdirs();\n\n            if ( isDirectory )\n            {\n                f.mkdirs();\n            }\n            else\n            {\n                byte[] buffer = new byte[ 65536 ];\n                FileOutputStream fos = null;\n                try\n                {\n                    fos = new FileOutputStream( f );\n\n                    for ( int length = compressedInputStream.read( buffer );\n                          length >= 0;\n                          fos.write( buffer, 0, length ), length = compressedInputStream.read( buffer ) );\n\n                    fos.close();\n                    fos = null;\n                }\n                finally\n                {\n                    IOUtil.close( fos );\n                }\n            }\n\n            f.setLastModified( entryDate.getTime() );\n        }\n        catch ( FileNotFoundException ex )\n        {\n            throw new Exception( \"Can't extract file \" + srcF.getPath(), ex );\n        }\n\n    }"
+      }
+    },
+    "questions": {
+      "m1": {
+        "type": "noul",
+        "instructions": "True if the agents' final answers conclude that the method Expand.extractFile is part of a path traversal vulnerability (it builds, passes or opens the attacker-controlled path)."
+      }
+    }
+  },
+  "response": {
+    "model": "typesafe/jev-1.13-20260917",
+    "answers": {
+      "m1": {
+        "type": "noul",
+        "noul": 0.98
+      }
+    },
+    "usage": {
+      "input_tokens": 1065,
+      "output_tokens": 21,
+      "cost": 4.473e-05
+    },
+    "id": "gen-dec-1792569977-QjUU5ikJsYV15CXHAqQ6",
+    "provider": "TypeSafe"
+  },
+  "attempts": 1,
+  "seconds": 0.55
+}

@@ -1,0 +1,18 @@
+# Generic JDK path-object propagation (no sanitizers: normalization is not a guard).
+transfers:
+  - { method: "<java.io.File: void <init>(java.lang.String)>", from: 0, to: base, type: java.io.File }
+  - { method: "<java.io.File: void <init>(java.io.File,java.lang.String)>", from: 1, to: base, type: java.io.File }
+  - { method: "<java.io.File: void <init>(java.lang.String,java.lang.String)>", from: 0, to: base, type: java.io.File }
+  - { method: "<java.io.File: void <init>(java.lang.String,java.lang.String)>", from: 1, to: base, type: java.io.File }
+  - { method: "<java.io.File: java.lang.String getPath()>", from: base, to: result }
+  - { method: "<java.io.File: java.lang.String getAbsolutePath()>", from: base, to: result }
+  - { method: "<java.io.File: java.lang.String getCanonicalPath()>", from: base, to: result }
+  - { method: "<java.io.File: java.io.File getAbsoluteFile()>", from: base, to: result }
+  - { method: "<java.io.File: java.io.File getCanonicalFile()>", from: base, to: result }
+  - { method: "<java.io.File: java.nio.file.Path toPath()>", from: base, to: result }
+  - { method: "<java.nio.file.Paths: java.nio.file.Path get(java.lang.String,java.lang.String[])>", from: 0, to: result }
+  - { method: "<java.nio.file.Paths: java.nio.file.Path get(java.lang.String,java.lang.String[])>", from: "1[*]", to: result }
+  - { method: "<java.nio.file.Path: java.nio.file.Path resolve(java.lang.String)>", from: 0, to: result }
+  - { method: "<java.nio.file.Path: java.nio.file.Path resolve(java.lang.String)>", from: base, to: result }
+  - { method: "<java.nio.file.Path: java.nio.file.Path normalize()>", from: base, to: result }
+  - { method: "<java.nio.file.Path: java.io.File toFile()>", from: base, to: result }

@@ -1,0 +1,46 @@
+{
+  "id": "gen-1792654136-PExRwchcDlMrw1j7H6Yv",
+  "object": "chat.completion",
+  "created": 1792654136,
+  "model": "qwen/qwen3-coder-30b-a3b-instruct",
+  "provider": "Amazon Bedrock",
+  "system_fingerprint": null,
+  "service_tier": null,
+  "choices": [
+    {
+      "index": 0,
+      "logprobs": null,
+      "finish_reason": "stop",
+      "native_finish_reason": "end_turn",
+      "message": {
+        "role": "assistant",
+        "content": "Looking at the code, I need to trace the dependencies between variables:\n\n1. Line 15: `final ZipEntryFileInfo fileInfo = new ZipEntryFileInfo( zf, ze );`\n2. Line 16: `final tmp0 = fileInfo.getName();`\n3. Line 17: `if ( isSelected( tmp0, fileInfo ) )`\n4. Line 25: `final tmp4 = ze.getTime();`\n5. Line 26: `final tmp5 = ze.isDirectory();`\n\nThe question asks whether the value of `fileInfo` used at line 17 depends on the value of `ze` (which is used to create `tmp5`) at line 26.\n\nLet me trace the flow:\n- `fileInfo` is created at line 15 using `zf` and `ze` as parameters\n- `fileInfo.getName()` is called at line 16 to create `tmp0`\n- At line 17, `fileInfo` is used in the `isSelected` method call\n- The `isSelected` method uses both `tmp0` (which comes from `fileInfo.getName()`) and `fileInfo` itself\n- However, `ze` (used to create `tmp5` at line 26) is completely independent of the `fileInfo` creation and usage at line 17\n\nThe `fileInfo` object is created once at line 15 and used at line 17. The `ze` variable is used later at line 26 to create `tmp5`, but this happens after the `fileInfo` has already been created and used in the `isSelected` call. There's no dependency chain where the value of `ze` at line 26 affects the value of `fileInfo` used at line 17.\n\nThe `fileInfo` object contains information derived from `ze` when it was created, but the `ze` value used at line 26 is independent of the `fileInfo` usage at line 17.\n\nAnswer: No",
+        "refusal": null,
+        "reasoning": null
+      }
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 1455,
+    "completion_tokens": 426,
+    "total_tokens": 1881,
+    "cost": 0.00047385,
+    "is_byok": false,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0,
+      "video_tokens": 0
+    },
+    "cost_details": {
+      "upstream_inference_cost": 0.00047385,
+      "upstream_inference_prompt_cost": 0.00021825,
+      "upstream_inference_completions_cost": 0.0002556
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "image_tokens": 0,
+      "audio_tokens": 0
+    }
+  }
+}

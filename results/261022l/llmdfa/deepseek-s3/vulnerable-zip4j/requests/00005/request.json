@@ -1,0 +1,18 @@
+{
+  "model": "deepseek/deepseek-v4-pro",
+  "temperature": 0,
+  "max_tokens": 16000,
+  "reasoning": {
+    "effort": "low"
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are a Java programmer and very good at analyzing Java code."
+    },
+    {
+      "role": "user",
+      "content": "Please identify the source values for path traversal (CWE-22) according to the following instructions. The sources indicate attacker-controlled data\n- If a variable is assigned the return value of a method named `getFileName` (called on a `FileHeader`, yielding an archive entry's filename), it is a source value.\nExample (illustrative only; report values from the program below):\n1. String entryName = entry.getFileName();\n- Src name: entryName, Line number: 1\nNegative example: 1. validate();\nAnswer: an empty string. Never copy example identifiers into the answer.\nNow I will give you the program. Please list all the names of sources and the line numbers.The line numbers should indicate the line where the values of variables can be attacker-controlled.A variable can occur multiple times if it is assigned by different statements.\nDo not add extra explanations.Just list the pairs of variable and line number (where the variable has an attacker-controlled value) line by line.Each line should start with -.If there is no variable as source, just output an empty string.\nHere are several examples:\nExample 1:\n- Src name: x, Line number: 1\n- Src name: x, Line number: 4\nExample 2:\n- Src name: y, Line number: 3\nHere is the program:\n```\n1. private void readZipInfo() throws ZipException {\n2. \t\t\n3. \t\tif (!Zip4jUtil.checkFileExists(file)) {\n4. \t\t\tthrow new ZipException(\"zip file does not exist\");\n5. \t\t}\n6. \t\t\n7. \t\tif (!Zip4jUtil.checkFileReadAccess(this.file)) {\n8. \t\t\tthrow new ZipException(\"no read access for the input zip file\");\n9. \t\t}\n10. \t\t\n11. \t\tif (this.mode != InternalZipConstants.MODE_UNZIP) {\n12. \t\t\tthrow new ZipException(\"Invalid mode\");\n13. \t\t}\n14. \t\t\n15. \t\tRandomAccessFile raf = null;\n16. \t\ttry {\n17. \t\t\traf = new RandomAccessFile(new File(file), InternalZipConstants.READ_MODE);\n18. \t\t\t\n19. \t\t\tif (zipModel == null) {\n20. \t\t\t\t\n21. \t\t\t\tHeaderReader headerReader = new HeaderReader(raf);\n22. \t\t\t\tzipModel = headerReader.readAllHeaders(this.fileNameCharset);\n23. \t\t\t\tif (zipModel != null) {\n24. \t\t\t\t\tzipModel.setZipFile(file);\n25. \t\t\t\t}\n26. \t\t\t}\n27. \t\t} catch (FileNotFoundException e) {\n28. \t\t\tthrow new ZipException(e);\n29. \t\t} finally {\n30. \t\t\tif (raf != null) {\n31. \t\t\t\ttry {\n32. \t\t\t\t\traf.close();\n33. \t\t\t\t} catch (IOException e) {\n34. \t\t\t\t\t\n35. \t\t\t\t}\n36. \t\t\t}\n37. \t\t}\n38. \t}\n```\n"
+    }
+  ]
+}

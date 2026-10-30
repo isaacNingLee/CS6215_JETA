@@ -1,0 +1,12 @@
+{
+  "project": "plexus-utils",
+  "variant": "fixed",
+  "commit": "33a2853df8185b4519b1b8bfae284f03392618ef",
+  "stamp": {
+    "version": 1,
+    "context_sha256": "3720cdd7901450bc0f65629c2978eea431a40268b98933cac03f87918bc90441"
+  },
+  "locations": {
+    "Expand.extractFile": "// File: src/main/java/org/codehaus/plexus/util/Expand.java\n// Method under review: Expand.extractFile\n    private File dest;\n\n    private File source;\n\n    private boolean overwrite = true;\n\n    protected void extractFile( File srcF, File dir, InputStream compressedInputStream, String entryName,\n                                Date entryDate, boolean isDirectory )\n        throws Exception\n    {\n        File f = FileUtils.resolveFile( dir, entryName );\n\n        if ( !f.getAbsolutePath().startsWith( dir.getAbsolutePath() ) )\n        {\n            throw new IOException( \"Entry '\" + entryName + \"' outside the target directory.\" );\n        }\n\n        try\n        {\n            if ( !overwrite && f.exists() && f.lastModified() >= entryDate.getTime() )\n            {\n                return;\n            }\n\n            // create intermediary directories - sometimes zip don't add them\n            File dirF = f.getParentFile();\n            dirF.mkdirs();\n\n            if ( isDirectory )\n            {\n                f.mkdirs();\n            }\n            else\n            {\n                byte[] buffer = new byte[ 65536 ];\n                FileOutputStream fos = null;\n                try\n                {\n                    fos = new FileOutputStream( f );\n\n                    for ( int length = compressedInputStream.read( buffer );\n                          length >= 0;\n                          fos.write( buffer, 0, length ), length = compressedInputStream.read( buffer ) );\n\n                    fos.close();\n                    fos = null;\n                }\n                finally\n                {\n                    IOUtil.close( fos );\n                }\n            }\n\n            f.setLastModified( entryDate.getTime() );\n        }\n        catch ( FileNotFoundException ex )\n        {\n            throw new Exception( \"Can't extract file \" + srcF.getPath(), ex );\n        }\n\n    }"
+  }
+}

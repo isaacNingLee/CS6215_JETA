@@ -1,0 +1,69 @@
+{
+  "model": "qwen/qwen3-coder-30b-a3b-instruct",
+  "mode": "vanilla",
+  "project": "spark",
+  "variant": "vulnerable",
+  "sample": 1,
+  "request": {
+    "model": "qwen/qwen3-coder-30b-a3b-instruct",
+    "temperature": 0,
+    "max_tokens": 8000,
+    "reasoning": {
+      "effort": "low"
+    },
+    "messages": [
+      {
+        "role": "user",
+        "content": "You are reviewing one Java source file for security vulnerabilities as part of a manual code audit. Do not assume any particular vulnerability class in advance; look for anything a careful reviewer would flag.\n\nReport every vulnerability you find. Respond with ONLY a JSON object, no prose outside it, in this exact shape:\n{\"findings\": [{\"cwe\": \"CWE-XX\", \"class\": \"EnclosingClassName\", \"method\": \"methodName\", \"explanation\": \"one paragraph\"}]}\nUse the class's simple name (no package, no outer class prefix) and the method name as written in the source (for a constructor, use the class name, matching Java convention). If you find nothing worth reporting, return {\"findings\": []}.\n\nFile: src/main/java/spark/resource/ClassPathResource.java\n```java\n/*\n * Copyright 2002-2012 the original author or authors.\n *\n * Licensed under the Apache License, Version 2.0 (the \"License\");\n * you may not use this file except in compliance with the License.\n * You may obtain a copy of the License at\n *\n *      http://www.apache.org/licenses/LICENSE-2.0\n *\n * Unless required by applicable law or agreed to in writing, software\n * distributed under the License is distributed on an \"AS IS\" BASIS,\n * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n * See the License for the specific language governing permissions and\n * limitations under the License.\n */\n\npackage spark.resource;\n\nimport java.io.FileNotFoundException;\nimport java.io.IOException;\nimport java.io.InputStream;\nimport java.net.URL;\n\nimport spark.utils.Assert;\nimport spark.utils.ClassUtils;\nimport spark.utils.StringUtils;\n\n/**\n * {@link Resource} implementation for class path resources.\n * Uses either a given ClassLoader or a given Class for loading resources.\n * <p>Supports resolution as {@code java.io.File} if the class path\n * resource resides in the file system, but not for resources in a JAR.\n * Always supports resolution as URL.\n *\n * @author Juergen Hoeller\n * @author Sam Brannen\n * @see ClassLoader#getResourceAsStream(String)\n * @see Class#getResourceAsStream(String)\n * Code copied from Spring source. Modifications made (mostly removal of methods) by Per Wendel.\n */\npublic class ClassPathResource extends AbstractFileResolvingResource {\n\n    private final String path;\n\n    private ClassLoader classLoader;\n\n    private Class<?> clazz;\n\n\n    /**\n     * Create a new ClassPathResource for ClassLoader usage.\n     * A leading slash will be removed, as the ClassLoader\n     * resource access methods will not accept it.\n     * <p>The thread context class loader will be used for\n     * loading the resource.\n     *\n     * @param path the absolute path within the class path\n     * @see java.lang.ClassLoader#getResourceAsStream(String)\n     * @see spark.utils.ClassUtils#getDefaultClassLoader()\n     */\n    public ClassPathResource(String path) {\n        this(path, null);\n    }\n\n    /**\n     * Create a new ClassPathResource for ClassLoader usage.\n     * A leading slash will be removed, as the ClassLoader\n     * resource access methods will not accept it.\n     *\n     * @param path        the absolute path within the classpath\n     * @param classLoader the class loader to load the resource with,\n     *                    or {@code null} for the thread context class loader\n     * @see ClassLoader#getResourceAsStream(String)\n     */\n    public ClassPathResource(String path, ClassLoader classLoader) {\n        Assert.notNull(path, \"Path must not be null\");\n        String pathToUse = StringUtils.cleanPath(path);\n        if (pathToUse.startsWith(\"/\")) {\n            pathToUse = pathToUse.substring(1);\n        }\n        this.path = pathToUse;\n        this.classLoader = (classLoader != null ? classLoader : ClassUtils.getDefaultClassLoader());\n    }\n\n    /**\n     * Create a new ClassPathResource with optional ClassLoader and Class.\n     * Only for internal usage.\n     *\n     * @param path        relative or absolute path within the classpath\n     * @param classLoader the class loader to load the resource with, if any\n     * @param clazz       the class to load resources with, if any\n     */\n    protected ClassPathResource(String path, ClassLoader classLoader, Class<?> clazz) {\n        this.path = StringUtils.cleanPath(path);\n        this.classLoader = classLoader;\n        this.clazz = clazz;\n    }\n\n    /**\n     * Return the path for this resource (as resource path within the class path).\n     *\n     * @return the path\n     */\n    public final String getPath() {\n        return this.path;\n    }\n\n    /**\n     * This implementation checks for the resolution of a resource URL.\n     *\n     * @see java.lang.ClassLoader#getResource(String)\n     * @see java.lang.Class#getResource(String)\n     *\n     * @return if exists.\n     */\n    @Override\n    public boolean exists() {\n        URL url;\n        if (this.clazz != null) {\n            url = this.clazz.getResource(this.path);\n        } else {\n            url = this.classLoader.getResource(this.path);\n        }\n        return (url != null);\n    }\n\n    /**\n     * This implementation opens an InputStream for the given class path resource.\n     *\n     * @see java.lang.ClassLoader#getResourceAsStream(String)\n     * @see java.lang.Class#getResourceAsStream(String)\n     *\n     * @return the input stream.\n     */\n    @Override\n    public InputStream getInputStream() throws IOException {\n        InputStream is;\n        if (this.clazz != null) {\n            is = this.clazz.getResourceAsStream(this.path);\n        } else {\n            is = this.classLoader.getResourceAsStream(this.path);\n        }\n        if (is == null) {\n            throw new FileNotFoundException(getDescription() + \" cannot be opened because it does not exist\");\n        }\n        return is;\n    }\n\n    /**\n     * This implementation returns a URL for the underlying class path resource.\n     *\n     * @see java.lang.ClassLoader#getResource(String)\n     * @see java.lang.Class#getResource(String)\n     *\n     * @return the url.\n     */\n    @Override\n    public URL getURL() throws IOException {\n        URL url;\n        if (this.clazz != null) {\n            url = this.clazz.getResource(this.path);\n        } else {\n            url = this.classLoader.getResource(this.path);\n        }\n        if (url == null) {\n            throw new FileNotFoundException(getDescription() + \" cannot be resolved to URL because it does not exist\");\n        }\n        return url;\n    }\n\n    /**\n     * This implementation creates a ClassPathResource, applying the given path\n     * relative to the path of the underlying resource of this descriptor.\n     *\n     * @see spark.utils.StringUtils#applyRelativePath(String, String)\n     *\n     * @return the resource.\n     */\n    @Override\n    public Resource createRelative(String relativePath) {\n        String pathToUse = StringUtils.applyRelativePath(this.path, relativePath);\n        return new ClassPathResource(pathToUse, this.classLoader, this.clazz);\n    }\n\n    /**\n     * This implementation returns the name of the file that this class path\n     * resource refers to.\n     *\n     * @see spark.utils.StringUtils#getFilename(String)\n     *\n     * @return the file name.\n     */\n    @Override\n    public String getFilename() {\n        return StringUtils.getFilename(this.path);\n    }\n\n    /**\n     * This implementation returns a description that includes the class path location.\n     *\n     * @return the description.\n     */\n    @Override\n    public String getDescription() {\n        StringBuilder builder = new StringBuilder(\"class path resource [\");\n        String pathToUse = path;\n        if (this.clazz != null && !pathToUse.startsWith(\"/\")) {\n            builder.append(ClassUtils.classPackageAsResourcePath(this.clazz));\n            builder.append('/');\n        }\n        if (pathToUse.startsWith(\"/\")) {\n            pathToUse = pathToUse.substring(1);\n        }\n        builder.append(pathToUse);\n        builder.append(']');\n        return builder.toString();\n    }\n\n    /**\n     * This implementation compares the underlying class path locations.\n     *\n     * @return if equals.\n     */\n    @Override\n    public boolean equals(Object obj) {\n        if (obj == this) {\n            return true;\n        }\n        if (obj instanceof ClassPathResource) {\n            ClassPathResource otherRes = (ClassPathResource) obj;\n\n            ClassLoader thisLoader = this.classLoader;\n            ClassLoader otherLoader = otherRes.classLoader;\n\n            return (this.path.equals(otherRes.path) &&\n                    thisLoader.equals(otherLoader) &&\n                    this.clazz.equals(otherRes.clazz));\n        }\n        return false;\n    }\n\n    /**\n     * This implementation returns the hash code of the underlying\n     * class path location.\n     *\n     * @return the hash code.\n     */\n    @Override\n    public int hashCode() {\n        return this.path.hashCode();\n    }\n\n}\n\n```"
+      }
+    ]
+  },
+  "response": {
+    "id": "gen-1792474277-yAjdvsGNseg7P6wUaxLX",
+    "object": "chat.completion",
+    "created": 1792474277,
+    "model": "qwen/qwen3-coder-30b-a3b-instruct",
+    "provider": "SiliconFlow",
+    "system_fingerprint": null,
+    "service_tier": null,
+    "choices": [
+      {
+        "index": 0,
+        "logprobs": null,
+        "finish_reason": "stop",
+        "native_finish_reason": "stop",
+        "message": {
+          "role": "assistant",
+          "content": "{\"findings\": [{\"cwe\": \"CWE-22\", \"class\": \"ClassPathResource\", \"method\": \"getDescription\", \"explanation\": \"The getDescription method in ClassPathResource may be vulnerable to path traversal attacks. Although the code attempts to clean the path using StringUtils.cleanPath(), it does not fully prevent directory traversal by prepending the class package path when clazz is not null and the path doesn't start with '/'. This could allow an attacker to manipulate the resource path and potentially access unintended files if the path is constructed from untrusted input.\"}]}",
+          "refusal": null,
+          "reasoning": null
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 1879,
+      "completion_tokens": 117,
+      "total_tokens": 1996,
+      "cost": 0.00016429,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 128,
+        "cache_write_tokens": 0,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 0.00016429,
+        "upstream_inference_prompt_cost": 0.00013153,
+        "upstream_inference_completions_cost": 3.276e-05
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 0,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    }
+  },
+  "attempts": 1,
+  "seconds": 6.05
+}

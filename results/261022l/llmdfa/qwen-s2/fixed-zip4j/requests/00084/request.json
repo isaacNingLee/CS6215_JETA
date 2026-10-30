@@ -1,0 +1,18 @@
+{
+  "model": "qwen/qwen3-coder-30b-a3b-instruct",
+  "temperature": 0,
+  "max_tokens": 8000,
+  "reasoning": {
+    "effort": "low"
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are a Java programmer and very good at analyzing Java code."
+    },
+    {
+      "role": "user",
+      "content": "Please identify the source values for path traversal (CWE-22) according to the following instructions. The sources indicate attacker-controlled data\n- If a variable is assigned the return value of a method named `getFileName` (called on a `FileHeader`, yielding an archive entry's filename), it is a source value.\nExample (illustrative only; report values from the program below):\n1. String entryName = entry.getFileName();\n- Src name: entryName, Line number: 1\nNegative example: 1. validate();\nAnswer: an empty string. Never copy example identifiers into the answer.\nNow I will give you the program. Please list all the names of sources and the line numbers.The line numbers should indicate the line where the values of variables can be attacker-controlled.A variable can occur multiple times if it is assigned by different statements.\nDo not add extra explanations.Just list the pairs of variable and line number (where the variable has an attacker-controlled value) line by line.Each line should start with -.If there is no variable as source, just output an empty string.\nHere are several examples:\nExample 1:\n- Src name: x, Line number: 1\n- Src name: x, Line number: 4\nExample 2:\n- Src name: y, Line number: 3\nHere is the program:\n```\n1. private void init(RandomAccessFile raf) throws ZipException {\n2. \t\t\n3. \t\tif (localFileHeader == null) {\n4. \t\t\tthrow new ZipException(\"local file header is null, cannot initialize input stream\");\n5. \t\t}\n6. \t\t\n7. \t\ttry {\n8. \t\t\tinitDecrypter(raf);\n9. \t\t} catch (ZipException e) {\n10. \t\t\tthrow e;\n11. \t\t} catch (Exception e) {\n12. \t\t\tthrow new ZipException(e);\n13. \t\t}\n14. \t}\n```\n"
+    }
+  ]
+}

@@ -1,0 +1,46 @@
+{
+  "id": "gen-1792653809-AvRxXXYC1xusDV7FSgtm",
+  "object": "chat.completion",
+  "created": 1792653809,
+  "model": "qwen/qwen3-coder-30b-a3b-instruct",
+  "provider": "Amazon Bedrock",
+  "system_fingerprint": null,
+  "service_tier": null,
+  "choices": [
+    {
+      "index": 0,
+      "logprobs": null,
+      "finish_reason": "stop",
+      "native_finish_reason": "end_turn",
+      "message": {
+        "role": "assistant",
+        "content": "Looking at the code, I need to trace the flow from line 29 to line 48 to see if `fileHeader.getFileName()` affects `offsetStartOfData`.\n\nLet me trace the execution:\n\n1. Line 29: `fileHeader.getFileName()` is called within an exception message construction\n2. Line 18: `long offsetStartOfData = localFileHeader.getOffsetStartOfData();` - This assigns offsetStartOfData\n3. Lines 20-34: Various conditions modify `comprSize` and `offsetStartOfData` based on encryption method\n4. Line 45: `raf.seek(offsetStartOfData);` - Uses offsetStartOfData\n5. Line 48: `return new ZipInputStream(new PartInputStream(raf, offsetStartOfData, comprSize, this));` - Uses offsetStartOfData\n\nThe key point is that `fileHeader.getFileName()` is only used in line 29 within an exception message string. It's never used to compute or modify `offsetStartOfData` in any way. The `offsetStartOfData` variable is computed from `localFileHeader.getOffsetStartOfData()` and then potentially modified by the encryption handling logic, but none of these operations involve `fileHeader.getFileName()`.\n\nThe `fileHeader.getFileName()` call at line 29 is completely independent of the `offsetStartOfData` computation chain.\n\nAnswer: No",
+        "refusal": null,
+        "reasoning": null
+      }
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 1804,
+    "completion_tokens": 303,
+    "total_tokens": 2107,
+    "cost": 0.0004524,
+    "is_byok": false,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0,
+      "video_tokens": 0
+    },
+    "cost_details": {
+      "upstream_inference_cost": 0.0004524,
+      "upstream_inference_prompt_cost": 0.0002706,
+      "upstream_inference_completions_cost": 0.0001818
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "image_tokens": 0,
+      "audio_tokens": 0
+    }
+  }
+}

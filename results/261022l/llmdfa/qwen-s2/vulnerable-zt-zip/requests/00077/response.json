@@ -1,0 +1,46 @@
+{
+  "id": "gen-1792655559-8D9jiu8NRJfvK8T2Du02",
+  "object": "chat.completion",
+  "created": 1792655559,
+  "model": "qwen/qwen3-coder-30b-a3b-instruct",
+  "provider": "Amazon Bedrock",
+  "system_fingerprint": null,
+  "service_tier": null,
+  "choices": [
+    {
+      "index": 0,
+      "logprobs": null,
+      "finish_reason": "stop",
+      "native_finish_reason": "end_turn",
+      "message": {
+        "role": "assistant",
+        "content": "Explanation: Let me trace through the dependencies step by step. At line 2, `tmp1 = zipEntry.getName()` captures the name from the zip entry. At line 11, `name = mapper.map(getUnrootedName(root, zipEntry.getName()))` uses `zipEntry.getName()` again. At line 13, `File file = new File(outputDir, name)` creates the file using the `name` variable. The key dependency chain is: `zipEntry.getName()` at line 2 is used to compute `name` at line 11, and then `name` is used to create `file` at line 13. However, looking more carefully, the question asks about line 22 vs line 25. Line 22 has `zipEntry.getName()` in the debug log message, and line 25 has `FileUtils.copy(in, file)`. The `file` variable is created at line 13 based on `name`, which is computed from `zipEntry.getName()` at line 11. But there's no direct dependency between the `zipEntry.getName()` at line 22 and the `file` variable at line 25 because they're in different branches - line 22 is inside an if statement that checks `log.isDebugEnabled()`, while line 25 is the copy operation that happens regardless. However, the `file` variable itself is constructed using information derived from `zipEntry.getName()` earlier in the method, but the specific `zipEntry.getName()` call at line 22 doesn't directly affect the `file` variable creation.\n\nWait, let me re-read this more carefully. Looking at the actual lines mentioned: line 22 has `zipEntry.getName()` in the debug log, and line 25 has `FileUtils.copy(in, file)`. The `file` variable is created at line 13, and it's used at line 25. The `file` variable depends on `name` which depends on `zipEntry.getName()` (line 11). But the question is asking about whether the `zipEntry.getName()` at line 22 affects the `file` at line 25. These are different calls to `zipEntry.getName()`. The `file` variable is created from `name` which comes from `zipEntry.getName()` at line 11, not from the `zipEntry.getName()` at line 22. So the value of `file` at line 25 does not depend on the specific `zipEntry.getName()` call at line 22.\n\nAnswer: No",
+        "refusal": null,
+        "reasoning": null
+      }
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 1208,
+    "completion_tokens": 541,
+    "total_tokens": 1749,
+    "cost": 0.0005058,
+    "is_byok": false,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0,
+      "video_tokens": 0
+    },
+    "cost_details": {
+      "upstream_inference_cost": 0.0005058,
+      "upstream_inference_prompt_cost": 0.0001812,
+      "upstream_inference_completions_cost": 0.0003246
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "image_tokens": 0,
+      "audio_tokens": 0
+    }
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "model": "deepseek/deepseek-v4-pro",
+  "temperature": 0,
+  "max_tokens": 16000,
+  "reasoning": {
+    "effort": "low"
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are a Java programmer and very good at analyzing Java code."
+    },
+    {
+      "role": "user",
+      "content": "Please identify the source values for path traversal (CWE-22) according to the following instructions. The sources indicate attacker-controlled data\n- If a variable is assigned the return value of a method named `getName` (called on a `ZipEntry`, yielding an archive entry's filename), it is a source value.\nExample (illustrative only; report values from the program below):\n1. String entryName = entry.getName();\n- Src name: entryName, Line number: 1\nNegative example: 1. validate();\nAnswer: an empty string. Never copy example identifiers into the answer.\nNow I will give you the program. Please list all the names of sources and the line numbers.The line numbers should indicate the line where the values of variables can be attacker-controlled.A variable can occur multiple times if it is assigned by different statements.\nDo not add extra explanations.Just list the pairs of variable and line number (where the variable has an attacker-controlled value) line by line.Each line should start with -.If there is no variable as source, just output an empty string.\nHere are several examples:\nExample 1:\n- Src name: x, Line number: 1\n- Src name: x, Line number: 4\nExample 2:\n- Src name: y, Line number: 3\nHere is the program:\n```\n1. private static void processZipStream(File dir, InputStream inputStream) throws IOException\n2.    {\n3.       ZipInputStream zip = new ZipInputStream(inputStream);\n4.       while (true)\n5.       {\n6.          ZipEntry entry = zip.getNextEntry();\n7.          if (entry == null)\n8.          {\n9.             break;\n10.          }\n11. \n12.          File file = new File(dir, entry.getName());\n13.          if (entry.isDirectory())\n14.          {\n15.             FileHelper.mkdirsQuietly(file);\n16.             continue;\n17.          }\n18. \n19.          File parent = file.getParentFile();\n20.          if (parent != null)\n21.          {\n22.             FileHelper.mkdirsQuietly(parent);\n23.          }\n24. \n25.          FileOutputStream fos = new FileOutputStream(file);\n26.          byte[] bytes = new byte[1024];\n27.          int length;\n28.          while ((length = zip.read(bytes)) >= 0)\n29.          {\n30.             fos.write(bytes, 0, length);\n31.          }\n32.          fos.close();\n33.       }\n34.    }\n```\n"
+    }
+  ]
+}

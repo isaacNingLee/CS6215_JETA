@@ -1,0 +1,46 @@
+{
+  "id": "gen-1792658806-pBbqGN6gAjaB3ZKj1eit",
+  "object": "chat.completion",
+  "created": 1792658806,
+  "model": "qwen/qwen3-coder-30b-a3b-instruct",
+  "provider": "Amazon Bedrock",
+  "system_fingerprint": null,
+  "service_tier": null,
+  "choices": [
+    {
+      "index": 0,
+      "logprobs": null,
+      "finish_reason": "stop",
+      "native_finish_reason": "end_turn",
+      "message": {
+        "role": "assistant",
+        "content": "Explanation: Let me trace through the code to determine if the value of `tmp0` at line 19 depends on the value of `in` at line 1.\n\nLine 1: `in` is a parameter to the method, but its value is not directly used in the computation of `tmp0`.\nLine 2: `name = mapper.map(zipEntry.getName())` - `in` is not involved here.\nLine 3: `if (name != null)` - `in` is not involved here.\nLine 4: `File file = new File(outputDir, name)` - `in` is not involved here.\nLine 10: `if (name.indexOf(\"..\") != -1 && !file.getCanonicalPath().startsWith(outputDir.getCanonicalPath()))` - `in` is not involved here.\nLine 14: `if (zipEntry.isDirectory())` - `in` is not involved here.\nLine 18: `File tmp0 = file.getParentFile()` - This creates `tmp0` based on the `file` object, which was created from `outputDir` and `name`. The value of `in` does not affect how `file` is constructed or how `file.getParentFile()` works.\nLine 19: `FileUtils.forceMkdir(tmp0)` - This uses `tmp0` but doesn't depend on `in`.\n\nThe variable `tmp0` is derived from `file.getParentFile()`, where `file` is constructed using `outputDir` and `name`. None of these components depend on the value of `in`. The `in` parameter is only used later in line 25 (`FileUtils.copy(in, file)`) but has no impact on the creation or value of `tmp0`.\n\nAnswer: No",
+        "refusal": null,
+        "reasoning": null
+      }
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 1242,
+    "completion_tokens": 370,
+    "total_tokens": 1612,
+    "cost": 0.0004083,
+    "is_byok": false,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0,
+      "video_tokens": 0
+    },
+    "cost_details": {
+      "upstream_inference_cost": 0.0004083,
+      "upstream_inference_prompt_cost": 0.0001863,
+      "upstream_inference_completions_cost": 0.000222
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "image_tokens": 0,
+      "audio_tokens": 0
+    }
+  }
+}

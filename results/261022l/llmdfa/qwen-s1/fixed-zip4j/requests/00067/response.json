@@ -1,0 +1,46 @@
+{
+  "id": "gen-1792653902-lsZun1DODGfmnRzYZiej",
+  "object": "chat.completion",
+  "created": 1792653902,
+  "model": "qwen/qwen3-coder-30b-a3b-instruct",
+  "provider": "Amazon Bedrock",
+  "system_fingerprint": null,
+  "service_tier": null,
+  "choices": [
+    {
+      "index": 0,
+      "logprobs": null,
+      "finish_reason": "stop",
+      "native_finish_reason": "end_turn",
+      "message": {
+        "role": "assistant",
+        "content": "Looking at the code, I need to trace the dependency between `offsetStartOfData` at line 50 and `fileHeader.getFileName()` at line 29.\n\nLet me trace the execution:\n\n1. `offsetStartOfData` is assigned at line 18: `long offsetStartOfData = localFileHeader.getOffsetStartOfData();`\n2. `fileHeader.getFileName()` is called at line 29 in an error message, but this is just a method call for string concatenation in the error message - it doesn't affect any variable assignments.\n3. Looking at the code flow, `offsetStartOfData` is calculated from `localFileHeader.getOffsetStartOfData()` which is independent of `fileHeader.getFileName()`.\n4. The only place where `fileHeader.getFileName()` appears is in line 29's error message, and later in lines 42 and 49, but these are also just for error messages and don't modify `offsetStartOfData`.\n\nThe variable `offsetStartOfData` is set once at line 18 based on `localFileHeader.getOffsetStartOfData()`, and this value is then used at line 50 in the `InflaterInputStream` constructor. There is no path through the code where `fileHeader.getFileName()` affects the value of `offsetStartOfData`.\n\nThe `fileHeader.getFileName()` call at line 29 is only used in an error message string construction and has no impact on the computation of `offsetStartOfData`.\n\nAnswer: No",
+        "refusal": null,
+        "reasoning": null
+      }
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 1804,
+    "completion_tokens": 322,
+    "total_tokens": 2126,
+    "cost": 0.0004638,
+    "is_byok": false,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0,
+      "video_tokens": 0
+    },
+    "cost_details": {
+      "upstream_inference_cost": 0.0004638,
+      "upstream_inference_prompt_cost": 0.0002706,
+      "upstream_inference_completions_cost": 0.0001932
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "image_tokens": 0,
+      "audio_tokens": 0
+    }
+  }
+}

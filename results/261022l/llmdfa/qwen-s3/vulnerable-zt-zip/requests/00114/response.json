@@ -1,0 +1,46 @@
+{
+  "id": "gen-1792657896-3BhXlCcs9aruwRW4uK62",
+  "object": "chat.completion",
+  "created": 1792657896,
+  "model": "qwen/qwen3-coder-30b-a3b-instruct",
+  "provider": "Amazon Bedrock",
+  "system_fingerprint": null,
+  "service_tier": null,
+  "choices": [
+    {
+      "index": 0,
+      "logprobs": null,
+      "finish_reason": "stop",
+      "native_finish_reason": "end_turn",
+      "message": {
+        "role": "assistant",
+        "content": "Looking at the code, I need to trace the flow from line 20 to line 17 to determine if `in` used at line 17 depends on `entry.getName()` at line 20.\n\nLet me trace through the execution:\n\n1. Line 11: `ZipEntry entry;` - declares entry variable\n2. Line 11: `while ((entry = in.getNextEntry()) != null)` - assigns the result of `in.getNextEntry()` to `entry`\n3. Line 12: `if (!namesSet.contains(entry.getName()))` - uses `entry.getName()` to check against namesSet\n4. Line 17: `action.process(in, entry);` - passes `in` and `entry` to the action\n\nThe key point is that `entry.getName()` is used at line 20 in the exception message string concatenation, but this is completely independent of the `entry` variable's value that gets passed to `action.process()` at line 17. \n\nIn line 17, `in` is passed as the first argument to `action.process()`, and `entry` is passed as the second argument. The `entry.getName()` call at line 20 is part of a string concatenation in an exception message and doesn't affect the value of `in` that was already determined by the `getNextEntry()` call at line 11.\n\nThe `in` variable is assigned at line 9 (`in = newCloseShieldZipInputStream(is, charset)`) and remains unchanged throughout the loop. The `entry.getName()` call at line 20 has no impact on the value of `in` used at line 17.\n\nExplanation: The variable `in` used at line 17 is assigned at line 9 and remains constant throughout the loop. The `entry.getName()` call at line 20 is only used in an exception message string concatenation and does not affect the value of `in`. These are completely independent operations.\n\nAnswer: No",
+        "refusal": null,
+        "reasoning": null
+      }
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 1249,
+    "completion_tokens": 419,
+    "total_tokens": 1668,
+    "cost": 0.00043875,
+    "is_byok": false,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0,
+      "video_tokens": 0
+    },
+    "cost_details": {
+      "upstream_inference_cost": 0.00043875,
+      "upstream_inference_prompt_cost": 0.00018735,
+      "upstream_inference_completions_cost": 0.0002514
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "image_tokens": 0,
+      "audio_tokens": 0
+    }
+  }
+}

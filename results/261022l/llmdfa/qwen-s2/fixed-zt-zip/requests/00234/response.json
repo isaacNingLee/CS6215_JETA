@@ -1,0 +1,46 @@
+{
+  "id": "gen-1792656510-gsKkgKw3X71oQw7d4EZw",
+  "object": "chat.completion",
+  "created": 1792656510,
+  "model": "qwen/qwen3-coder-30b-a3b-instruct",
+  "provider": "SiliconFlow",
+  "system_fingerprint": null,
+  "service_tier": null,
+  "choices": [
+    {
+      "index": 0,
+      "logprobs": null,
+      "finish_reason": "stop",
+      "native_finish_reason": "stop",
+      "message": {
+        "role": "assistant",
+        "content": "Explanation: Let me trace through this path step by step.\n\nLine 2 in the function process: `String name = mapper.map(zipEntry.getName());`\nThis line executes and assigns a value to `name`.\n\nLine 25 in the function process: `FileUtils.copy(in, file);`\nThis line is in the else branch of the if-statement at line 14 (zipEntry.isDirectory()). For this line to be reachable, zipEntry.isDirectory() must return false, meaning the entry is not a directory.\n\nLine 1 in the function copy: This is the start of the copy method.\nLine 2 in the function copy: `OutputStream out = new BufferedOutputStream(new FileOutputStream(file));`\n\nFor this path to be reachable, we need to check the conditions:\n1. Line 3 condition: `name != null` - this must be true for the outer if block to execute\n2. Line 14 condition: `zipEntry.isDirectory()` - this must be false for line 25 to execute (since line 25 is in the else branch)\n3. Line 10 condition: `name.indexOf(\"..\") != -1` - this condition is checked but doesn't affect reachability of our path\n\nSince all these conditions can be satisfied (name can be non-null, zipEntry can be a file, not a directory), the path is reachable. When line 25 executes, it calls the copy method which will create an OutputStream and copy data from the input stream to the file.\n\nAnswer: Yes",
+        "refusal": null,
+        "reasoning": null
+      }
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 2453,
+    "completion_tokens": 311,
+    "total_tokens": 2764,
+    "cost": 0.00025879,
+    "is_byok": false,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0,
+      "video_tokens": 0
+    },
+    "cost_details": {
+      "upstream_inference_cost": 0.00025879,
+      "upstream_inference_prompt_cost": 0.00017171,
+      "upstream_inference_completions_cost": 8.708e-05
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "image_tokens": 0,
+      "audio_tokens": 0
+    }
+  }
+}

@@ -1,0 +1,46 @@
+{
+  "id": "gen-1792655371-EUVO0v6iIpsGQUzni7lP",
+  "object": "chat.completion",
+  "created": 1792655371,
+  "model": "qwen/qwen3-coder-30b-a3b-instruct",
+  "provider": "Amazon Bedrock",
+  "system_fingerprint": null,
+  "service_tier": null,
+  "choices": [
+    {
+      "index": 0,
+      "logprobs": null,
+      "finish_reason": "stop",
+      "native_finish_reason": "end_turn",
+      "message": {
+        "role": "assistant",
+        "content": "Looking at the code, I need to trace the flow from `fileHeader.getFileName()` at line 29 to `raf` at line 48.\n\nLet me trace through the execution:\n\n1. Line 29: `fileHeader.getFileName()` is called within an exception message construction\n2. This call happens inside an `else` block at line 28, which is part of the AES encryption handling\n3. The `fileHeader.getFileName()` call doesn't affect the value of `raf` at all\n4. `raf` is declared at line 6 and assigned at line 8 via `createFileHandler(InternalZipConstants.READ_MODE)`\n5. `raf` is used later at line 45 (`raf.seek(offsetStartOfData)`) and line 48 (in the return statement)\n6. The value of `raf` is completely independent of `fileHeader.getFileName()` - it's assigned based on the result of `createFileHandler()` and then used for file operations\n\nThe `fileHeader.getFileName()` call at line 29 is only used in an exception message string and has no impact on the value of `raf`.\n\nAnswer: No",
+        "refusal": null,
+        "reasoning": null
+      }
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 1798,
+    "completion_tokens": 246,
+    "total_tokens": 2044,
+    "cost": 0.0004173,
+    "is_byok": false,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0,
+      "video_tokens": 0
+    },
+    "cost_details": {
+      "upstream_inference_cost": 0.0004173,
+      "upstream_inference_prompt_cost": 0.0002697,
+      "upstream_inference_completions_cost": 0.0001476
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "image_tokens": 0,
+      "audio_tokens": 0
+    }
+  }
+}

@@ -1,0 +1,46 @@
+{
+  "id": "gen-1792655925-U4zPCKlxxwMRZTHEouIw",
+  "object": "chat.completion",
+  "created": 1792655925,
+  "model": "qwen/qwen3-coder-30b-a3b-instruct",
+  "provider": "Amazon Bedrock",
+  "system_fingerprint": null,
+  "service_tier": null,
+  "choices": [
+    {
+      "index": 0,
+      "logprobs": null,
+      "finish_reason": "stop",
+      "native_finish_reason": "end_turn",
+      "message": {
+        "role": "assistant",
+        "content": "Explanation: Let me trace through the code to determine if the value of `f` used at line 36 depends on the value of `InputStream` (which is `compressedInputStream` parameter at line 1).\n\nLine 1: `final InputStream compressedInputStream` - this is the parameter\nLine 7: `final File f = FileUtils.resolveFile( dir, entryName );` - `f` is created using `dir` and `entryName` parameters, but NOT using `compressedInputStream`\nLine 36: `out = new FileOutputStream( f );` - here `f` is used, but `f` was already determined at line 7 based only on `dir` and `entryName` parameters\n\nThe variable `f` is constructed from the `dir` and `entryName` parameters at line 7, and this construction has no dependency on the `compressedInputStream` parameter. The `compressedInputStream` is only used later at line 38 in `IOUtil.copy( compressedInputStream, out )`, but it doesn't affect how `f` was computed.\n\nAnswer: No",
+        "refusal": null,
+        "reasoning": null
+      }
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 1414,
+    "completion_tokens": 228,
+    "total_tokens": 1642,
+    "cost": 0.0003489,
+    "is_byok": false,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0,
+      "video_tokens": 0
+    },
+    "cost_details": {
+      "upstream_inference_cost": 0.0003489,
+      "upstream_inference_prompt_cost": 0.0002121,
+      "upstream_inference_completions_cost": 0.0001368
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "image_tokens": 0,
+      "audio_tokens": 0
+    }
+  }
+}

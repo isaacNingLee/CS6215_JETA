@@ -1,0 +1,46 @@
+{
+  "id": "gen-1792653861-ubtwRap10odo1vD4SboF",
+  "object": "chat.completion",
+  "created": 1792653861,
+  "model": "qwen/qwen3-coder-30b-a3b-instruct",
+  "provider": "Amazon Bedrock",
+  "system_fingerprint": null,
+  "service_tier": null,
+  "choices": [
+    {
+      "index": 0,
+      "logprobs": null,
+      "finish_reason": "stop",
+      "native_finish_reason": "end_turn",
+      "message": {
+        "role": "assistant",
+        "content": "Looking at the code, I need to trace the dependency between `raf` at line 50 and `fileHeader.getFileName()` at line 29.\n\nLet me trace through the execution:\n\n1. Line 8: `raf = createFileHandler(InternalZipConstants.READ_MODE);` - This creates the raf object\n2. Line 29: `throw new ZipException(\"invalid decryptor when trying to calculate \" + \"compressed size for AES encrypted file: \" + fileHeader.getFileName());` - This is inside an else block that executes when decrypter is not an AESDecrypter\n3. Line 50: `return new ZipInputStream(new InflaterInputStream(raf, offsetStartOfData, comprSize, this));` - This uses raf to create the return value\n\nThe key insight is that `fileHeader.getFileName()` at line 29 is only executed when the condition at line 27 is false (i.e., when `decrypter instanceof AESDecrypter` is false). However, `raf` at line 50 is created at line 8 and used in the return statement at line 50 regardless of the encryption method or the exception path.\n\nThe `fileHeader.getFileName()` call at line 29 is part of an exception message construction and does not affect the value of `raf` at any point. The `raf` variable is created independently at line 8 and used directly at line 50 without any dependency on the file name.\n\nThe value of `raf` is determined by the `createFileHandler` call and remains unchanged throughout the execution flow. The `fileHeader.getFileName()` call at line 29 is completely independent of `raf`'s value.\n\nExplanation: The variable `raf` is initialized at line 8 with the result of `createFileHandler()` and is used directly at line 50 in the return statement. The `fileHeader.getFileName()` call at line 29 is only executed within an exception handling branch that occurs when the decrypter is not an AESDecrypter, which is completely separate from the normal execution path where `raf` is created and used. There is no data flow or dependency between these two variables.\n\nAnswer: No",
+        "refusal": null,
+        "reasoning": null
+      }
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 1798,
+    "completion_tokens": 462,
+    "total_tokens": 2260,
+    "cost": 0.0005469,
+    "is_byok": false,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0,
+      "video_tokens": 0
+    },
+    "cost_details": {
+      "upstream_inference_cost": 0.0005469,
+      "upstream_inference_prompt_cost": 0.0002697,
+      "upstream_inference_completions_cost": 0.0002772
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "image_tokens": 0,
+      "audio_tokens": 0
+    }
+  }
+}

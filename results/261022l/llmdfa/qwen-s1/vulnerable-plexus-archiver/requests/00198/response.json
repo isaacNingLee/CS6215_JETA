@@ -1,0 +1,46 @@
+{
+  "id": "gen-1792655713-4LnfLm0LnHMZgQefBulS",
+  "object": "chat.completion",
+  "created": 1792655713,
+  "model": "qwen/qwen3-coder-30b-a3b-instruct",
+  "provider": "Amazon Bedrock",
+  "system_fingerprint": null,
+  "service_tier": null,
+  "choices": [
+    {
+      "index": 0,
+      "logprobs": null,
+      "finish_reason": "stop",
+      "native_finish_reason": "end_turn",
+      "message": {
+        "role": "assistant",
+        "content": "Looking at this complex path through multiple methods, I need to trace the execution flow and check if each step is reachable.\n\nLet me analyze each segment of the path:\n\n1. **Line 10 in getName** → **Line 10 in getName**: This is the same line, so it's trivially reachable within the same basic block.\n\n2. **Line 10 in getName** → **Line 16 in execute**: This requires going from getName method to execute method. Since these are different methods, I need to check if this path is possible. Looking at the code structure, this would require calling getName() from within execute(), which seems possible.\n\n3. **Line 16 in execute** → **Line 24 in execute**: Line 16 calls fileInfo.getName(), and line 24 is inside the if statement that checks isSelected(tmp0, fileInfo). For this to be reachable, isSelected must return true.\n\n4. **Line 24 in execute** → **Line 1 in extractFileIfIncluded**: Line 24 calls extractFileIfIncluded, so this is a direct method call - reachable.\n\n5. **Line 1 in extractFileIfIncluded** → **Line 6 in extractFileIfIncluded**: This is the same method, so reachable.\n\n6. **Line 1 in extractFile** → **Line 36 in extractFile**: Line 1 is the start of extractFile, and line 36 is in the else branch of the isDirectory check (line 27). For this to be reachable, we need isDirectory to be false.\n\nHowever, looking more carefully at the actual code structure and the path given, I notice that the path involves:\n- Line 10 in getName: This is part of a ternary operation that returns either a UTF-8 decoded string or zipEntry.getName()\n- The path goes through execute() and extractFile() methods\n\nThe key issue is that the path assumes certain conditions are met. But since we're dealing with a complex chain of method calls and conditional logic, and the path conditions are not specified beyond what's given, I need to evaluate based on the information provided.\n\nThe path shows a sequence where:\n- Line 24 in execute is in the true branch of isSelected(tmp0, fileInfo)\n- Line 36 in extractFile is in the else branch of isDirectory\n\nBoth of these branches can be reached under normal program execution conditions, assuming the method calls and conditions evaluate properly.\n\nThe path represents a valid execution path through the code where sensitive data could potentially be processed and written to files.\n\nExplanation: The path traces a valid execution flow from getName() through execute() to extractFile(). Each step in the path is reachable: the isSelected condition can be true, leading to the extractFileIfIncluded call, and the isDirectory condition can be false, allowing execution to reach line 36 in extractFile where file output occurs. This path can lead to potential security issues involving sensitive data processing.\n\nAnswer: Yes",
+        "refusal": null,
+        "reasoning": null
+      }
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 3390,
+    "completion_tokens": 617,
+    "total_tokens": 4007,
+    "cost": 0.0008787,
+    "is_byok": false,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0,
+      "video_tokens": 0
+    },
+    "cost_details": {
+      "upstream_inference_cost": 0.0008787,
+      "upstream_inference_prompt_cost": 0.0005085,
+      "upstream_inference_completions_cost": 0.0003702
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "image_tokens": 0,
+      "audio_tokens": 0
+    }
+  }
+}

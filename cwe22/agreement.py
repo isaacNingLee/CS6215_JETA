@@ -1,5 +1,5 @@
-"""Agreement guard, the proposed method of CS6215_proj, on every hint-relaxation level
-and on both revisions.
+"""JETA stages 1-2 (the "agreement guard"): guard-aware flow filtering and reader-guided
+candidate selection, on every hint-relaxation level and on both revisions.
 
 For one Tai-e configuration, project, revision and reader sample:
 
@@ -12,8 +12,8 @@ For one Tai-e configuration, project, revision and reader sample:
    are none, every Tai-e location (fallback). This priority tier is the output; the
    other candidates are the review tail, recorded in predictions.json, not scored.
 
-The Tai-e flows of each level come from a hint-relaxation run (relax.py), both all
-flows and application scope. Readers are the vanilla arm of a baseline run: sample
+The Tai-e flows of each level come from a hint-relaxation run (relax.py). Readers are
+the vanilla arm of a baseline run: sample
 k of each model forms sample k here, and a failed reader answer adds no location.
 Readers see the production fix file (oracle-selected input), as in CS6215_proj.
 Selection reads no fix label, and predictions are written before labels are loaded.
@@ -24,7 +24,7 @@ and *pair-correct* means it is reported on the vulnerable revision but not the f
 """
 from datetime import datetime, timezone
 
-from . import config, guards, relax, report, spec, taie
+from . import config, guards, relax, report, taie
 from .report import f4, pct, ranged, spread
 from .scoring import aggregate, flow_locations, score
 from .subjects import check_dataset, fix_labels, manifest
@@ -69,7 +69,7 @@ def check_guards(out, projects):
 
 
 # ---- predictions ------------------------------------------------------------------------
-def static_flows(relax_dir, cfg, project, variant, scoped):
+def static_flows(relax_dir, cfg, project, variant):
     """Tai-e flows of one configuration; None if not run, [] if the analysis failed."""
     path = relax_dir / "taie" / cfg / "{}-{}.json".format(project, variant)
     if not path.is_file():
@@ -77,13 +77,7 @@ def static_flows(relax_dir, cfg, project, variant, scoped):
     result = read_json(path)
     if result["status"] != "completed":
         return [], "Tai-e {}: {}".format(cfg, result.get("error", "failed")[:160])
-    flows = result["flows"]
-    if scoped:
-        classes = set(taie.project_classes(config.SUBJECTS / project / variant / "target/classes", result["entry"]))
-        flows = spec.app_scoped(flows, classes)
-        if len(flows) != result["scoped_flows"]:
-            raise RuntimeError("Application scope does not reproduce {}".format(path))
-    return flows, None
+    return result["flows"], None
 
 
 def catalogue(relax_dir, cfg, project, variant):
@@ -110,31 +104,28 @@ def select(static, readers):
 
 
 def predict(relax_dir, readers_dir, projects, models, samples, contracts):
-    """Every agreement prediction, with and without the guard; no label is read here."""
+    """Every agreement-guard prediction; no label is read here."""
     rows = []
     for level, cfg, _ in configs(models):
-        for scoped in (False, True):
-            for project in projects:
-                for variant in config.VARIANTS:
-                    flows, failure = static_flows(relax_dir, cfg, project, variant, scoped)
-                    protected = contracts[project, variant]["protected"]
-                    if flows and protected:
-                        cat = catalogue(relax_dir, cfg, project, variant)
-                        kept = [f for f in flows if not guards.guarded(f, protected, cat)]
+        for project in projects:
+            for variant in config.VARIANTS:
+                flows, failure = static_flows(relax_dir, cfg, project, variant)
+                protected = contracts[project, variant]["protected"]
+                if flows and protected:
+                    cat = catalogue(relax_dir, cfg, project, variant)
+                    kept = [f for f in flows if not guards.guarded(f, protected, cat)]
+                else:
+                    kept = flows
+                for sample in range(1, samples + 1):
+                    found = [reader_locations(readers_dir, s, project, variant, sample) for s in READERS]
+                    row = dict(level=level, config=cfg, project=project, variant=variant, sample=sample,
+                               failures=[f for f in [failure] + [r[1] for r in found] if f])
+                    if kept is None:
+                        row["status"] = "unscored"
                     else:
-                        kept = flows
-                    for sample in range(1, samples + 1):
-                        found = [reader_locations(readers_dir, s, project, variant, sample) for s in READERS]
-                        failures = [f for f in [failure] + [r[1] for r in found] if f]
-                        for guard, chosen in ((False, flows), (True, kept)):
-                            row = dict(level=level, config=cfg, scoped=scoped, guard=guard, project=project,
-                                       variant=variant, sample=sample, failures=failures)
-                            if chosen is None:
-                                row["status"] = "unscored"
-                            else:
-                                row.update(status="predicted", flows=len(chosen), guarded=len(flows) - len(chosen),
-                                           **select(flow_locations(chosen), [set(r[0]) for r in found]))
-                            rows.append(row)
+                        row.update(status="predicted", flows=len(kept), guarded=len(flows) - len(kept),
+                                   **select(flow_locations(kept), [set(r[0]) for r in found]))
+                    rows.append(row)
     return rows
 
 
@@ -179,12 +170,12 @@ def summarise(per_sample, projects):
 
 
 def arms(relax_run, readers_dir, predictions, models, samples):
-    """(level, label, kind, sample count, loader); kind is baseline, proposed or control."""
-    index = {(r["config"], r["scoped"], r["guard"], r["project"], r["variant"], r["sample"]): r for r in predictions}
+    """(level, label, kind, sample count, loader); kind is baseline or proposed."""
+    index = {(r["config"], r["project"], r["variant"], r["sample"]): r for r in predictions}
 
-    def agreement(cfg, scoped, guard):
+    def agreement(cfg):
         def load(project, variant, sample):
-            row = index[cfg, scoped, guard, project, variant, sample]
+            row = index[cfg, project, variant, sample]
             if row["status"] == "unscored":
                 return None, None
             return [tuple(x) for x in row["priority"]], "; ".join(row["failures"]) or None
@@ -197,8 +188,8 @@ def arms(relax_run, readers_dir, predictions, models, samples):
             return (None, None) if missing else (locations, failure)
         return load
 
-    def taie_arm(cfg, scoped):
-        return lambda project, variant, sample: relax.taie_locations(relax_run, cfg, project, variant, scoped)
+    def taie_arm(cfg):
+        return lambda project, variant, sample: relax.taie_locations(relax_run, cfg, project, variant)
 
     def hinted(short, level):
         return lambda project, variant, sample: relax.hinted_locations(relax_run, short, level, project, variant,
@@ -207,18 +198,10 @@ def arms(relax_run, readers_dir, predictions, models, samples):
     rows = [("–", "Vanilla " + s.capitalize(), "baseline", samples, vanilla(s)) for s in READERS]
     for level in relax.LEVELS:
         level_configs = [c for c in configs(models) if c[0] == level]
-        for _, cfg, suffix in level_configs:
-            for scoped in (False, True):
-                scope = " app scope" if scoped else ""
-                rows.append((level, "Tai-e" + scope + suffix, "baseline", 1, taie_arm(cfg, scoped)))
+        rows += [(level, "Tai-e" + suffix, "baseline", 1, taie_arm(cfg)) for _, cfg, suffix in level_configs]
         rows += [(level, "Hinted " + s.capitalize(), "baseline", samples, hinted(s, level)) for s in models]
-        for _, cfg, suffix in level_configs:
-            for scoped in (False, True):
-                scope = " app scope" if scoped else ""
-                rows.append((level, "Agreement guard" + scope + suffix, "proposed", samples,
-                             agreement(cfg, scoped, True)))
-                rows.append((level, "Agreement, no guard" + scope + suffix, "control", samples,
-                             agreement(cfg, scoped, False)))
+        rows += [(level, "Agreement guard" + suffix, "proposed", samples, agreement(cfg))
+                 for _, cfg, suffix in level_configs]
     return rows
 
 
@@ -260,14 +243,13 @@ def guard_effect(predictions, models):
     """Flows the guard sets aside, per configuration and revision (sample 1; Tai-e is deterministic)."""
     rows = []
     for level, cfg, suffix in configs(models):
-        for scoped in (False, True):
-            picked = [r for r in predictions if r["config"] == cfg and r["scoped"] == scoped and r["guard"]
-                      and r["sample"] == 1 and r["status"] == "predicted"]
-            total = lambda key: {v: sum(key(r) for r in picked if r["variant"] == v) for v in config.VARIANTS}
-            rows.append(dict(level=level, config=cfg, scoped=scoped, suffix=suffix,
-                             guarded=total(lambda r: r["guarded"]), flows=total(lambda r: r["flows"] + r["guarded"]),
-                             by_project=sorted({"{} {}".format(r["project"], r["variant"])
-                                                for r in picked if r["guarded"]})))
+        picked = [r for r in predictions if r["config"] == cfg and r["sample"] == 1 and r["status"] == "predicted"]
+        total = lambda key: {v: sum(key(r) for r in picked if r["variant"] == v) for v in config.VARIANTS}
+        rows.append(dict(level=level, config=cfg, suffix=suffix,
+                         guarded=total(lambda r: r["guarded"]), flows=total(lambda r: r["flows"] + r["guarded"]),
+                         by_project=sorted("{} {}: {} of {}".format(r["project"], r["variant"], r["guarded"],
+                                                                    r["flows"] + r["guarded"])
+                                           for r in picked if r["guarded"])))
     return rows
 
 
@@ -284,11 +266,11 @@ def render(result, projects, labels):
              "Tai-e flows and hinted-LLM answers from run `{}`; vanilla readers from run `{}`.".format(
                  result["relax_run"], result["readers_run"]),
              "Models: " + ", ".join("{} = `{}`".format(k, v) for k, v in result["models"].items()) + ".", "",
-             "**Agreement guard** (proposed, from CS6215_proj): set aside Tai-e flows into a sink protected by a",
-             "checked guard contract; then report the locations that Tai-e and at least one independent vanilla",
-             "reader (Qwen, DeepSeek) both report, or every Tai-e location when they share none. Sample k uses",
-             "sample k of both readers. *Agreement, no guard* is the same rule without step one. Readers see the",
-             "production fix file (oracle-selected input). Levels and Tai-e configurations as in `{}`.".format(
+             "**Agreement guard** (JETA stages 1-2): set aside Tai-e flows into a sink protected by a checked",
+             "guard contract; then report the locations that Tai-e and at least one independent vanilla reader",
+             "(Qwen, DeepSeek) both report, or every Tai-e location when they share none. Sample k uses sample k",
+             "of both readers. Readers see the production fix file (oracle-selected input). Levels and Tai-e",
+             "configurations as in `{}`.".format(
                  result["relax_run"]), "",
              "Vulnerable revision: Detected = K > 0, FDR = 1 − K/N, F1 = 2K/(N+K) over `(simple class, method)`",
              "locations. Fixed revision: **Flagged** = the patched fix method is still reported (a false alarm);",
@@ -315,8 +297,6 @@ def render(result, projects, labels):
               "| Level | Arm | Detected ↑ | Macro FDR ↓ | Macro F1 ↑ | Fixed: flagged ↓ | Pair-correct ↑ |",
               "| --- | --- | --- | ---: | ---: | --- | --- |"]
     for arm in result["arms"]:
-        if arm["kind"] == "control":
-            continue
         s, name = arm["summary"], ("**{}**".format(arm["arm"]) if arm["kind"] == "proposed" else arm["arm"])
         if s is None:
             lines.append("| {} | {} | incomplete | – | – | – | – |".format(arm["level"].upper(), name))
@@ -324,25 +304,13 @@ def render(result, projects, labels):
         lines.append("| {} | {} | {} | {} | {} | {} | {} |".format(
             arm["level"].upper(), name, counts(s["detected"], n), ranged(s["macro_fdr"], pct),
             ranged(s["macro_f1"], f4), counts(s["flagged"], n), counts(s["pair_correct"], n)))
-    lines += ["", "## Guard ablation", "",
-              "Flows set aside by the guard (vulnerable / fixed, summed over projects), and the agreement rule with",
-              "and without them. Identical rows mean the guard changed nothing at that configuration.", "",
-              "| Level | Configuration | Flows set aside | Revisions affected | Detected | Macro F1 | Flagged | Pair-correct |",
-              "| --- | --- | --- | --- | --- | --- | --- | --- |"]
-    by_label = {(a["level"], a["arm"]): a["summary"] for a in result["arms"]}
+    lines += ["", "## Flows set aside by the guard", "",
+              "Tai-e flows removed by stage 1 (vulnerable / fixed, summed over projects).", "",
+              "| Level | Configuration | Flows set aside | Revisions affected |", "| --- | --- | --- | --- |"]
     for g in result["guard_effect"]:
-        scope = " app scope" if g["scoped"] else ""
-        on, off = (by_label[g["level"], name + scope + g["suffix"]]
-                   for name in ("Agreement guard", "Agreement, no guard"))
-        if on is None or off is None:
-            lines.append("| {} | {}{} | incomplete | | | | | |".format(g["level"].upper(), g["config"], scope))
-            continue
-        pair = lambda key, fmt: "{} → {}".format(fmt(off[key]), fmt(on[key]))
-        lines.append("| {} | {}{} | {} / {} of {} / {} | {} | {} | {} | {} | {} |".format(
-            g["level"].upper(), g["config"], scope, g["guarded"]["vulnerable"], g["guarded"]["fixed"],
-            g["flows"]["vulnerable"], g["flows"]["fixed"], ", ".join(g["by_project"]) or "–",
-            pair("detected", lambda v: counts(v, n)), pair("macro_f1", lambda v: ranged(v, f4)),
-            pair("flagged", lambda v: counts(v, n)), pair("pair_correct", lambda v: counts(v, n))))
+        lines.append("| {} | {} | {} / {} of {} / {} | {} |".format(
+            g["level"].upper(), g["config"], g["guarded"]["vulnerable"], g["guarded"]["fixed"],
+            g["flows"]["vulnerable"], g["flows"]["fixed"], ", ".join(g["by_project"]) or "–"))
     lines += ["", "Failed baseline inputs, counted as empty output (the agreement arms read the same failed",
               "readers and Tai-e runs):", ""]
     lines += ["- {} / {}{} / {} {}: {}".format(f["level"].upper(), f["arm"], " s{}".format(f["sample"]) if f["sample"]
@@ -354,8 +322,6 @@ def render(result, projects, labels):
                   "| Level | Arm | Detected | N per sample | F1 ↑ | Fixed N per sample | Flagged ↓ | Pair-correct ↑ |",
                   "| --- | --- | :---: | --- | ---: | --- | :---: | :---: |"]
         for arm in result["arms"]:
-            if arm["kind"] == "control":
-                continue
             if arm["summary"] is None:
                 lines.append("| {} | {} | incomplete | | | | | |".format(arm["level"].upper(), arm["arm"]))
                 continue

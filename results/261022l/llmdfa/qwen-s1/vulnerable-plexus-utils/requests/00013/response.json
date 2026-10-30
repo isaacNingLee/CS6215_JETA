@@ -1,0 +1,46 @@
+{
+  "id": "gen-1792635942-M6R4YO6duCHsNivzvsDi",
+  "object": "chat.completion",
+  "created": 1792635942,
+  "model": "qwen/qwen3-coder-30b-a3b-instruct",
+  "provider": "Amazon Bedrock",
+  "system_fingerprint": null,
+  "service_tier": null,
+  "choices": [
+    {
+      "index": 0,
+      "logprobs": null,
+      "finish_reason": "stop",
+      "native_finish_reason": "end_turn",
+      "message": {
+        "role": "assistant",
+        "content": "Looking at the path line by line and analyzing the reachability:\n\nLine 15 in the function expandFile: This is where `tmp0 = ze.getName();` is executed. This line is part of the `extractFile` method call within the loop.\n\nLine 13 in the function expandFile: This is where `extractFile` is called. The method is called with parameters including `ze.getName()`.\n\nLine 1 in the function extractFile: This is the beginning of the `extractFile` method signature. This line is always reachable when `extractFile` is called.\n\nLine 34 in the function extractFile: This is `fos = new FileOutputStream( f );`. According to the facts, this line is in the else branch of the if-statement at line 23 (`if ( isDirectory )`). \n\nFor line 34 to be reachable, the condition `isDirectory` must evaluate to false (since line 34 is in the else branch). Looking at the code, `isDirectory` is passed as a parameter from line 19 in the expandFile method where `tmp2 = ze.isDirectory();` is assigned. \n\nThe path is reachable because:\n1. The `expandFile` method is called\n2. The while loop executes and calls `extractFile`\n3. The `extractFile` method is entered\n4. The condition `isDirectory` can be false, making the else branch (line 34) reachable\n\nSince the path can be executed and line 34 creates a FileOutputStream which could potentially throw exceptions, this path can cause an exception or bug.\n\nAnswer: Yes",
+        "refusal": null,
+        "reasoning": null
+      }
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 2835,
+    "completion_tokens": 336,
+    "total_tokens": 3171,
+    "cost": 0.00062685,
+    "is_byok": false,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0,
+      "video_tokens": 0
+    },
+    "cost_details": {
+      "upstream_inference_cost": 0.00062685,
+      "upstream_inference_prompt_cost": 0.00042525,
+      "upstream_inference_completions_cost": 0.0002016
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "image_tokens": 0,
+      "audio_tokens": 0
+    }
+  }
+}

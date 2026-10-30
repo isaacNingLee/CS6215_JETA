@@ -65,7 +65,7 @@ def source_yaml(signatures):
         '  - {{ kind: call, method: "{}", index: result }}\n'.format(s) for s in signatures)
 
 
-def write_policy(directory, extra_sources=None, kit=True):
+def write_policy(directory, extra_sources=None):
     """Manual-free policy: kit files + shared string transfers (+ extra call sources)."""
     if directory.exists():
         shutil.rmtree(directory)

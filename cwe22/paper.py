@@ -1,266 +1,380 @@
-"""LaTeX tables for the paper from saved outputs: appendix tables (paper_tables.tex) and their
-main-paper summaries (paper_tables_main.tex).
+"""Every table, figure and quoted number of the report, regenerated from saved runs (no API call).
 
-Rows: Tai-e, vanilla and hinted LLMs (baseline run), every hint-relaxation level (relax run), and
-the proposed pipeline (pipeline run, all flows): the agreement guard, + Jev judging the hinted
-answers, + the blind checklist answered by Jev. Every row is scored here with one rule: a failed or empty output counts as 100% FDR, unlike
-REPORT.md files, whose macro FDR averages nonempty outputs only.
+``python3 -m cwe22 paper`` writes to results/paper/:
+
+* table1_main.tex        Table 1: per-project FDR, F1 and detections, Original configuration
+* table2_ablation.tex    Table 2: incremental effect of JETA's stages on vulnerable revisions
+* table3_cost.tex        Table 3: model calls, tokens, charges and time (cost.py)
+* fig5_hint_relaxation.pdf, fig6_pair_correct.pdf, fig8_cost_breakdown.pdf   (figures.py; needs matplotlib)
+* numbers.json           every number behind the tables and figures, and the case-study numbers in the text
+* SUMMARY.md             the same numbers, readable, keyed to the paper's sections
+
+Scoring convention (paper Section 5.2): a failed or empty output counts as 100% FDR. The REPORT.md of
+each run instead averages FDR over nonempty outputs only, so its FDR can differ from the paper's.
+Means and sample standard deviations are over the three aligned samples; Tai-e runs once.
 """
+import json
 import statistics as st
 
-from . import config, relax, report
+from . import config, cost, pipeline, relax, report
 from .scoring import score
-from .subjects import fix_labels, manifest
-from .util import read_json
+from .subjects import check_dataset, fix_labels, manifest
+from .util import read_json, write_json
 
-NAMES = ["zip4j", "zt-zip", "spark", "Plexus-Arch.", "Plexus-Utils", "mpxj"]
-MAIN_COLS = [("fdr", "mean", min), ("f1", "mean", max), ("det", "sum", max), ("flag", "sum", min), ("pc", "sum", max)]
-LEVEL_NAMES = [("h1", "H1: kit only", "H1: kit only"),
-               ("h2a", "H2a: kit + all candidate sources", "H2a: + all candidate sources"),
-               ("h2b", "H2b: kit + LLM-selected sources", "H2b: + LLM-selected sources"),
-               ("e", "E: LLM entry + kit + LLM-selected sources", "E: + LLM-written entry")]
-
-
-# ---- statistics --------------------------------------------------------------
-def sd(xs):
-    return st.stdev(xs) if len(xs) > 1 else 0.0
+SAMPLES = list(range(1, config.SAMPLES + 1))
+TRACKS = [("qwen", "Qwen"), ("deepseek", "DeepSeek")]
+LEVEL_LABELS = {"hinted": "Original", "h1": "H1", "h2a": "H2a", "h2b": "H2b", "e": "E"}
+PROJECT_LABELS = {"zip4j": "zip4j", "zt-zip": "zt-zip", "spark": "Spark", "plexus-archiver": "Plexus-Arch.",
+                  "plexus-utils": "Plexus-Utils", "mpxj": "MPXJ"}
+STAGE_LABELS = [("guard", "Agreement"), ("judged", "+ judgment"), ("checked", "+ checklist")]
+MSD = r"\providecommand{\msd}[2]{\ensuremath{#1_{\scriptscriptstyle\pm #2}}}"
 
 
-def per_project(runs, j, k):
-    return [r[j][k] for r in runs]
+# ---- loading every arm ---------------------------------------------------------------------
+class Scores:
+    """Per-sample, per-project scores of every arm. An arm is a list (one per sample) of lists
+    (one per project) of dicts: fdr, f1 (percent), det, flag, pc (0/1) and n (fixed-revision count)."""
 
+    def __init__(self, baseline, relax_run, pipeline_run, llmdfa_run):
+        info = manifest()
+        check_dataset(info["dataset_commit"])
+        self.projects = list(config.PROJECTS)
+        self.labels = {p: fix_labels(info["subjects"][p]["slug"]) for p in self.projects}
+        self.baseline = config.RESULTS / baseline
+        self.relax = relax.Run(config.RESULTS / relax_run, self.projects, [s for s, _ in TRACKS], baseline=baseline)
+        self.pipeline_run, self.llmdfa_run = pipeline_run, llmdfa_run
+        self.metrics = read_json(config.RESULTS / pipeline_run / "metrics.json")
+        self.stages = {(r["config"], r["project"], r["variant"], r["sample"]): r
+                       for r in read_json(config.RESULTS / pipeline_run / "predictions.json")}
 
-def macro(runs, k, agg="mean"):
-    f = (lambda r: 100 * st.mean(c[k] for c in r)) if agg == "pct" else \
-        (lambda r: sum(c[k] for c in r)) if agg == "sum" else (lambda r: st.mean(c[k] for c in r))
-    return [f(r) for r in runs]
-
-
-def fmt(xs, bold=False, sdv=True):
-    mu = "%.1f" % st.mean(xs)
-    if bold:
-        mu = r"\mathbf{%s}" % mu
-    return r"\msd{%s}{%.1f}" % (mu, sd(xs)) if sdv else (r"$%s$" % mu if bold else mu)
-
-
-def best(rows, k, agg, pick):
-    return pick(round(st.mean(macro(r, k, agg)), 1) for _, r in rows)
-
-
-# ---- appendix tables -----------------------------------------------------------
-MSD = r"""\newcommand{\msd}[2]{%
-  \ensuremath{#1_{\scriptscriptstyle\pm #2}}%
-}
-
-\setlength{\tabcolsep}{3pt}
-\renewcommand{\arraystretch}{1.35}
-"""
-
-
-def wide_head(sub, macro_sub, last):
-    h = [r"\resizebox{\textwidth}{!}{%", r"\begin{tabular}{@{}l*{7}{cc}c@{}}", r"\toprule"]
-    h += [r"& \multicolumn{2}{c}{\textbf{%s}}" % n for n in NAMES + ["Macro Avg."]]
-    h += [r"& \textbf{%s} \\" % last[0]] + [r"\cmidrule(lr){%d-%d}" % (i, i + 1) for i in range(2, 16, 2)]
-    h += ["", r"\textbf{Approach}"] + [r"& %s" % sub] * 6 + [r"& %s" % macro_sub, r"& %s \\" % last[1], r"\midrule", ""]
-    return "\n".join(h)
-
-
-def vuln_row(name, runs, bold):
-    c = []
-    for j in range(6):
-        c += [fmt(per_project(runs, j, "fdr")), fmt(per_project(runs, j, "f1"))]
-    c += [fmt(macro(runs, "fdr"), bold[0]), fmt(macro(runs, "f1"), bold[1]), fmt(macro(runs, "det", "sum"))]
-    return name + "\n& " + "\n& ".join(" & ".join(c[i:i + 2]) for i in range(0, 14, 2)) + "\n& " + c[14] + r" \\"
-
-
-def fixed_row(name, runs):
-    c = []
-    for j in range(6):
-        c += [fmt(per_project(runs, j, "n")), "%.0f" % (100 * st.mean(per_project(runs, j, "flag")))]
-    c += [fmt(macro(runs, "n")), fmt(macro(runs, "flag", "sum")), fmt(macro(runs, "pc", "sum"))]
-    return name + "\n& " + "\n& ".join(" & ".join(c[i:i + 2]) for i in range(0, 14, 2)) + "\n& " + c[14] + r" \\"
-
-
-def vuln_block(rows):
-    b = (best(rows, "fdr", "mean", min), best(rows, "f1", "mean", max))
-    return [vuln_row(n, r, (round(st.mean(macro(r, "fdr")), 1) == b[0], round(st.mean(macro(r, "f1")), 1) == b[1]))
-            for n, r in rows]
-
-
-def table(env, caption, label, body):
-    return "\\begin{%s}[t]\n\\centering\n\\caption{%s}\n\\label{%s}\n\n" % (env, caption, label) + body + \
-           "\n\\bottomrule\n\\end{tabular}%%\n}\n\\end{%s}\n" % env
-
-
-COMMON = (r"Mean$_{\pm\mathrm{SD}}$ over three runs (percent for FDR and F1); a run with failed or empty output "
-          r"counts as 100\% FDR. Tai-e is deterministic (one run).")
-FIXDEF = (r"On the fixed revision the fix method has been patched, so any report of it is a false alarm. "
-          r"$N$: locations reported; Flag: \% of runs that still report the fix method; "
-          r"macro Flag: projects whose fix method is still reported (/6, lower is better); "
-          r"P-C: pair-correct projects, whose fix method is reported on the vulnerable revision and not on the fixed one "
-          r"(higher is better). A failed or empty output reports nothing. Tai-e is deterministic (one run).")
-LEVELDEF = (r"Levels remove human input step by step: \emph{Original hint} uses the manual adapter and per-project "
-            r"policy (LLM: prose hint and sink files); H1 replaces the policy with a shared CWE-22 kit; H2a adds every "
-            r"candidate source; H2b keeps only the sources the model did not reject; E also replaces the manual adapter "
-            r"with an LLM-written entry driver. At each level the hinted LLM sees the configuration Tai-e uses; "
-            r"[Qwen]/[DeepSeek] marks the model that selected the sources or wrote the driver.")
-GUARDDEF = (r"\emph{LLMDFA} (Wang et al., NeurIPS 2024; pinned upstream engine) gets the Original hint's "
-            r"inputs: the manual source/sink policy as CWE-22 prompt specs and the Tai-e entry point; it parses the fix "
-            r"file, sink files, entry class and adapter, and reports both endpoints of each validated trace. "
-            r"\emph{Agreement guard}: Tai-e flows into a sink proven protected by a checked guard are set aside, then "
-            r"the locations that Tai-e and at least one vanilla reader both report are kept (all Tai-e locations when "
-            r"they share none). \emph{+ Jev (hinted answers)}: a location is kept when Jev, reading both hinted "
-            r"LLMs' answers and the location's code, judges that they conclude it is part of the vulnerability. "
-            r"\emph{+ checklist (Jev)}: a location is dropped when Jev answers yes to every condition of a safe "
-            r"pattern in a CWE-22 checklist that DeepSeek wrote from CWE-22's description alone. Run $k$ uses sample "
-            r"$k$ of every LLM input.")
-
-
-def level_body(levels, rowfn):
-    out = []
-    for long, _, rows in levels:
-        out.append(r"\multicolumn{16}{@{}l}{\textit{%s}} \\" % long + "\n" + "\n".join(rowfn(rows)))
-    return "\n\\midrule\n".join(out)
-
-
-# ---- main-paper tables ---------------------------------------------------------
-MAIN_HEAD = r"""\newcommand{\msd}[2]{\ensuremath{#1_{\scriptscriptstyle\pm #2}}}
-\setlength{\tabcolsep}{3.5pt}
-
-\resizebox{\columnwidth}{!}{%
-\begin{tabular}{@{}lccccc@{}}
-\toprule
-& \multicolumn{3}{c}{\textbf{Vulnerable}} & \textbf{Fixed} & \textbf{Pair} \\
-\cmidrule(lr){2-4}\cmidrule(lr){5-5}\cmidrule(lr){6-6}
-\textbf{FIRST} & FDR$\downarrow$ & F1$\uparrow$ & Det.$\uparrow$ & Flag.$\downarrow$ & P-C$\uparrow$ \\
-\midrule
-"""
-MAINDEF = (r"Vulnerable: macro FDR and F1 (\%) and projects whose fix method is reported (Det., /6). "
-           r"Fixed: projects whose already-patched fix method is still reported, a false alarm (Flag., /6). "
-           r"Pair: P-C, projects whose fix method is reported on the vulnerable revision and not on the fixed one (/6). "
-           r"A failed or empty output reports nothing, which lowers Flag. but not P-C. "
-           r"Mean$_{\pm\mathrm{SD}}$ over three runs; Tai-e is deterministic. Bold: best per column")
-
-
-def row_with(n, r, bests):
-    cells = []
-    for (k, agg, _), b in zip(MAIN_COLS, bests):
-        xs = macro(r, k, agg)
-        cells.append(fmt(xs, round(st.mean(xs), 1) == b, sdv=len(r) > 1))
-    return n + " & " + " & ".join(cells) + r" \\"
-
-
-def write(out, baseline="261021b", relax_run="261020h", pipeline_run="261021c", llmdfa_run="261022l"):
-    projects = list(config.PROJECTS)
-    info = manifest()
-    labels = {p: fix_labels(info["subjects"][p]["slug"]) for p in projects}
-    B, H = config.RESULTS / baseline, config.RESULTS / relax_run
-    run = relax.Run(H, projects, ["qwen", "deepseek"], baseline=baseline)
-    samples = [1, 2, 3]
-
-    def cell(vloc, floc, p):
-        v, f = score(vloc or [], labels[p]), score(floc or [], labels[p])
+    def cell(self, vulnerable, fixed, project):
+        v, f = score(vulnerable or [], self.labels[project]), score(fixed or [], self.labels[project])
         return dict(fdr=100 * v["fdr"] if v["fdr"] is not None else 100.0, f1=100 * v["f1"], det=int(v["detected"]),
                     n=f["reported"], flag=int(f["detected"]), pc=int(v["detected"] and not f["detected"]))
 
-    def arm(load, runs):
-        return [[cell(load(p, "vulnerable", s), load(p, "fixed", s), p) for p in projects] for s in runs]
+    def arm(self, load, samples=SAMPLES):
+        return [[self.cell(load(p, "vulnerable", s), load(p, "fixed", s), p) for p in self.projects] for s in samples]
 
-    def base(key):
-        return arm(lambda p, v, s: report.load_locations(B, key, p, v, s)[0], [1] if key is None else samples)
+    def taie(self, cfg=None):
+        """Tai-e on the baseline run (cfg None) or on one hint-relaxation configuration."""
+        if cfg is None:
+            return self.arm(lambda p, v, s: report.load_locations(self.baseline, None, p, v)[0], [1])
+        return self.arm(lambda p, v, s: relax.taie_locations(self.relax, cfg, p, v)[0], [1])
 
-    def taie(cfg):
-        return arm(lambda p, v, s: relax.taie_locations(run, cfg, p, v, False)[0], [1])
+    def reader(self, short, mode):
+        return self.arm(lambda p, v, s: report.load_locations(self.baseline, (short, mode), p, v, s)[0])
 
-    def hinted(short, level):
-        return arm(lambda p, v, s: relax.hinted_locations(run, short, level, p, v, s)[0], samples)
+    def hinted(self, short, level):
+        return self.arm(lambda p, v, s: relax.hinted_locations(self.relax, short, level, p, v, s)[0])
 
-    rows_by = {(r["config"], r["project"], r["variant"], r["sample"]): r
-               for r in read_json(config.RESULTS / pipeline_run / "predictions.json") if not r["scoped"]}
-    agreement_run = read_json(config.RESULTS / pipeline_run / "metrics.json")["agreement_run"]
-
-    def stage(cfg, name):
+    def jeta(self, cfg, stage="checked"):
         def load(p, v, s):
-            row = rows_by[cfg, p, v, s]
+            row = self.stages[cfg, p, v, s]
             if row["status"] == "unscored":
                 return None
-            if row[name] is None:
-                raise RuntimeError("Pipeline run {} lacks {} {} {} {} s{}".format(pipeline_run, name, cfg, p, v, s))
-            return [tuple(x) for x in row[name]]
-        return arm(load, samples)
+            if row[stage] is None:
+                raise RuntimeError("Pipeline run {} lacks {} {} {} {} s{}".format(
+                    self.pipeline_run, stage, cfg, p, v, s))
+            return [tuple(x) for x in row[stage]]
+        return self.arm(load)
 
-    def proposed(cfg, tag=""):
-        return [("Agreement guard" + tag, stage(cfg, "guard")), (r"\quad + Jev (hinted answers)", stage(cfg, "judged")),
-                (r"\quad + checklist (Jev)", stage(cfg, "checked"))]
-
-    def llmdfa(short):
-        """LLMDFA cases (llmdfa.py); a failed case reports nothing."""
+    def llmdfa(self, short):
         def load(p, v, s):
-            path = config.RESULTS / llmdfa_run / "llmdfa" / "{}-s{}".format(short, s) / "{}-{}".format(v, p) / "result.json"
+            path = (config.RESULTS / self.llmdfa_run / "llmdfa" / "{}-s{}".format(short, s) / "{}-{}".format(v, p)
+                    / "result.json")
             row = read_json(path)
             if row["status"] not in ("completed", "failed"):
                 raise RuntimeError("LLMDFA case not finished: " + str(path))
-            return [tuple(x) for x in row.get("locations", [])]
-        return arm(load, samples)
+            return [tuple(x) for x in row.get("locations", [])]  # a failed case reports nothing
+        return self.arm(load)
 
-    BASE = [[("Tai-e", base(None))],
-            [("Vanilla Qwen", base(("qwen", "vanilla"))), ("Vanilla DeepSeek", base(("deepseek", "vanilla")))],
-            [("Hinted Qwen", base(("qwen", "hinted"))), ("Hinted DeepSeek", base(("deepseek", "hinted")))],
-            [("LLMDFA Qwen", llmdfa("qwen")), ("LLMDFA DeepSeek", llmdfa("deepseek"))],
-            proposed("manual")]
-    LEVELS = [("Original hint", "Original hint",
-               [("Tai-e", taie("manual")), ("Hinted Qwen", BASE[2][0][1]), ("Hinted DeepSeek", BASE[2][1][1])]
-               + BASE[3] + BASE[4])]
-    for lv, long, short_name in LEVEL_NAMES:
-        rows, guarded = [], []
-        for s, cap in [("qwen", "Qwen"), ("deepseek", "DeepSeek")]:
-            if lv in ("h1", "h2a") and s == "deepseek":
-                continue
-            tag = "" if lv in ("h1", "h2a") else " [%s]" % cap
-            rows.append(("Tai-e" + tag, taie(relax.taie_config(lv, s))))
-            guarded += proposed(relax.taie_config(lv, s), tag)
-        rows += [("Hinted Qwen", hinted("qwen", lv)), ("Hinted DeepSeek", hinted("deepseek", lv))] + guarded
-        LEVELS.append((long, short_name, rows))
 
-    VH = wide_head("FDR & F1", "FDR & F1", ("Detected", "/6"))
-    FH = wide_head("$N$ & Flag", "$N$ & Flag", ("P-C", "/6"))
-    allbase = [x for g in BASE for x in g]
-    bb = (best(allbase, "fdr", "mean", min), best(allbase, "f1", "mean", max))
-    source = "% Generated by python3 -m cwe22 paper from results/{}, {}, {}, {} and {}.\n\n".format(
-        baseline, relax_run, agreement_run, pipeline_run, llmdfa_run)
-    app = [
-        table("table*", r"CWE-22 fix-location detection across six Java projects. " + GUARDDEF + " " + COMMON,
-              "tab:cwe22",
-              MSD + "\n" + VH + "\n\n\\midrule\n\n".join("\n\n".join(
-                  vuln_row(n, r, (round(st.mean(macro(r, "fdr")), 1) == bb[0],
-                                  round(st.mean(macro(r, "f1")), 1) == bb[1]))
-                  for n, r in g) for g in BASE)),
-        table("table*", r"CWE-22 reports on the \emph{fixed} revisions of the six Java projects (arms as in "
-              r"Table~\ref{tab:cwe22}). " + FIXDEF, "tab:cwe22-fixed",
-              MSD + "\n" + FH + "\n\n\\midrule\n\n".join("\n\n".join(fixed_row(n, r) for n, r in g) for g in BASE)),
-        table("table*", r"CWE-22 fix-location detection on the \emph{vulnerable} revisions under hint relaxation. "
-              + LEVELDEF + " " + COMMON + " Bold marks the best macro score within each level.",
-              "tab:cwe22-relax-vuln", MSD + "\n" + VH + level_body(LEVELS, vuln_block)),
-        table("table*", r"CWE-22 reports on the \emph{fixed} revisions under hint relaxation (levels as in "
-              r"Table~\ref{tab:cwe22-relax-vuln}). " + FIXDEF, "tab:cwe22-relax-fixed",
-              MSD + "\n" + FH + level_body(LEVELS, lambda rows: [fixed_row(n, r) for n, r in rows])),
-    ]
-    out.mkdir(parents=True, exist_ok=True)
-    (out / "paper_tables.tex").write_text(source + "\n\n".join(app))
+# ---- statistics ----------------------------------------------------------------------------
+def per_sample(runs, key, agg="mean"):
+    """Macro value of ``key`` in each sample: mean over projects, or a project count (sum)."""
+    return [(sum if agg == "sum" else st.mean)(c[key] for c in r) for r in runs]
 
-    bests = [best(allbase, k, agg, pick) for k, agg, pick in MAIN_COLS]
-    m1 = table("table", r"CWE-22 results on six Java projects (per-project scores in Tables~\ref{tab:cwe22} and "
-               r"\ref{tab:cwe22-fixed}). " + GUARDDEF + " " + MAINDEF + ".", "tab:main-baselines",
-               MAIN_HEAD.replace("FIRST", "Approach") + "\\midrule\n".join(
-                   "\n".join(row_with(n, r, bests) for n, r in g) + "\n" for g in BASE))
-    m2 = table("table", r"CWE-22 results under hint relaxation (per-project scores in Tables~\ref{tab:cwe22-relax-vuln} "
-               r"and \ref{tab:cwe22-relax-fixed}). Each level removes one more human input, and the hinted LLM sees "
-               r"the configuration Tai-e uses; [Q]/[D] marks the model that selected the sources (and wrote the entry "
-               r"driver). " + MAINDEF + " within each level.", "tab:main-relax",
-               MAIN_HEAD.replace("FIRST", "Level / approach") + "\n\\midrule\n".join(
-                   r"\multicolumn{6}{@{}l}{\textit{%s}} \\" % short + "\n" + "\n".join(
-                       row_with(n.replace("[Qwen]", "[Q]").replace("[DeepSeek]", "[D]"), r,
-                                [best(rows, k, agg, pick) for k, agg, pick in MAIN_COLS]) for n, r in rows)
-                   for _, short, rows in LEVELS))
-    (out / "paper_tables_main.tex").write_text(source + m1 + "\n\n" + m2)
+
+def mean_sd(xs):
+    return st.mean(xs), (st.stdev(xs) if len(xs) > 1 else 0.0)
+
+
+def summary(runs):
+    """Macro FDR/F1 (%) and Det./Flag./P-C (projects) as [mean, sd]."""
+    return {k: list(mean_sd(per_sample(runs, k, agg))) for k, agg in
+            (("fdr", "mean"), ("f1", "mean"), ("det", "sum"), ("flag", "sum"), ("pc", "sum"))}
+
+
+def r1(x):
+    return round(x + 1e-9, 1)
+
+
+# ---- LaTeX ---------------------------------------------------------------------------------
+def value(xs, bold, deterministic):
+    mu, sd = mean_sd(xs)
+    text = "%.1f" % mu
+    if deterministic:
+        return r"\textbf{%s}" % text if bold else text
+    return r"\msd{%s}{%.1f}" % (r"\mathbf{%s}" % text if bold else text, sd)
+
+
+def table1(scores, groups):
+    """Paper Table 1: per-project FDR, F1 and Det. (successful samples), then macro averages."""
+    rows = [(name, runs) for group in groups for name, runs in group]
+    project_values = lambda runs, j, key: [r[j][key] for r in runs]
+    det_fraction = lambda runs, j: sum(project_values(runs, j, "det")) / len(runs)
+    best = {}
+    for j in range(len(scores.projects)):
+        best[j, "fdr"] = min(r1(st.mean(project_values(r, j, "fdr"))) for _, r in rows)
+        best[j, "f1"] = max(r1(st.mean(project_values(r, j, "f1"))) for _, r in rows)
+        best[j, "det"] = max(det_fraction(r, j) for _, r in rows)
+    for key, agg, pick in (("fdr", "mean", min), ("f1", "mean", max), ("det", "sum", max)):
+        best["macro", key] = pick(r1(st.mean(per_sample(r, key, agg))) for _, r in rows)
+
+    def row(name, runs):
+        once = len(runs) == 1
+        cells = []
+        for j in range(len(scores.projects)):
+            fdr, f1 = project_values(runs, j, "fdr"), project_values(runs, j, "f1")
+            det = "%d/%d" % (sum(project_values(runs, j, "det")), len(runs))
+            cells.append(" & ".join([value(fdr, r1(st.mean(fdr)) == best[j, "fdr"], once),
+                                     value(f1, r1(st.mean(f1)) == best[j, "f1"], once),
+                                     r"\textbf{%s}" % det if det_fraction(runs, j) == best[j, "det"] else det]))
+        macro = []
+        for key, agg in (("fdr", "mean"), ("f1", "mean"), ("det", "sum")):
+            xs = per_sample(runs, key, agg)
+            macro.append(value(xs, r1(st.mean(xs)) == best["macro", key], once))
+        cells.append(" & ".join(macro))
+        return name + "\n& " + "\n& ".join(cells) + r" \\"
+
+    head = [r"\begin{table*}[t]", r"\centering",
+            r"\caption{Comparison of Tai-e, direct LLM readers, adapted LLMDFA,",
+            r"and JETA in locating methods changed by known CWE-22 fixes across",
+            r"six vulnerable Java projects. Analysis hints come from manually",
+            r"specified taint policies and entry points.}",
+            r"\label{tab:main-results}", r"\setlength{\tabcolsep}{1.5pt}", r"\renewcommand{\arraystretch}{1.25}",
+            r"\resizebox{\textwidth}{!}{%", r"\begin{tabular}{@{}l*{7}{ccc}@{}}", r"\toprule"]
+    head += [r"& \multicolumn{3}{c}{\textbf{%s}}" % PROJECT_LABELS[p] for p in scores.projects]
+    head += [r"& \multicolumn{3}{c}{\textbf{Macro avg.}} \\",
+             r"\cmidrule(lr){2-4}\cmidrule(lr){5-7}\cmidrule(lr){8-10}",
+             r"\cmidrule(lr){11-13}\cmidrule(lr){14-16}\cmidrule(lr){17-19}", r"\cmidrule(l){20-22}",
+             r"\textbf{Approach}"]
+    head += [r"& FDR$\downarrow$ & F1$\uparrow$ & Det."] * len(scores.projects)
+    head += [r"& FDR$\downarrow$ & F1$\uparrow$ & Det.$\uparrow$ \\", r"\midrule"]
+    body = []
+    for i, group in enumerate(groups):
+        if i:
+            body.append(r"\midrule" if i == len(groups) - 1 else r"\addlinespace[2pt]")
+        body += [row(name, runs) for name, runs in group]
+    foot = [r"\bottomrule", r"\end{tabular}", "}", r"\par\smallskip", r"\begin{minipage}{\textwidth}", r"\footnotesize",
+            r"FDR and F1 are percentages. Subscripts show sample standard deviations over three runs.",
+            r"Bold marks the best mean, including ties.",
+            r"Per-project Det. counts successful runs (Tai-e: one run);",
+            r"macro Det. is the mean number of detected projects out of six.",
+            r"Empty outputs receive 100\% FDR by convention.", r"\end{minipage}", r"\end{table*}"]
+    return "\n".join([MSD] + head + body + foot) + "\n"
+
+
+def table2(stages):
+    """Paper Table 2: Agreement guard, + Jev judgment, + blind checklist (vulnerable revisions)."""
+    cols = (("fdr", "mean", min), ("f1", "mean", max), ("det", "sum", max))
+    best = [pick(r1(st.mean(per_sample(r, k, agg))) for _, r in stages) for k, agg, pick in cols]
+    lines = [MSD, r"\begin{table}[!htbp]", r"\centering",
+             r"\caption{Incremental effects of JETA stages on vulnerable revisions under original hints. Each row "
+             r"adds a stage to the preceding pipeline. FDR and F1 are macro means across six projects; Det. counts "
+             r"detected projects. Subscripts show sample standard deviations over three aligned runs. Bold marks "
+             r"the best mean, including ties.}", r"\label{tab:vulnerable-ablation}",
+             r"\begin{tabular*}{\columnwidth}{@{\extracolsep{\fill}}lccc@{}}", r"\toprule",
+             r"JETA stage & FDR (\%)$\downarrow$ & F1 (\%)$\uparrow$ & Det. (/6)$\uparrow$ \\", r"\midrule"]
+    for name, runs in stages:
+        cells = [value(per_sample(runs, k, agg), r1(st.mean(per_sample(runs, k, agg))) == b, False)
+                 for (k, agg, _), b in zip(cols, best)]
+        lines += [name, "& " + " & ".join(cells) + r" \\"]
+    return "\n".join(lines + [r"\bottomrule", r"\end{tabular*}", r"\end{table}"]) + "\n"
+
+
+def thousands(x, fmt):
+    return format(x, fmt).replace(",", "{,}")
+
+
+def table3(costs):
+    """Paper Table 3: calls, tokens (k), total and per-run charges, and time per run."""
+    lines = [r"\begin{table}[!htbp]", r"\centering",
+             r"\caption{Model API charges and recorded time under manual policies and entry adapters, over 36 runs "
+             r"(six projects $\times$ two revisions $\times$ three samples). Output tokens include reasoning.}",
+             r"\label{tab:cost}", r"\footnotesize", r"\setlength{\tabcolsep}{2.5pt}",
+             r"\begin{tabular*}{\columnwidth}{@{\extracolsep{\fill}}lrrrrrr@{}}", r"\toprule",
+             r"& & \multicolumn{2}{c}{Tokens (k)} & \multicolumn{2}{c}{Cost} & Time \\",
+             r"\cmidrule(lr){3-4}\cmidrule(lr){5-6}",
+             r"Approach & Calls & In & Out & Total (\$) & /run (\textcent) & /run (s) \\", r"\midrule"]
+    for name, row in costs["rows"]:
+        tokens = ["--", "--"] if row["tokens_in"] is None else [
+            thousands(row[k] / 1000, ",.1f") for k in ("tokens_in", "tokens_out")]
+        if name in ("Hinted Qwen", "LLMDFA Qwen"):
+            lines.append(r"\addlinespace[2pt]")
+        if name == "JETA":
+            lines.append(r"\midrule")
+            name = r"\textbf{JETA}"
+        lines.append(" & ".join([name, thousands(row["calls"], ",d")] + tokens + [
+            "%.3f" % row["cost"], "%.3f" % row["cost_per_run_cents"], thousands(row["seconds_per_run"], ",.1f")])
+            + r" \\")
+    return "\n".join(lines + [r"\bottomrule", r"\end{tabular*}", r"\end{table}"]) + "\n"
+
+
+# ---- case-study numbers quoted in the text ----------------------------------------------------
+def location_in(locations, target):
+    return target in {tuple(x) for x in locations or []}
+
+
+def cases(scores, agreement_run):
+    """Numbers of Figures 1, 4 and 7 and the case analysis (Sections 3, 4.2 and 5.5)."""
+    zip_stream, unpack = ("InputStreamHelper", "processZipStream"), ("Unpacker", "process")
+    guard = {(r["config"], r["project"], r["variant"], r["sample"]): r
+             for r in read_json(config.RESULTS / agreement_run / "predictions.json")}
+    out = {}
+    g = guard["manual", "mpxj", "fixed", 1]
+    out["mpxj_fixed_original"] = dict(
+        taie_flows=g["flows"] + g["guarded"], guard_removed=g["guarded"],
+        hinted_qwen_flags_fix_method=sum(location_in(relax.hinted_locations(scores.relax, "qwen", "hinted", "mpxj",
+                                                                            "fixed", s)[0], zip_stream)
+                                         for s in SAMPLES),
+        jeta_suppressed=sum(not location_in(scores.stages["manual", "mpxj", "fixed", s]["checked"], zip_stream)
+                            for s in SAMPLES),
+        jeta_reports_vulnerable=sum(location_in(scores.stages["manual", "mpxj", "vulnerable", s]["checked"],
+                                                zip_stream) for s in SAMPLES))
+    spark = lambda load: sum(scores.cell(load(s), [], "spark")["det"] for s in SAMPLES)
+    out["spark_vulnerable_detections"] = {
+        "{} {}".format(mode, name): spark(lambda s: report.load_locations(scores.baseline, (short, mode), "spark",
+                                                                          "vulnerable", s)[0])
+        for mode in ("vanilla", "hinted") for short, name in TRACKS}
+    run = pipeline.Run(config.RESULTS / scores.pipeline_run, scores.relax.dir.name, scores.relax.baseline.name)
+    patterns, _ = run.checklist(1)
+    groups, _ = pipeline.question_ids(patterns)
+    figure4 = dict(pattern=patterns[0][0], conditions=patterns[0][1])
+    for variant in config.VARIANTS:
+        code = read_json(run.out / "context" / "mpxj-{}.json".format(variant))["locations"]["{}.{}".format(*zip_stream)]
+        answers = read_json(run.checklist_answer_path(code, 1))["response"]["answers"]
+        figure4[variant] = dict(scores=[answers[q]["noul"] for q in groups[0]],
+                                suppressed=any(all(answers[q]["noul"] >= pipeline.THRESHOLD for q in ids)
+                                               for ids in groups))
+    out["figure4_mpxj_checklist_sample1"] = figure4
+    cfg = relax.taie_config("e", "qwen")
+    flows = read_json(scores.relax.taie_path(cfg, "mpxj", "vulnerable"))["flows"]
+    out["mpxj_vulnerable_e_qwen"] = dict(
+        taie_flows=len(flows),
+        fix_method_in_taie_endpoints=location_in(relax.taie_locations(scores.relax, cfg, "mpxj", "vulnerable")[0],
+                                                 zip_stream),
+        fix_method_in_review_tail=sum(location_in(guard[cfg, "mpxj", "vulnerable", s]["tail"], zip_stream)
+                                      for s in SAMPLES),
+        jeta_detects=sum(location_in(scores.stages[cfg, "mpxj", "vulnerable", s]["checked"], zip_stream)
+                         for s in SAMPLES))
+    out["ztzip_fixed_jeta_flags_unpacker_process"] = sum(
+        location_in(scores.stages["manual", "zt-zip", "fixed", s]["checked"], unpack) for s in SAMPLES)
+    checked = scores.jeta("manual")
+    out["original_pair_correct_samples_per_project"] = {
+        p: sum(r[j]["pc"] for r in checked) for j, p in enumerate(scores.projects)}
     return out
+
+
+# ---- everything --------------------------------------------------------------------------------
+def write(out, baseline="261021b", relax_run="261020h", pipeline_run="261021c", llmdfa_run="261022l"):
+    scores = Scores(baseline, relax_run, pipeline_run, llmdfa_run)
+    agreement_run = scores.metrics["agreement_run"]
+    main = [[("Tai-e", scores.taie())],
+            [("Vanilla Qwen", scores.reader("qwen", "vanilla")), ("Vanilla DeepSeek", scores.reader("deepseek", "vanilla"))],
+            [("Hinted Qwen", scores.reader("qwen", "hinted")), ("Hinted DeepSeek", scores.reader("deepseek", "hinted"))],
+            [("LLMDFA Qwen", scores.llmdfa("qwen")), ("LLMDFA DeepSeek", scores.llmdfa("deepseek"))],
+            [(r"\textbf{JETA}", scores.jeta("manual"))]]
+    ablation = [("Agreement guard", scores.jeta("manual", "guard")),
+                (r"\quad + Jev judgment", scores.jeta("manual", "judged")),
+                (r"\quad + blind checklist", scores.jeta("manual", "checked"))]
+    relaxation = {}
+    for short, name in TRACKS:
+        track = relaxation.setdefault(name, {})
+        for level in relax.LEVELS:
+            cfg = relax.taie_config(level, short)
+            arms = [("Tai-e", scores.taie(cfg)), ("Hinted LLM", scores.hinted(short, level))]
+            arms += [(label, scores.jeta(cfg, stage)) for stage, label in STAGE_LABELS]
+            for label, runs in arms:
+                track.setdefault(label, {})[LEVEL_LABELS[level]] = summary(runs)
+            track.setdefault("config", {})[LEVEL_LABELS[level]] = cfg
+    costs = cost.table(baseline, relax_run, agreement_run, pipeline_run, llmdfa_run)
+    numbers = dict(
+        sources=dict(baseline=baseline, relax=relax_run, agreement=agreement_run, pipeline=pipeline_run,
+                     llmdfa=llmdfa_run),
+        convention="mean and sample SD over 3 aligned samples; FDR/F1 in percent; empty output = 100% FDR",
+        table1={name.replace(r"\textbf{JETA}", "JETA"): dict(
+            macro=summary(runs), per_project={p: dict(fdr=mean_sd([r[j]["fdr"] for r in runs]),
+                                                      f1=mean_sd([r[j]["f1"] for r in runs]),
+                                                      detected="%d/%d" % (sum(r[j]["det"] for r in runs), len(runs)))
+                                              for j, p in enumerate(scores.projects)})
+            for group in main for name, runs in group},
+        table2_ablation={name.replace(r"\quad ", ""): summary(runs) for name, runs in ablation},
+        figure5_6_relaxation=relaxation,
+        table3_cost=dict(runs=costs["runs"], rows=dict(costs["rows"])),
+        # Figure 8 shares are of the rounded components' sum ($0.979), as its caption states.
+        figure8_cost_breakdown={name: dict(cost=part["cost"], calls=part["calls"],
+                                           share=round(part["cost"], 3) / sum(round(x["cost"], 3)
+                                                                              for _, x in costs["jeta_parts"]))
+                                for name, part in costs["jeta_parts"]},
+        cases=cases(scores, agreement_run))
+    out.mkdir(parents=True, exist_ok=True)
+    stamp = "% Generated by python3 -m cwe22 paper from results/{}, {}, {}, {} and {}.\n".format(
+        baseline, relax_run, agreement_run, pipeline_run, llmdfa_run)
+    (out / "table1_main.tex").write_text(stamp + table1(scores, main))
+    (out / "table2_ablation.tex").write_text(stamp + table2(ablation))
+    (out / "table3_cost.tex").write_text(stamp + table3(costs))
+    write_json(out / "numbers.json", numbers)
+    (out / "SUMMARY.md").write_text(render(numbers))
+    try:
+        from . import figures
+    except ImportError as exc:  # matplotlib is optional: tables and numbers do not need it
+        print("Skipped figures ({}); install matplotlib to draw them".format(exc))
+    else:
+        figures.draw(out, numbers)
+    return out
+
+
+def render(numbers):
+    """SUMMARY.md: the numbers the paper quotes, next to where it quotes them."""
+    def ms(pair, digits=1):
+        return "{0:.{2}f} ± {1:.{2}f}".format(pair[0], pair[1], digits)
+
+    lines = ["# Paper numbers", "", "Generated by `python3 -m cwe22 paper` from saved runs ({}). {}.".format(
+        ", ".join("{} `{}`".format(k, v) for k, v in numbers["sources"].items()), numbers["convention"].capitalize()),
+             "", "## Table 1 (Section 5.3): Original configuration, vulnerable revisions", "",
+             "| Approach | Macro FDR ↓ | Macro F1 ↑ | Det. ↑ | Per-project detections |", "| --- | ---: | ---: | ---: | --- |"]
+    for name, row in numbers["table1"].items():
+        m = row["macro"]
+        lines.append("| {} | {} | {} | {} | {} |".format(name, ms(m["fdr"]), ms(m["f1"]), ms(m["det"]), ", ".join(
+            "{} {}".format(PROJECT_LABELS[p], v["detected"]) for p, v in row["per_project"].items())))
+    lines += ["", "## Table 2 (Section 5.6): JETA stages, Original configuration", "",
+              "| Stage | FDR ↓ | F1 ↑ | Det. ↑ | Fixed: Flag. ↓ | P-C ↑ |", "| --- | ---: | ---: | ---: | ---: | ---: |"]
+    lines += ["| {} | {} | {} | {} | {} | {} |".format(n, *(ms(s[k]) for k in ("fdr", "f1", "det", "flag", "pc")))
+              for n, s in numbers["table2_ablation"].items()]
+    lines += ["", "## Figures 5 and 6 (Section 5.4): hint relaxation", "",
+              "Each track uses that model as the hinted reader and, at H2b and E, as the source selector and",
+              "entry-driver writer. JETA (= + checklist) always uses both readers.", ""]
+    for track, arms in numbers["figure5_6_relaxation"].items():
+        lines += ["### {} track".format(track), "",
+                  "| Arm | Level | Tai-e config | FDR ↓ | F1 ↑ | Det. ↑ | Flag. ↓ | P-C ↑ |",
+                  "| --- | --- | --- | ---: | ---: | ---: | ---: | ---: |"]
+        for arm, levels in arms.items():
+            if arm == "config":
+                continue
+            lines += ["| {} | {} | `{}` | {} | {} | {} | {} | {} |".format(
+                arm, level, arms["config"][level], *(ms(s[k]) for k in ("fdr", "f1", "det", "flag", "pc")))
+                for level, s in levels.items()]
+        lines.append("")
+    lines += ["## Table 3 and Figure 8 (Section 5.7): cost over {} runs".format(numbers["table3_cost"]["runs"]), "",
+              "| Approach | Calls | Tokens in (k) | Tokens out (k) | Total ($) | /run (¢) | /run (s) |",
+              "| --- | ---: | ---: | ---: | ---: | ---: | ---: |"]
+    for name, r in numbers["table3_cost"]["rows"].items():
+        tok = ["–", "–"] if r["tokens_in"] is None else ["{:,.1f}".format(r[k] / 1000) for k in ("tokens_in", "tokens_out")]
+        lines.append("| {} | {:,} | {} | {} | {:.3f} | {:.3f} | {:,.1f} |".format(
+            name, r["calls"], *tok, r["cost"], r["cost_per_run_cents"], r["seconds_per_run"]))
+    lines += ["", "JETA's charges: " + "; ".join("{} {:.1%} (${:.3f}, {} calls)".format(n, p["share"], p["cost"], p["calls"])
+                                                for n, p in numbers["figure8_cost_breakdown"].items()) + ".", "",
+              "## Case numbers (Sections 3, 4.2, 5.5; Figures 1, 4, 7)", "", "```json"]
+    lines += [json.dumps(numbers["cases"], indent=2), "```", ""]
+    return "\n".join(lines)

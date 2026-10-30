@@ -1,0 +1,209 @@
+{
+  "project": "zt-zip",
+  "variant": "vulnerable",
+  "stamp": {
+    "version": 1,
+    "guards_sha256": "1bf3162985e123f09fc39425bc60c2b50f43de4a4091041200b9202758eed2c1",
+    "checkers_sha256": {
+      "SourceFacts.java": "a4cf29014742376ee9a8d0c848839e281595d1abc8695f99c4b421bbc045c1b9",
+      "CanonicalGuardCheck.java": "de54813e23ce149d7f0168b85fc3268696f69164b8f24ec564fb42994934cb25"
+    }
+  },
+  "commit": "bd3f3d77f3709f901fd5180a493ef32e4dfebfa6",
+  "model": "JDK POSIX paths; trusted root; no symlinks, filesystem races or custom Path providers",
+  "files": [
+    "src/main/java/org/zeroturnaround/zip/ZipUtil.java",
+    "src/main/java/org/zeroturnaround/zip/Zips.java",
+    "src/main/java/org/zeroturnaround/zip/commons/FileUtils.java",
+    "src/main/java/org/zeroturnaround/zip/commons/FileUtilsV2_2.java",
+    "src/main/java/org/zeroturnaround/zip/commons/IOUtils.java",
+    "src/main/java/org/zeroturnaround/zip/transform/FileZipEntryTransformer.java"
+  ],
+  "contracts": [
+    {
+      "checker": "path",
+      "cls": "org.zeroturnaround.zip.Zips",
+      "method": "addFile",
+      "guard_line": 215,
+      "guard": "entryPath.startsWith(\"/\")",
+      "status": "unknown",
+      "protects_sink": false,
+      "reason": "Requires exactly one supported filesystem sink"
+    },
+    {
+      "checker": "path",
+      "cls": "org.zeroturnaround.zip.Zips",
+      "method": "getRelativePath",
+      "guard_line": 226,
+      "guard": "filePath.startsWith(parentPath)",
+      "status": "unknown",
+      "protects_sink": false,
+      "reason": "Requires exactly one supported filesystem sink"
+    },
+    {
+      "checker": "path",
+      "cls": "org.zeroturnaround.zip.Zips",
+      "method": "isEntryInDir",
+      "guard_line": 611,
+      "guard": "entryName.startsWith(dirName)",
+      "status": "unknown",
+      "protects_sink": false,
+      "reason": "Requires exactly one supported filesystem sink"
+    },
+    {
+      "checker": "path",
+      "cls": "org.zeroturnaround.zip.commons.FileUtilsV2_2",
+      "method": "copyDirectory",
+      "guard_line": 579,
+      "guard": "destDir.getCanonicalPath().startsWith(srcDir.getCanonicalPath())",
+      "status": "refuted",
+      "protects_sink": false,
+      "reason": "Path String prefix has no directory-component boundary",
+      "counterexample": {
+        "root": "/tmp/out",
+        "candidate": "/tmp/outside/probe"
+      }
+    },
+    {
+      "checker": "path",
+      "cls": "org.zeroturnaround.zip.commons.FileUtilsV2_2",
+      "method": "moveDirectory",
+      "guard_line": 1000,
+      "guard": "destDir.getCanonicalPath().startsWith(srcDir.getCanonicalPath())",
+      "status": "refuted",
+      "protects_sink": false,
+      "reason": "Path String prefix has no directory-component boundary",
+      "counterexample": {
+        "root": "/tmp/out",
+        "candidate": "/tmp/outside/probe"
+      }
+    },
+    {
+      "checker": "canonical",
+      "cls": "org.zeroturnaround.zip.ZipUtil",
+      "status": "unknown",
+      "method": "packEntries",
+      "sink_line": 1531,
+      "protects_sink": false,
+      "reason": "Unsupported canonical containment contract"
+    },
+    {
+      "checker": "canonical",
+      "cls": "org.zeroturnaround.zip.ZipUtil",
+      "status": "unknown",
+      "method": "pack",
+      "sink_line": 1590,
+      "protects_sink": false,
+      "reason": "Unsupported canonical containment contract"
+    },
+    {
+      "checker": "canonical",
+      "cls": "org.zeroturnaround.zip.ZipUtil.RepackZipEntryCallback",
+      "status": "unknown",
+      "method": "<init>",
+      "sink_line": 1848,
+      "protects_sink": false,
+      "reason": "Unsupported canonical containment contract"
+    },
+    {
+      "checker": "canonical",
+      "cls": "org.zeroturnaround.zip.ZipUtil",
+      "status": "unknown",
+      "method": "pack",
+      "sink_line": 1963,
+      "protects_sink": false,
+      "reason": "Unsupported canonical containment contract"
+    },
+    {
+      "checker": "canonical",
+      "cls": "org.zeroturnaround.zip.ZipUtil",
+      "status": "unknown",
+      "method": "addEntries",
+      "sink_line": 2131,
+      "protects_sink": false,
+      "reason": "Unsupported canonical containment contract"
+    },
+    {
+      "checker": "canonical",
+      "cls": "org.zeroturnaround.zip.ZipUtil",
+      "status": "unknown",
+      "method": "removeEntries",
+      "sink_line": 2270,
+      "protects_sink": false,
+      "reason": "Unsupported canonical containment contract"
+    },
+    {
+      "checker": "canonical",
+      "cls": "org.zeroturnaround.zip.ZipUtil",
+      "status": "unknown",
+      "method": "replaceEntries",
+      "sink_line": 2568,
+      "protects_sink": false,
+      "reason": "Unsupported canonical containment contract"
+    },
+    {
+      "checker": "canonical",
+      "cls": "org.zeroturnaround.zip.ZipUtil",
+      "status": "unknown",
+      "method": "addOrReplaceEntries",
+      "sink_line": 2633,
+      "protects_sink": false,
+      "reason": "Unsupported canonical containment contract"
+    },
+    {
+      "checker": "canonical",
+      "cls": "org.zeroturnaround.zip.ZipUtil",
+      "status": "unknown",
+      "method": "transformEntries",
+      "sink_line": 2781,
+      "protects_sink": false,
+      "reason": "Unsupported canonical containment contract"
+    },
+    {
+      "checker": "canonical",
+      "cls": "org.zeroturnaround.zip.Zips",
+      "status": "unknown",
+      "method": "process",
+      "sink_line": 357,
+      "protects_sink": false,
+      "reason": "Unsupported canonical containment contract"
+    },
+    {
+      "checker": "canonical",
+      "cls": "org.zeroturnaround.zip.commons.FileUtils",
+      "status": "unknown",
+      "method": "copy",
+      "sink_line": 54,
+      "protects_sink": false,
+      "reason": "Unsupported canonical containment contract"
+    },
+    {
+      "checker": "canonical",
+      "cls": "org.zeroturnaround.zip.commons.FileUtilsV2_2",
+      "status": "unknown",
+      "method": "openOutputStream",
+      "sink_line": 211,
+      "protects_sink": false,
+      "reason": "Unsupported canonical containment contract"
+    },
+    {
+      "checker": "canonical",
+      "cls": "org.zeroturnaround.zip.commons.FileUtilsV2_2",
+      "status": "unknown",
+      "method": "doCopyFile",
+      "sink_line": 428,
+      "protects_sink": false,
+      "reason": "Unsupported canonical containment contract"
+    },
+    {
+      "checker": "canonical",
+      "cls": "org.zeroturnaround.zip.transform.FileZipEntryTransformer",
+      "status": "unknown",
+      "method": "copy",
+      "sink_line": 64,
+      "protects_sink": false,
+      "reason": "Unsupported canonical containment contract"
+    }
+  ],
+  "protected": []
+}

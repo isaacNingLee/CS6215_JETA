@@ -1,0 +1,46 @@
+{
+  "id": "gen-1792653871-uecDOax1GlnH08dGdu2C",
+  "object": "chat.completion",
+  "created": 1792653871,
+  "model": "qwen/qwen3-coder-30b-a3b-instruct",
+  "provider": "Amazon Bedrock",
+  "system_fingerprint": null,
+  "service_tier": null,
+  "choices": [
+    {
+      "index": 0,
+      "logprobs": null,
+      "finish_reason": "stop",
+      "native_finish_reason": "end_turn",
+      "message": {
+        "role": "assistant",
+        "content": "Looking at the code, I need to trace the flow from `fileHeader.getFileName()` at line 29 to `raf` at line 48.\n\nLet me trace through the execution:\n\n1. Line 29: `fileHeader.getFileName()` is called within an exception message string construction\n2. This call happens inside the `else` block of line 27-30, which is part of the AES encryption handling logic\n3. The `fileHeader.getFileName()` call at line 29 is only used in the exception message string \"invalid decryptor when trying to calculate compressed size for AES encrypted file: \" + fileHeader.getFileName()\n4. This exception message is never actually used or stored anywhere\n5. The `raf` variable at line 48 is created at line 6 (`RandomAccessFile raf = null;`) and then assigned at line 8 (`raf = createFileHandler(InternalZipConstants.READ_MODE);`)\n6. The `raf` variable is used later at line 45 (`raf.seek(offsetStartOfData);`) and line 48 (`new ZipInputStream(new PartInputStream(raf, offsetStartOfData, comprSize, this))`)\n\nThere is no connection between the value of `fileHeader.getFileName()` at line 29 and the value of `raf` at line 48. The `fileHeader.getFileName()` is only used in an exception message string and doesn't affect the `raf` variable's initialization or assignment.\n\nExplanation: The variable `fileHeader.getFileName()` at line 29 is only used within an exception message string construction and has no impact on the `raf` variable at line 48. The `raf` variable is initialized by calling `createFileHandler(InternalZipConstants.READ_MODE)` and is completely independent of the filename information used in the exception message.\n\nAnswer: No",
+        "refusal": null,
+        "reasoning": null
+      }
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 1798,
+    "completion_tokens": 389,
+    "total_tokens": 2187,
+    "cost": 0.0005031,
+    "is_byok": false,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0,
+      "video_tokens": 0
+    },
+    "cost_details": {
+      "upstream_inference_cost": 0.0005031,
+      "upstream_inference_prompt_cost": 0.0002697,
+      "upstream_inference_completions_cost": 0.0002334
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "image_tokens": 0,
+      "audio_tokens": 0
+    }
+  }
+}

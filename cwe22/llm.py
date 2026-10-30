@@ -55,9 +55,10 @@ def input_files(project, variant, mode):
     return files
 
 
-def request_body(model, prompt, system=None):
+def request_body(model, prompt, system=None, long=False):
     messages = ([dict(role="system", content=system)] if system else []) + [dict(role="user", content=prompt)]
-    return dict(model=model, temperature=0, max_tokens=config.max_tokens(model), reasoning=dict(effort="low"), messages=messages)
+    return dict(model=model, temperature=0, max_tokens=config.max_tokens(model, long), reasoning=dict(effort="low"),
+                messages=messages)
 
 
 def call(body, key, timeout=600, attempts=3, url=config.OPENROUTER_URL):

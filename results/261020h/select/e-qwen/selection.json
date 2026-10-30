@@ -1,0 +1,1306 @@
+{
+  "zip4j": {
+    "pool": 11,
+    "reaching": [
+      "<net.lingala.zip4j.crypto.PBKDF2.PBKDF2Parameters: java.lang.String getHashAlgorithm()>",
+      "<net.lingala.zip4j.model.FileHeader: java.lang.String getFileName()>",
+      "<net.lingala.zip4j.model.LocalFileHeader: java.lang.String getFileName()>",
+      "<net.lingala.zip4j.model.ZipModel: java.lang.String getFileNameCharset()>",
+      "<net.lingala.zip4j.model.ZipModel: java.lang.String getZipFile()>",
+      "<net.lingala.zip4j.model.ZipParameters: java.lang.String getDefaultFolderPath()>",
+      "<net.lingala.zip4j.model.ZipParameters: java.lang.String getFileNameInZip()>",
+      "<net.lingala.zip4j.model.ZipParameters: java.lang.String getRootFolderInZip()>"
+    ],
+    "selected": [
+      "<net.lingala.zip4j.model.FileHeader: java.lang.String getFileName()>",
+      "<net.lingala.zip4j.model.LocalFileHeader: java.lang.String getFileName()>",
+      "<net.lingala.zip4j.model.ZipModel: java.lang.String getZipFile()>",
+      "<net.lingala.zip4j.model.ZipParameters: java.lang.String getFileNameInZip()>",
+      "<net.lingala.zip4j.model.ZipParameters: java.lang.String getRootFolderInZip()>"
+    ],
+    "decisions": [
+      {
+        "id": "C03",
+        "decision": "source",
+        "reason": "Local file names from ZIP archives can be controlled by attackers.",
+        "evidence": [
+          "K5"
+        ],
+        "signature": "<net.lingala.zip4j.model.LocalFileHeader: java.lang.String getFileName()>"
+      },
+      {
+        "id": "C07",
+        "decision": "source",
+        "reason": "File name in ZIP can be controlled by attacker during creation.",
+        "evidence": [
+          "K17"
+        ],
+        "signature": "<net.lingala.zip4j.model.ZipParameters: java.lang.String getFileNameInZip()>"
+      },
+      {
+        "id": "C01",
+        "decision": "not_source",
+        "reason": "Returns hash algorithm name, not attacker-controlled file path data.",
+        "evidence": [
+          "K1"
+        ],
+        "signature": "<net.lingala.zip4j.crypto.PBKDF2.PBKDF2Parameters: java.lang.String getHashAlgorithm()>"
+      },
+      {
+        "id": "C02",
+        "decision": "source",
+        "reason": "File names from ZIP archives can be controlled by attackers.",
+        "evidence": [
+          "K2"
+        ],
+        "signature": "<net.lingala.zip4j.model.FileHeader: java.lang.String getFileName()>"
+      },
+      {
+        "id": "C06",
+        "decision": "not_source",
+        "reason": "Default folder path, not directly attacker-controlled file name.",
+        "evidence": [
+          "K14"
+        ],
+        "signature": "<net.lingala.zip4j.model.ZipParameters: java.lang.String getDefaultFolderPath()>"
+      },
+      {
+        "id": "C05",
+        "decision": "source",
+        "reason": "ZIP file path can be controlled by attacker in file operations.",
+        "evidence": [
+          "K11"
+        ],
+        "signature": "<net.lingala.zip4j.model.ZipModel: java.lang.String getZipFile()>"
+      },
+      {
+        "id": "C04",
+        "decision": "not_source",
+        "reason": "Character set encoding parameter, not file path data.",
+        "evidence": [
+          "K8"
+        ],
+        "signature": "<net.lingala.zip4j.model.ZipModel: java.lang.String getFileNameCharset()>"
+      },
+      {
+        "id": "C08",
+        "decision": "source",
+        "reason": "Root folder in ZIP can be used to construct paths and is attacker-controllable.",
+        "evidence": [
+          "K20"
+        ],
+        "signature": "<net.lingala.zip4j.model.ZipParameters: java.lang.String getRootFolderInZip()>"
+      }
+    ],
+    "errors": [],
+    "valid": 8
+  },
+  "zt-zip": {
+    "pool": 5,
+    "reaching": [
+      "<java.util.jar.JarFile$JarFileEntry: java.lang.String getName()>",
+      "<org.zeroturnaround.zip.Zips: java.io.File getDestinationFile()>"
+    ],
+    "selected": [
+      "<java.util.jar.JarFile$JarFileEntry: java.lang.String getName()>",
+      "<org.zeroturnaround.zip.Zips: java.io.File getDestinationFile()>"
+    ],
+    "decisions": [
+      {
+        "id": "C02",
+        "decision": "unknown",
+        "reason": "Insufficient information to determine if the destination file path is attacker-controlled.",
+        "evidence": [
+          "K4"
+        ],
+        "signature": "<org.zeroturnaround.zip.Zips: java.io.File getDestinationFile()>"
+      },
+      {
+        "id": "C01",
+        "decision": "source",
+        "reason": "The getName() method returns a file name from a ZipEntry, which can be controlled by an attacker.",
+        "evidence": [
+          "K2"
+        ],
+        "signature": "<java.util.jar.JarFile$JarFileEntry: java.lang.String getName()>"
+      }
+    ],
+    "errors": [],
+    "valid": 2
+  },
+  "spark": {
+    "pool": 19,
+    "reaching": [
+      "<java.net.URI: java.lang.String getSchemeSpecificPart()>",
+      "<java.net.URL: java.lang.String getFile()>",
+      "<spark.resource.AbstractResource: java.lang.String getFilename()>",
+      "<spark.resource.ClassPathResource: java.lang.String getDescription()>",
+      "<spark.resource.ClassPathResource: java.lang.String getFilename()>",
+      "<spark.resource.ClassPathResource: java.lang.String getPath()>",
+      "<spark.resource.ExternalResource: java.lang.String getDescription()>",
+      "<spark.resource.ExternalResource: java.lang.String getFilename()>",
+      "<spark.resource.ExternalResource: java.lang.String getPath()>",
+      "<spark.resource.Resource: java.lang.String getDescription()>",
+      "<spark.utils.ClassUtils: java.lang.String classPackageAsResourcePath(java.lang.Class)>"
+    ],
+    "selected": [
+      "<java.net.URI: java.lang.String getSchemeSpecificPart()>",
+      "<java.net.URL: java.lang.String getFile()>",
+      "<spark.resource.AbstractResource: java.lang.String getFilename()>",
+      "<spark.resource.ClassPathResource: java.lang.String getDescription()>",
+      "<spark.resource.ClassPathResource: java.lang.String getFilename()>",
+      "<spark.resource.ClassPathResource: java.lang.String getPath()>",
+      "<spark.resource.ExternalResource: java.lang.String getDescription()>",
+      "<spark.resource.ExternalResource: java.lang.String getFilename()>",
+      "<spark.resource.ExternalResource: java.lang.String getPath()>",
+      "<spark.resource.Resource: java.lang.String getDescription()>",
+      "<spark.utils.ClassUtils: java.lang.String classPackageAsResourcePath(java.lang.Class)>"
+    ],
+    "decisions": [
+      {
+        "id": "C03",
+        "decision": "source",
+        "reason": "getFilename() returns filename from resource that may be attacker-controlled.",
+        "evidence": [
+          "K3"
+        ],
+        "signature": "<spark.resource.AbstractResource: java.lang.String getFilename()>"
+      },
+      {
+        "id": "C09",
+        "decision": "source",
+        "reason": "getPath() returns path string that may be attacker-controlled.",
+        "evidence": [
+          "K13"
+        ],
+        "signature": "<spark.resource.ExternalResource: java.lang.String getPath()>"
+      },
+      {
+        "id": "C07",
+        "decision": "source",
+        "reason": "getDescription() returns resource description that may contain attacker-controlled path data.",
+        "evidence": [
+          "K10"
+        ],
+        "signature": "<spark.resource.ExternalResource: java.lang.String getDescription()>"
+      },
+      {
+        "id": "C01",
+        "decision": "source",
+        "reason": "getSchemeSpecificPart() can return attacker-controlled URI data used in file path construction.",
+        "evidence": [
+          "K1"
+        ],
+        "signature": "<java.net.URI: java.lang.String getSchemeSpecificPart()>"
+      },
+      {
+        "id": "C10",
+        "decision": "source",
+        "reason": "getDescription() returns resource description that may contain attacker-controlled path data.",
+        "evidence": [
+          "K15"
+        ],
+        "signature": "<spark.resource.Resource: java.lang.String getDescription()>"
+      },
+      {
+        "id": "C02",
+        "decision": "source",
+        "reason": "getFile() returns URL path component that may be attacker-controlled.",
+        "evidence": [
+          "K2"
+        ],
+        "signature": "<java.net.URL: java.lang.String getFile()>"
+      },
+      {
+        "id": "C11",
+        "decision": "unknown",
+        "reason": "Missing/invalid review",
+        "evidence": [],
+        "signature": "<spark.utils.ClassUtils: java.lang.String classPackageAsResourcePath(java.lang.Class)>"
+      },
+      {
+        "id": "C06",
+        "decision": "source",
+        "reason": "getPath() returns path string that may be attacker-controlled.",
+        "evidence": [
+          "K8"
+        ],
+        "signature": "<spark.resource.ClassPathResource: java.lang.String getPath()>"
+      },
+      {
+        "id": "C05",
+        "decision": "source",
+        "reason": "getFilename() returns filename from resource that may be attacker-controlled.",
+        "evidence": [
+          "K7"
+        ],
+        "signature": "<spark.resource.ClassPathResource: java.lang.String getFilename()>"
+      },
+      {
+        "id": "C04",
+        "decision": "source",
+        "reason": "getDescription() returns resource description that may contain attacker-controlled path data.",
+        "evidence": [
+          "K4"
+        ],
+        "signature": "<spark.resource.ClassPathResource: java.lang.String getDescription()>"
+      },
+      {
+        "id": "C08",
+        "decision": "source",
+        "reason": "getFilename() returns filename from resource that may be attacker-controlled.",
+        "evidence": [
+          "K11"
+        ],
+        "signature": "<spark.resource.ExternalResource: java.lang.String getFilename()>"
+      }
+    ],
+    "errors": [
+      "Missing decision for C11"
+    ],
+    "valid": 10
+  },
+  "plexus-archiver": {
+    "pool": 8,
+    "reaching": [
+      "<org.apache.commons.compress.archivers.tar.TarArchiveEntry: java.lang.String getLinkName()>",
+      "<org.apache.commons.compress.archivers.zip.ZipFile: java.lang.String getUnixSymlink(org.apache.commons.compress.archivers.zip.ZipArchiveEntry)>",
+      "<org.codehaus.plexus.archiver.AbstractUnArchiver: java.io.File getDestDirectory()>",
+      "<org.codehaus.plexus.archiver.AbstractUnArchiver: java.io.File getSourceFile()>",
+      "<org.codehaus.plexus.archiver.zip.AbstractZipUnArchiver$ZipEntryFileInfo: java.lang.String getName()>",
+      "<org.codehaus.plexus.archiver.zip.AbstractZipUnArchiver: java.lang.String resolveSymlink(org.apache.commons.compress.archivers.zip.ZipFile,org.apache.commons.compress.archivers.zip.ZipArchiveEntry)>",
+      "<org.codehaus.plexus.components.io.fileselectors.FileInfo: java.lang.String getName()>",
+      "<org.codehaus.plexus.components.io.resources.AbstractPlexusIoResource: java.lang.String getName()>"
+    ],
+    "selected": [
+      "<org.apache.commons.compress.archivers.tar.TarArchiveEntry: java.lang.String getLinkName()>",
+      "<org.apache.commons.compress.archivers.zip.ZipFile: java.lang.String getUnixSymlink(org.apache.commons.compress.archivers.zip.ZipArchiveEntry)>",
+      "<org.codehaus.plexus.archiver.AbstractUnArchiver: java.io.File getDestDirectory()>",
+      "<org.codehaus.plexus.archiver.AbstractUnArchiver: java.io.File getSourceFile()>",
+      "<org.codehaus.plexus.archiver.zip.AbstractZipUnArchiver$ZipEntryFileInfo: java.lang.String getName()>",
+      "<org.codehaus.plexus.archiver.zip.AbstractZipUnArchiver: java.lang.String resolveSymlink(org.apache.commons.compress.archivers.zip.ZipFile,org.apache.commons.compress.archivers.zip.ZipArchiveEntry)>",
+      "<org.codehaus.plexus.components.io.fileselectors.FileInfo: java.lang.String getName()>",
+      "<org.codehaus.plexus.components.io.resources.AbstractPlexusIoResource: java.lang.String getName()>"
+    ],
+    "decisions": [
+      {
+        "id": "C03",
+        "decision": "unknown",
+        "reason": "Missing/invalid review",
+        "evidence": [],
+        "signature": "<org.codehaus.plexus.archiver.AbstractUnArchiver: java.io.File getDestDirectory()>"
+      },
+      {
+        "id": "C07",
+        "decision": "source",
+        "reason": "getName() from FileInfo returns file name from archive entry, potentially attacker-controlled.",
+        "evidence": [
+          "K13"
+        ],
+        "signature": "<org.codehaus.plexus.components.io.fileselectors.FileInfo: java.lang.String getName()>"
+      },
+      {
+        "id": "C01",
+        "decision": "source",
+        "reason": "getLinkName() returns a symlink target name from a tar archive entry, potentially controlled by attacker.",
+        "evidence": [
+          "K1"
+        ],
+        "signature": "<org.apache.commons.compress.archivers.tar.TarArchiveEntry: java.lang.String getLinkName()>"
+      },
+      {
+        "id": "C02",
+        "decision": "source",
+        "reason": "getUnixSymlink() retrieves symlink target from zip entry, which may be attacker-controlled.",
+        "evidence": [
+          "K2"
+        ],
+        "signature": "<org.apache.commons.compress.archivers.zip.ZipFile: java.lang.String getUnixSymlink(org.apache.commons.compress.archivers.zip.ZipArchiveEntry)>"
+      },
+      {
+        "id": "C06",
+        "decision": "unknown",
+        "reason": "Missing/invalid review",
+        "evidence": [],
+        "signature": "<org.codehaus.plexus.archiver.zip.AbstractZipUnArchiver: java.lang.String resolveSymlink(org.apache.commons.compress.archivers.zip.ZipFile,org.apache.commons.compress.archivers.zip.ZipArchiveEntry)>"
+      },
+      {
+        "id": "C05",
+        "decision": "source",
+        "reason": "getName() from ZipEntryFileInfo returns entry name from archive, potentially attacker-controlled.",
+        "evidence": [
+          "K9"
+        ],
+        "signature": "<org.codehaus.plexus.archiver.zip.AbstractZipUnArchiver$ZipEntryFileInfo: java.lang.String getName()>"
+      },
+      {
+        "id": "C04",
+        "decision": "unknown",
+        "reason": "Missing/invalid review",
+        "evidence": [],
+        "signature": "<org.codehaus.plexus.archiver.AbstractUnArchiver: java.io.File getSourceFile()>"
+      },
+      {
+        "id": "C08",
+        "decision": "source",
+        "reason": "getName() from AbstractPlexusIoResource returns resource name from archive, potentially attacker-controlled.",
+        "evidence": [
+          "K14"
+        ],
+        "signature": "<org.codehaus.plexus.components.io.resources.AbstractPlexusIoResource: java.lang.String getName()>"
+      }
+    ],
+    "errors": [
+      "Missing decision for C03",
+      "Missing decision for C04",
+      "Missing decision for C06"
+    ],
+    "valid": 5
+  },
+  "plexus-utils": {
+    "pool": 2,
+    "reaching": [
+      "<java.util.StringTokenizer: java.lang.String nextToken()>"
+    ],
+    "selected": [],
+    "decisions": [
+      {
+        "id": "C01",
+        "decision": "not_source",
+        "reason": "The StringTokenizer.next() method returns tokens from a fixed separator string, not attacker-controlled input.",
+        "evidence": [
+          "K1"
+        ],
+        "signature": "<java.util.StringTokenizer: java.lang.String nextToken()>"
+      }
+    ],
+    "errors": [],
+    "valid": 1
+  },
+  "mpxj": {
+    "pool": 91,
+    "reaching": [
+      "<com.rtfparserkit.converter.text.StringTextConverter: java.lang.String getText()>",
+      "<java.text.SimpleDateFormat: java.lang.String toPattern()>",
+      "<java.util.regex.Matcher: java.lang.String group(int)>",
+      "<net.sf.mpxj.AssignmentField: java.lang.String getName()>",
+      "<net.sf.mpxj.AssignmentField: java.lang.String getName(java.util.Locale)>",
+      "<net.sf.mpxj.Column: java.lang.String getTitle()>",
+      "<net.sf.mpxj.Column: java.lang.String getTitle(java.util.Locale)>",
+      "<net.sf.mpxj.ConstraintField: java.lang.String getName()>",
+      "<net.sf.mpxj.ConstraintField: java.lang.String getName(java.util.Locale)>",
+      "<net.sf.mpxj.CustomField: java.lang.String getAlias()>",
+      "<net.sf.mpxj.FieldType: java.lang.String getName()>",
+      "<net.sf.mpxj.FieldType: java.lang.String getName(java.util.Locale)>",
+      "<net.sf.mpxj.Filter: java.lang.String getName()>",
+      "<net.sf.mpxj.Group: java.lang.String getName()>",
+      "<net.sf.mpxj.ProjectCalendarWeek: java.lang.String getName()>",
+      "<net.sf.mpxj.ProjectField: java.lang.String getName()>",
+      "<net.sf.mpxj.ProjectField: java.lang.String getName(java.util.Locale)>",
+      "<net.sf.mpxj.ProjectProperties: java.lang.String getAMText()>",
+      "<net.sf.mpxj.ProjectProperties: java.lang.String getCurrencySymbol()>",
+      "<net.sf.mpxj.ProjectProperties: java.lang.String getPMText()>",
+      "<net.sf.mpxj.RecurringData: java.lang.String getOrdinal(java.lang.Integer)>",
+      "<net.sf.mpxj.Resource: java.lang.String getName()>",
+      "<net.sf.mpxj.Resource: java.lang.String getNotes()>",
+      "<net.sf.mpxj.ResourceAssignment: java.lang.String getNotes()>",
+      "<net.sf.mpxj.ResourceField: java.lang.String getName()>",
+      "<net.sf.mpxj.ResourceField: java.lang.String getName(java.util.Locale)>",
+      "<net.sf.mpxj.SubProject: java.lang.String getDosFullPath()>",
+      "<net.sf.mpxj.SubProject: java.lang.String getFullPath()>",
+      "<net.sf.mpxj.Table: java.lang.String getName()>",
+      "<net.sf.mpxj.Task: java.lang.String getName()>",
+      "<net.sf.mpxj.Task: java.lang.String getNotes()>",
+      "<net.sf.mpxj.Task: java.lang.String getOutlineNumber()>",
+      "<net.sf.mpxj.Task: java.lang.String getWBS()>",
+      "<net.sf.mpxj.TaskField: java.lang.String getName()>",
+      "<net.sf.mpxj.TaskField: java.lang.String getName(java.util.Locale)>",
+      "<net.sf.mpxj.TimeUnit: java.lang.String getName()>",
+      "<net.sf.mpxj.common.FieldTypeHelper$1: java.lang.String getName()>",
+      "<net.sf.mpxj.common.Tokenizer: java.lang.String getToken()>",
+      "<net.sf.mpxj.mpp.BackgroundPattern: java.lang.String getName()>",
+      "<net.sf.mpxj.mpp.ChartPattern: java.lang.String getName()>",
+      "<net.sf.mpxj.mpp.CompObj: java.lang.String getApplicationName()>",
+      "<net.sf.mpxj.mpp.CompObj: java.lang.String getFileFormat()>",
+      "<net.sf.mpxj.mpp.ExtendedData: java.lang.String getString(java.lang.Integer)>",
+      "<net.sf.mpxj.mpp.ExtendedData: java.lang.String getUnicodeString(java.lang.Integer)>",
+      "<net.sf.mpxj.mpp.FixDeferFix: java.lang.String getString(int)>",
+      "<net.sf.mpxj.mpp.FixDeferFix: java.lang.String getUnicodeString(int)>",
+      "<net.sf.mpxj.mpp.GanttBarDateFormat: java.lang.String getName()>",
+      "<net.sf.mpxj.mpp.GanttBarMiddleShape: java.lang.String getName()>",
+      "<net.sf.mpxj.mpp.GanttBarShowForTasks: java.lang.String getName()>",
+      "<net.sf.mpxj.mpp.GanttBarStartEndShape: java.lang.String getName()>",
+      "<net.sf.mpxj.mpp.GanttBarStartEndType: java.lang.String getName()>",
+      "<net.sf.mpxj.mpp.Interval: java.lang.String getName()>",
+      "<net.sf.mpxj.mpp.LineStyle: java.lang.String getName()>",
+      "<net.sf.mpxj.mpp.LinkStyle: java.lang.String getName()>",
+      "<net.sf.mpxj.mpp.MPP12Reader: java.lang.String getCustomFieldOutlineCodeValue(net.sf.mpxj.mpp.Var2Data,net.sf.mpxj.mpp.Var2Data,java.lang.Integer)>",
+      "<net.sf.mpxj.mpp.MPP12Reader: java.lang.String getCustomFieldOutlineCodeValue(net.sf.mpxj.mpp.Var2Data,net.sf.mpxj.mpp.Var2Data,java.lang.Integer,java.lang.Integer)>",
+      "<net.sf.mpxj.mpp.MPP14Reader: java.lang.String getCustomFieldOutlineCodeValue(net.sf.mpxj.mpp.Var2Data,net.sf.mpxj.mpp.Var2Data,java.lang.Integer)>",
+      "<net.sf.mpxj.mpp.MPP14Reader: java.lang.String getCustomFieldOutlineCodeValue(net.sf.mpxj.mpp.Var2Data,net.sf.mpxj.mpp.Var2Data,java.lang.Integer,java.lang.Integer)>",
+      "<net.sf.mpxj.mpp.MPPReader: java.lang.String getReadPassword()>",
+      "<net.sf.mpxj.mpp.NonWorkingTimeStyle: java.lang.String getName()>",
+      "<net.sf.mpxj.mpp.Props: java.lang.String getUnicodeString(java.lang.Integer)>",
+      "<net.sf.mpxj.mpp.TimescaleAlignment: java.lang.String getName()>",
+      "<net.sf.mpxj.mpp.TimescaleFormat: java.lang.String getName()>",
+      "<net.sf.mpxj.mpp.TimescaleUnits: java.lang.String getName()>",
+      "<net.sf.mpxj.mpp.Var2Data: java.lang.String getString(java.lang.Integer)>",
+      "<net.sf.mpxj.mpp.Var2Data: java.lang.String getString(java.lang.Integer,java.lang.Integer)>",
+      "<net.sf.mpxj.mpp.Var2Data: java.lang.String getUnicodeString(java.lang.Integer)>",
+      "<net.sf.mpxj.mpp.Var2Data: java.lang.String getUnicodeString(java.lang.Integer,java.lang.Integer)>",
+      "<net.sf.mpxj.mpx.MPXReader$DeferredRelationship: java.lang.String getData()>",
+      "<net.sf.mpxj.mpx.Record: java.lang.String getString(int)>",
+      "<org.apache.poi.hpsf.CustomProperty: java.lang.String getName()>",
+      "<org.apache.poi.hpsf.DocumentSummaryInformation: java.lang.String getCategory()>",
+      "<org.apache.poi.hpsf.DocumentSummaryInformation: java.lang.String getCompany()>",
+      "<org.apache.poi.hpsf.DocumentSummaryInformation: java.lang.String getContentStatus()>",
+      "<org.apache.poi.hpsf.DocumentSummaryInformation: java.lang.String getContentType()>",
+      "<org.apache.poi.hpsf.DocumentSummaryInformation: java.lang.String getDocumentVersion()>",
+      "<org.apache.poi.hpsf.DocumentSummaryInformation: java.lang.String getLanguage()>",
+      "<org.apache.poi.hpsf.DocumentSummaryInformation: java.lang.String getManager()>",
+      "<org.apache.poi.hpsf.DocumentSummaryInformation: java.lang.String getPresentationFormat()>",
+      "<org.apache.poi.hpsf.SummaryInformation: java.lang.String getApplicationName()>",
+      "<org.apache.poi.hpsf.SummaryInformation: java.lang.String getAuthor()>",
+      "<org.apache.poi.hpsf.SummaryInformation: java.lang.String getComments()>",
+      "<org.apache.poi.hpsf.SummaryInformation: java.lang.String getKeywords()>",
+      "<org.apache.poi.hpsf.SummaryInformation: java.lang.String getLastAuthor()>",
+      "<org.apache.poi.hpsf.SummaryInformation: java.lang.String getRevNumber()>",
+      "<org.apache.poi.hpsf.SummaryInformation: java.lang.String getSubject()>",
+      "<org.apache.poi.hpsf.SummaryInformation: java.lang.String getTemplate()>",
+      "<org.apache.poi.hpsf.SummaryInformation: java.lang.String getTitle()>"
+    ],
+    "selected": [
+      "<com.rtfparserkit.converter.text.StringTextConverter: java.lang.String getText()>",
+      "<java.text.SimpleDateFormat: java.lang.String toPattern()>",
+      "<java.util.regex.Matcher: java.lang.String group(int)>",
+      "<net.sf.mpxj.AssignmentField: java.lang.String getName()>",
+      "<net.sf.mpxj.AssignmentField: java.lang.String getName(java.util.Locale)>",
+      "<net.sf.mpxj.Column: java.lang.String getTitle()>",
+      "<net.sf.mpxj.Column: java.lang.String getTitle(java.util.Locale)>",
+      "<net.sf.mpxj.ConstraintField: java.lang.String getName()>",
+      "<net.sf.mpxj.ConstraintField: java.lang.String getName(java.util.Locale)>",
+      "<net.sf.mpxj.CustomField: java.lang.String getAlias()>",
+      "<net.sf.mpxj.FieldType: java.lang.String getName()>",
+      "<net.sf.mpxj.FieldType: java.lang.String getName(java.util.Locale)>",
+      "<net.sf.mpxj.Filter: java.lang.String getName()>",
+      "<net.sf.mpxj.Group: java.lang.String getName()>",
+      "<net.sf.mpxj.ProjectCalendarWeek: java.lang.String getName()>",
+      "<net.sf.mpxj.ProjectField: java.lang.String getName()>",
+      "<net.sf.mpxj.ProjectField: java.lang.String getName(java.util.Locale)>",
+      "<net.sf.mpxj.ProjectProperties: java.lang.String getAMText()>",
+      "<net.sf.mpxj.ProjectProperties: java.lang.String getCurrencySymbol()>",
+      "<net.sf.mpxj.ProjectProperties: java.lang.String getPMText()>",
+      "<net.sf.mpxj.RecurringData: java.lang.String getOrdinal(java.lang.Integer)>",
+      "<net.sf.mpxj.Resource: java.lang.String getName()>",
+      "<net.sf.mpxj.Resource: java.lang.String getNotes()>",
+      "<net.sf.mpxj.ResourceAssignment: java.lang.String getNotes()>",
+      "<net.sf.mpxj.ResourceField: java.lang.String getName()>",
+      "<net.sf.mpxj.SubProject: java.lang.String getDosFullPath()>",
+      "<net.sf.mpxj.SubProject: java.lang.String getFullPath()>",
+      "<net.sf.mpxj.mpp.CompObj: java.lang.String getApplicationName()>",
+      "<net.sf.mpxj.mpp.CompObj: java.lang.String getFileFormat()>",
+      "<net.sf.mpxj.mpp.ExtendedData: java.lang.String getString(java.lang.Integer)>",
+      "<net.sf.mpxj.mpp.ExtendedData: java.lang.String getUnicodeString(java.lang.Integer)>",
+      "<net.sf.mpxj.mpp.FixDeferFix: java.lang.String getString(int)>",
+      "<net.sf.mpxj.mpp.FixDeferFix: java.lang.String getUnicodeString(int)>",
+      "<net.sf.mpxj.mpp.GanttBarStartEndType: java.lang.String getName()>",
+      "<net.sf.mpxj.mpp.Interval: java.lang.String getName()>",
+      "<net.sf.mpxj.mpp.LineStyle: java.lang.String getName()>",
+      "<net.sf.mpxj.mpp.LinkStyle: java.lang.String getName()>",
+      "<net.sf.mpxj.mpp.MPP12Reader: java.lang.String getCustomFieldOutlineCodeValue(net.sf.mpxj.mpp.Var2Data,net.sf.mpxj.mpp.Var2Data,java.lang.Integer)>",
+      "<net.sf.mpxj.mpp.MPP12Reader: java.lang.String getCustomFieldOutlineCodeValue(net.sf.mpxj.mpp.Var2Data,net.sf.mpxj.mpp.Var2Data,java.lang.Integer,java.lang.Integer)>",
+      "<net.sf.mpxj.mpp.MPP14Reader: java.lang.String getCustomFieldOutlineCodeValue(net.sf.mpxj.mpp.Var2Data,net.sf.mpxj.mpp.Var2Data,java.lang.Integer)>",
+      "<net.sf.mpxj.mpp.MPP14Reader: java.lang.String getCustomFieldOutlineCodeValue(net.sf.mpxj.mpp.Var2Data,net.sf.mpxj.mpp.Var2Data,java.lang.Integer,java.lang.Integer)>",
+      "<net.sf.mpxj.mpp.MPPReader: java.lang.String getReadPassword()>",
+      "<net.sf.mpxj.mpp.NonWorkingTimeStyle: java.lang.String getName()>",
+      "<net.sf.mpxj.mpp.Props: java.lang.String getUnicodeString(java.lang.Integer)>",
+      "<net.sf.mpxj.mpp.TimescaleAlignment: java.lang.String getName()>",
+      "<net.sf.mpxj.mpp.TimescaleFormat: java.lang.String getName()>",
+      "<net.sf.mpxj.mpp.TimescaleUnits: java.lang.String getName()>",
+      "<net.sf.mpxj.mpp.Var2Data: java.lang.String getString(java.lang.Integer)>",
+      "<net.sf.mpxj.mpp.Var2Data: java.lang.String getString(java.lang.Integer,java.lang.Integer)>",
+      "<net.sf.mpxj.mpp.Var2Data: java.lang.String getUnicodeString(java.lang.Integer)>",
+      "<net.sf.mpxj.mpp.Var2Data: java.lang.String getUnicodeString(java.lang.Integer,java.lang.Integer)>",
+      "<net.sf.mpxj.mpx.MPXReader$DeferredRelationship: java.lang.String getData()>",
+      "<net.sf.mpxj.mpx.Record: java.lang.String getString(int)>",
+      "<org.apache.poi.hpsf.CustomProperty: java.lang.String getName()>",
+      "<org.apache.poi.hpsf.DocumentSummaryInformation: java.lang.String getCategory()>",
+      "<org.apache.poi.hpsf.DocumentSummaryInformation: java.lang.String getCompany()>",
+      "<org.apache.poi.hpsf.DocumentSummaryInformation: java.lang.String getContentStatus()>",
+      "<org.apache.poi.hpsf.DocumentSummaryInformation: java.lang.String getContentType()>"
+    ],
+    "decisions": [
+      {
+        "id": "C07",
+        "decision": "unknown",
+        "reason": "Missing/invalid review",
+        "evidence": [],
+        "signature": "<net.sf.mpxj.Column: java.lang.String getTitle(java.util.Locale)>"
+      },
+      {
+        "id": "C14",
+        "decision": "unknown",
+        "reason": "Missing/invalid review",
+        "evidence": [],
+        "signature": "<net.sf.mpxj.Group: java.lang.String getName()>"
+      },
+      {
+        "id": "C18",
+        "decision": "unknown",
+        "reason": "Missing/invalid review",
+        "evidence": [],
+        "signature": "<net.sf.mpxj.ProjectProperties: java.lang.String getAMText()>"
+      },
+      {
+        "id": "C06",
+        "decision": "unknown",
+        "reason": "Missing/invalid review",
+        "evidence": [],
+        "signature": "<net.sf.mpxj.Column: java.lang.String getTitle()>"
+      },
+      {
+        "id": "C08",
+        "decision": "unknown",
+        "reason": "Missing/invalid review",
+        "evidence": [],
+        "signature": "<net.sf.mpxj.ConstraintField: java.lang.String getName()>"
+      },
+      {
+        "id": "C03",
+        "decision": "unknown",
+        "reason": "Matcher group extraction from regex; context unclear if input is attacker-controlled.",
+        "evidence": [
+          "K3"
+        ],
+        "signature": "<java.util.regex.Matcher: java.lang.String group(int)>"
+      },
+      {
+        "id": "C15",
+        "decision": "unknown",
+        "reason": "Missing/invalid review",
+        "evidence": [],
+        "signature": "<net.sf.mpxj.ProjectCalendarWeek: java.lang.String getName()>"
+      },
+      {
+        "id": "C10",
+        "decision": "unknown",
+        "reason": "Custom field alias retrieval; no clear indication of external input.",
+        "evidence": [
+          "K14"
+        ],
+        "signature": "<net.sf.mpxj.CustomField: java.lang.String getAlias()>"
+      },
+      {
+        "id": "C20",
+        "decision": "unknown",
+        "reason": "Missing/invalid review",
+        "evidence": [],
+        "signature": "<net.sf.mpxj.ProjectProperties: java.lang.String getPMText()>"
+      },
+      {
+        "id": "C22",
+        "decision": "unknown",
+        "reason": "Missing/invalid review",
+        "evidence": [],
+        "signature": "<net.sf.mpxj.Resource: java.lang.String getName()>"
+      },
+      {
+        "id": "C23",
+        "decision": "unknown",
+        "reason": "Resource notes retrieval; context unclear if input is attacker-controlled.",
+        "evidence": [
+          "K38"
+        ],
+        "signature": "<net.sf.mpxj.Resource: java.lang.String getNotes()>"
+      },
+      {
+        "id": "C01",
+        "decision": "unknown",
+        "reason": "Method returns text from RTF parsing; no clear evidence of attacker control.",
+        "evidence": [
+          "K1"
+        ],
+        "signature": "<com.rtfparserkit.converter.text.StringTextConverter: java.lang.String getText()>"
+      },
+      {
+        "id": "C17",
+        "decision": "unknown",
+        "reason": "Missing/invalid review",
+        "evidence": [],
+        "signature": "<net.sf.mpxj.ProjectField: java.lang.String getName(java.util.Locale)>"
+      },
+      {
+        "id": "C16",
+        "decision": "unknown",
+        "reason": "Project field name retrieval; no clear indication of external input.",
+        "evidence": [
+          "K23"
+        ],
+        "signature": "<net.sf.mpxj.ProjectField: java.lang.String getName()>"
+      },
+      {
+        "id": "C11",
+        "decision": "unknown",
+        "reason": "Field type name retrieval; no clear evidence of attacker control.",
+        "evidence": [
+          "K15"
+        ],
+        "signature": "<net.sf.mpxj.FieldType: java.lang.String getName()>"
+      },
+      {
+        "id": "C05",
+        "decision": "unknown",
+        "reason": "Missing/invalid review",
+        "evidence": [],
+        "signature": "<net.sf.mpxj.AssignmentField: java.lang.String getName(java.util.Locale)>"
+      },
+      {
+        "id": "C04",
+        "decision": "unknown",
+        "reason": "Missing/invalid review",
+        "evidence": [],
+        "signature": "<net.sf.mpxj.AssignmentField: java.lang.String getName()>"
+      },
+      {
+        "id": "C24",
+        "decision": "unknown",
+        "reason": "Resource assignment notes retrieval; context unclear if input is attacker-controlled.",
+        "evidence": [
+          "K41"
+        ],
+        "signature": "<net.sf.mpxj.ResourceAssignment: java.lang.String getNotes()>"
+      },
+      {
+        "id": "C13",
+        "decision": "unknown",
+        "reason": "Missing/invalid review",
+        "evidence": [],
+        "signature": "<net.sf.mpxj.Filter: java.lang.String getName()>"
+      },
+      {
+        "id": "C21",
+        "decision": "unknown",
+        "reason": "Missing/invalid review",
+        "evidence": [],
+        "signature": "<net.sf.mpxj.RecurringData: java.lang.String getOrdinal(java.lang.Integer)>"
+      },
+      {
+        "id": "C09",
+        "decision": "unknown",
+        "reason": "Missing/invalid review",
+        "evidence": [],
+        "signature": "<net.sf.mpxj.ConstraintField: java.lang.String getName(java.util.Locale)>"
+      },
+      {
+        "id": "C25",
+        "decision": "unknown",
+        "reason": "Missing/invalid review",
+        "evidence": [],
+        "signature": "<net.sf.mpxj.ResourceField: java.lang.String getName()>"
+      },
+      {
+        "id": "C12",
+        "decision": "unknown",
+        "reason": "Missing/invalid review",
+        "evidence": [],
+        "signature": "<net.sf.mpxj.FieldType: java.lang.String getName(java.util.Locale)>"
+      },
+      {
+        "id": "C02",
+        "decision": "unknown",
+        "reason": "Missing/invalid review",
+        "evidence": [],
+        "signature": "<java.text.SimpleDateFormat: java.lang.String toPattern()>"
+      },
+      {
+        "id": "C19",
+        "decision": "unknown",
+        "reason": "Missing/invalid review",
+        "evidence": [],
+        "signature": "<net.sf.mpxj.ProjectProperties: java.lang.String getCurrencySymbol()>"
+      },
+      {
+        "id": "C07",
+        "decision": "not_source",
+        "reason": "getOutlineNumber() returns task outline number, not file path",
+        "evidence": [
+          "K16"
+        ],
+        "signature": "<net.sf.mpxj.Task: java.lang.String getOutlineNumber()>"
+      },
+      {
+        "id": "C14",
+        "decision": "not_source",
+        "reason": "getName() returns background pattern name, not file path",
+        "evidence": [
+          "K32"
+        ],
+        "signature": "<net.sf.mpxj.mpp.BackgroundPattern: java.lang.String getName()>"
+      },
+      {
+        "id": "C18",
+        "decision": "source",
+        "reason": "getString() returns string data from external file",
+        "evidence": [
+          "K36"
+        ],
+        "signature": "<net.sf.mpxj.mpp.ExtendedData: java.lang.String getString(java.lang.Integer)>"
+      },
+      {
+        "id": "C06",
+        "decision": "not_source",
+        "reason": "getNotes() returns task notes, not file path",
+        "evidence": [
+          "K13"
+        ],
+        "signature": "<net.sf.mpxj.Task: java.lang.String getNotes()>"
+      },
+      {
+        "id": "C08",
+        "decision": "not_source",
+        "reason": "getWBS() returns task WBS, not file path",
+        "evidence": [
+          "K19"
+        ],
+        "signature": "<net.sf.mpxj.Task: java.lang.String getWBS()>"
+      },
+      {
+        "id": "C03",
+        "decision": "source",
+        "reason": "getFullPath() returns file path from external MPP file",
+        "evidence": [
+          "K6"
+        ],
+        "signature": "<net.sf.mpxj.SubProject: java.lang.String getFullPath()>"
+      },
+      {
+        "id": "C15",
+        "decision": "not_source",
+        "reason": "getName() returns chart pattern name, not file path",
+        "evidence": [
+          "K33"
+        ],
+        "signature": "<net.sf.mpxj.mpp.ChartPattern: java.lang.String getName()>"
+      },
+      {
+        "id": "C10",
+        "decision": "not_source",
+        "reason": "getName() returns task field name, not file path",
+        "evidence": [
+          "K25"
+        ],
+        "signature": "<net.sf.mpxj.TaskField: java.lang.String getName(java.util.Locale)>"
+      },
+      {
+        "id": "C20",
+        "decision": "source",
+        "reason": "getString() returns string data from external file",
+        "evidence": [
+          "K41"
+        ],
+        "signature": "<net.sf.mpxj.mpp.FixDeferFix: java.lang.String getString(int)>"
+      },
+      {
+        "id": "C22",
+        "decision": "not_source",
+        "reason": "getName() returns date format name, not file path",
+        "evidence": [
+          "K46"
+        ],
+        "signature": "<net.sf.mpxj.mpp.GanttBarDateFormat: java.lang.String getName()>"
+      },
+      {
+        "id": "C23",
+        "decision": "not_source",
+        "reason": "getName() returns shape name, not file path",
+        "evidence": [
+          "K47"
+        ],
+        "signature": "<net.sf.mpxj.mpp.GanttBarMiddleShape: java.lang.String getName()>"
+      },
+      {
+        "id": "C01",
+        "decision": "not_source",
+        "reason": "getName() returns internal field name, not attacker-controlled path",
+        "evidence": [
+          "K1"
+        ],
+        "signature": "<net.sf.mpxj.ResourceField: java.lang.String getName(java.util.Locale)>"
+      },
+      {
+        "id": "C17",
+        "decision": "source",
+        "reason": "getFileFormat() returns file format from external file",
+        "evidence": [
+          "K35"
+        ],
+        "signature": "<net.sf.mpxj.mpp.CompObj: java.lang.String getFileFormat()>"
+      },
+      {
+        "id": "C16",
+        "decision": "source",
+        "reason": "getApplicationName() returns application name from external file",
+        "evidence": [
+          "K34"
+        ],
+        "signature": "<net.sf.mpxj.mpp.CompObj: java.lang.String getApplicationName()>"
+      },
+      {
+        "id": "C11",
+        "decision": "not_source",
+        "reason": "getName() returns time unit name, not file path",
+        "evidence": [
+          "K27"
+        ],
+        "signature": "<net.sf.mpxj.TimeUnit: java.lang.String getName()>"
+      },
+      {
+        "id": "C05",
+        "decision": "not_source",
+        "reason": "getName() returns task name, not file path",
+        "evidence": [
+          "K10"
+        ],
+        "signature": "<net.sf.mpxj.Task: java.lang.String getName()>"
+      },
+      {
+        "id": "C04",
+        "decision": "not_source",
+        "reason": "getName() returns table name, not file path",
+        "evidence": [
+          "K9"
+        ],
+        "signature": "<net.sf.mpxj.Table: java.lang.String getName()>"
+      },
+      {
+        "id": "C24",
+        "decision": "not_source",
+        "reason": "getName() returns task show flag, not file path",
+        "evidence": [
+          "K48"
+        ],
+        "signature": "<net.sf.mpxj.mpp.GanttBarShowForTasks: java.lang.String getName()>"
+      },
+      {
+        "id": "C13",
+        "decision": "not_source",
+        "reason": "getToken() returns parsed token, not file path",
+        "evidence": [
+          "K31"
+        ],
+        "signature": "<net.sf.mpxj.common.Tokenizer: java.lang.String getToken()>"
+      },
+      {
+        "id": "C21",
+        "decision": "source",
+        "reason": "getUnicodeString() returns unicode string from external file",
+        "evidence": [
+          "K43"
+        ],
+        "signature": "<net.sf.mpxj.mpp.FixDeferFix: java.lang.String getUnicodeString(int)>"
+      },
+      {
+        "id": "C09",
+        "decision": "not_source",
+        "reason": "getName() returns task field name, not file path",
+        "evidence": [
+          "K22"
+        ],
+        "signature": "<net.sf.mpxj.TaskField: java.lang.String getName()>"
+      },
+      {
+        "id": "C25",
+        "decision": "not_source",
+        "reason": "getName() returns shape name, not file path",
+        "evidence": [
+          "K49"
+        ],
+        "signature": "<net.sf.mpxj.mpp.GanttBarStartEndShape: java.lang.String getName()>"
+      },
+      {
+        "id": "C12",
+        "decision": "not_source",
+        "reason": "getName() returns field type name, not file path",
+        "evidence": [
+          "K28"
+        ],
+        "signature": "<net.sf.mpxj.common.FieldTypeHelper$1: java.lang.String getName()>"
+      },
+      {
+        "id": "C02",
+        "decision": "source",
+        "reason": "getDosFullPath() returns file path from external MPP file",
+        "evidence": [
+          "K3"
+        ],
+        "signature": "<net.sf.mpxj.SubProject: java.lang.String getDosFullPath()>"
+      },
+      {
+        "id": "C19",
+        "decision": "source",
+        "reason": "getUnicodeString() returns unicode string from external file",
+        "evidence": [
+          "K38"
+        ],
+        "signature": "<net.sf.mpxj.mpp.ExtendedData: java.lang.String getUnicodeString(java.lang.Integer)>"
+      },
+      {
+        "id": "C07",
+        "decision": "source",
+        "reason": "Returns string values from archive/outline code data that may be attacker-controlled.",
+        "evidence": [
+          "K10",
+          "K11"
+        ],
+        "signature": "<net.sf.mpxj.mpp.MPP14Reader: java.lang.String getCustomFieldOutlineCodeValue(net.sf.mpxj.mpp.Var2Data,net.sf.mpxj.mpp.Var2Data,java.lang.Integer)>"
+      },
+      {
+        "id": "C14",
+        "decision": "unknown",
+        "reason": "Missing/invalid review",
+        "evidence": [],
+        "signature": "<net.sf.mpxj.mpp.TimescaleUnits: java.lang.String getName()>"
+      },
+      {
+        "id": "C18",
+        "decision": "source",
+        "reason": "Retrieves unicode strings from var2data, which can contain untrusted data from files.",
+        "evidence": [
+          "K27",
+          "K28",
+          "K29"
+        ],
+        "signature": "<net.sf.mpxj.mpp.Var2Data: java.lang.String getUnicodeString(java.lang.Integer,java.lang.Integer)>"
+      },
+      {
+        "id": "C06",
+        "decision": "source",
+        "reason": "Retrieves outline code values from task data, potentially from untrusted input.",
+        "evidence": [
+          "K7",
+          "K8",
+          "K9"
+        ],
+        "signature": "<net.sf.mpxj.mpp.MPP12Reader: java.lang.String getCustomFieldOutlineCodeValue(net.sf.mpxj.mpp.Var2Data,net.sf.mpxj.mpp.Var2Data,java.lang.Integer,java.lang.Integer)>"
+      },
+      {
+        "id": "C08",
+        "decision": "source",
+        "reason": "Retrieves outline code values from task data, potentially from untrusted input.",
+        "evidence": [
+          "K12",
+          "K13",
+          "K14"
+        ],
+        "signature": "<net.sf.mpxj.mpp.MPP14Reader: java.lang.String getCustomFieldOutlineCodeValue(net.sf.mpxj.mpp.Var2Data,net.sf.mpxj.mpp.Var2Data,java.lang.Integer,java.lang.Integer)>"
+      },
+      {
+        "id": "C03",
+        "decision": "unknown",
+        "reason": "Missing/invalid review",
+        "evidence": [],
+        "signature": "<net.sf.mpxj.mpp.LineStyle: java.lang.String getName()>"
+      },
+      {
+        "id": "C15",
+        "decision": "unknown",
+        "reason": "Missing/invalid review",
+        "evidence": [],
+        "signature": "<net.sf.mpxj.mpp.Var2Data: java.lang.String getString(java.lang.Integer)>"
+      },
+      {
+        "id": "C10",
+        "decision": "unknown",
+        "reason": "Missing/invalid review",
+        "evidence": [],
+        "signature": "<net.sf.mpxj.mpp.NonWorkingTimeStyle: java.lang.String getName()>"
+      },
+      {
+        "id": "C20",
+        "decision": "source",
+        "reason": "Retrieves string data from records, which can contain untrusted data from files.",
+        "evidence": [
+          "K31",
+          "K32",
+          "K33"
+        ],
+        "signature": "<net.sf.mpxj.mpx.Record: java.lang.String getString(int)>"
+      },
+      {
+        "id": "C22",
+        "decision": "unknown",
+        "reason": "Missing/invalid review",
+        "evidence": [],
+        "signature": "<org.apache.poi.hpsf.DocumentSummaryInformation: java.lang.String getCategory()>"
+      },
+      {
+        "id": "C23",
+        "decision": "unknown",
+        "reason": "Missing/invalid review",
+        "evidence": [],
+        "signature": "<org.apache.poi.hpsf.DocumentSummaryInformation: java.lang.String getCompany()>"
+      },
+      {
+        "id": "C01",
+        "decision": "unknown",
+        "reason": "Missing/invalid review",
+        "evidence": [],
+        "signature": "<net.sf.mpxj.mpp.GanttBarStartEndType: java.lang.String getName()>"
+      },
+      {
+        "id": "C17",
+        "decision": "unknown",
+        "reason": "Missing/invalid review",
+        "evidence": [],
+        "signature": "<net.sf.mpxj.mpp.Var2Data: java.lang.String getUnicodeString(java.lang.Integer)>"
+      },
+      {
+        "id": "C16",
+        "decision": "unknown",
+        "reason": "Missing/invalid review",
+        "evidence": [],
+        "signature": "<net.sf.mpxj.mpp.Var2Data: java.lang.String getString(java.lang.Integer,java.lang.Integer)>"
+      },
+      {
+        "id": "C11",
+        "decision": "source",
+        "reason": "Retrieves unicode strings from props, which can contain untrusted data from files.",
+        "evidence": [
+          "K18",
+          "K19",
+          "K20"
+        ],
+        "signature": "<net.sf.mpxj.mpp.Props: java.lang.String getUnicodeString(java.lang.Integer)>"
+      },
+      {
+        "id": "C05",
+        "decision": "source",
+        "reason": "Returns string values from archive/outline code data that may be attacker-controlled.",
+        "evidence": [
+          "K5",
+          "K6"
+        ],
+        "signature": "<net.sf.mpxj.mpp.MPP12Reader: java.lang.String getCustomFieldOutlineCodeValue(net.sf.mpxj.mpp.Var2Data,net.sf.mpxj.mpp.Var2Data,java.lang.Integer)>"
+      },
+      {
+        "id": "C04",
+        "decision": "unknown",
+        "reason": "Missing/invalid review",
+        "evidence": [],
+        "signature": "<net.sf.mpxj.mpp.LinkStyle: java.lang.String getName()>"
+      },
+      {
+        "id": "C24",
+        "decision": "unknown",
+        "reason": "Missing/invalid review",
+        "evidence": [],
+        "signature": "<org.apache.poi.hpsf.DocumentSummaryInformation: java.lang.String getContentStatus()>"
+      },
+      {
+        "id": "C13",
+        "decision": "unknown",
+        "reason": "Missing/invalid review",
+        "evidence": [],
+        "signature": "<net.sf.mpxj.mpp.TimescaleFormat: java.lang.String getName()>"
+      },
+      {
+        "id": "C21",
+        "decision": "unknown",
+        "reason": "Missing/invalid review",
+        "evidence": [],
+        "signature": "<org.apache.poi.hpsf.CustomProperty: java.lang.String getName()>"
+      },
+      {
+        "id": "C09",
+        "decision": "unknown",
+        "reason": "Missing/invalid review",
+        "evidence": [],
+        "signature": "<net.sf.mpxj.mpp.MPPReader: java.lang.String getReadPassword()>"
+      },
+      {
+        "id": "C25",
+        "decision": "unknown",
+        "reason": "Missing/invalid review",
+        "evidence": [],
+        "signature": "<org.apache.poi.hpsf.DocumentSummaryInformation: java.lang.String getContentType()>"
+      },
+      {
+        "id": "C12",
+        "decision": "unknown",
+        "reason": "Missing/invalid review",
+        "evidence": [],
+        "signature": "<net.sf.mpxj.mpp.TimescaleAlignment: java.lang.String getName()>"
+      },
+      {
+        "id": "C02",
+        "decision": "unknown",
+        "reason": "Missing/invalid review",
+        "evidence": [],
+        "signature": "<net.sf.mpxj.mpp.Interval: java.lang.String getName()>"
+      },
+      {
+        "id": "C19",
+        "decision": "unknown",
+        "reason": "Missing/invalid review",
+        "evidence": [],
+        "signature": "<net.sf.mpxj.mpx.MPXReader$DeferredRelationship: java.lang.String getData()>"
+      },
+      {
+        "id": "C03",
+        "decision": "not_source",
+        "reason": "Returns manager string from metadata, not attacker-controlled path data.",
+        "evidence": [
+          "K3"
+        ],
+        "signature": "<org.apache.poi.hpsf.DocumentSummaryInformation: java.lang.String getManager()>"
+      },
+      {
+        "id": "C09",
+        "decision": "not_source",
+        "reason": "Returns last author string from metadata, not attacker-controlled path data.",
+        "evidence": [
+          "K9"
+        ],
+        "signature": "<org.apache.poi.hpsf.SummaryInformation: java.lang.String getLastAuthor()>"
+      },
+      {
+        "id": "C07",
+        "decision": "not_source",
+        "reason": "Returns comments string from metadata, not attacker-controlled path data.",
+        "evidence": [
+          "K7"
+        ],
+        "signature": "<org.apache.poi.hpsf.SummaryInformation: java.lang.String getComments()>"
+      },
+      {
+        "id": "C01",
+        "decision": "not_source",
+        "reason": "Returns document version string from metadata, not attacker-controlled path data.",
+        "evidence": [
+          "K1"
+        ],
+        "signature": "<org.apache.poi.hpsf.DocumentSummaryInformation: java.lang.String getDocumentVersion()>"
+      },
+      {
+        "id": "C10",
+        "decision": "not_source",
+        "reason": "Returns revision number string from metadata, not attacker-controlled path data.",
+        "evidence": [
+          "K10"
+        ],
+        "signature": "<org.apache.poi.hpsf.SummaryInformation: java.lang.String getRevNumber()>"
+      },
+      {
+        "id": "C12",
+        "decision": "not_source",
+        "reason": "Returns template string from metadata, not attacker-controlled path data.",
+        "evidence": [
+          "K12"
+        ],
+        "signature": "<org.apache.poi.hpsf.SummaryInformation: java.lang.String getTemplate()>"
+      },
+      {
+        "id": "C02",
+        "decision": "not_source",
+        "reason": "Returns language string from metadata, not attacker-controlled path data.",
+        "evidence": [
+          "K2"
+        ],
+        "signature": "<org.apache.poi.hpsf.DocumentSummaryInformation: java.lang.String getLanguage()>"
+      },
+      {
+        "id": "C11",
+        "decision": "not_source",
+        "reason": "Returns subject string from metadata, not attacker-controlled path data.",
+        "evidence": [
+          "K11"
+        ],
+        "signature": "<org.apache.poi.hpsf.SummaryInformation: java.lang.String getSubject()>"
+      },
+      {
+        "id": "C06",
+        "decision": "not_source",
+        "reason": "Returns author string from metadata, not attacker-controlled path data.",
+        "evidence": [
+          "K6"
+        ],
+        "signature": "<org.apache.poi.hpsf.SummaryInformation: java.lang.String getAuthor()>"
+      },
+      {
+        "id": "C05",
+        "decision": "not_source",
+        "reason": "Returns application name string from metadata, not attacker-controlled path data.",
+        "evidence": [
+          "K5"
+        ],
+        "signature": "<org.apache.poi.hpsf.SummaryInformation: java.lang.String getApplicationName()>"
+      },
+      {
+        "id": "C04",
+        "decision": "not_source",
+        "reason": "Returns presentation format string from metadata, not attacker-controlled path data.",
+        "evidence": [
+          "K4"
+        ],
+        "signature": "<org.apache.poi.hpsf.DocumentSummaryInformation: java.lang.String getPresentationFormat()>"
+      },
+      {
+        "id": "C08",
+        "decision": "not_source",
+        "reason": "Returns keywords string from metadata, not attacker-controlled path data.",
+        "evidence": [
+          "K8"
+        ],
+        "signature": "<org.apache.poi.hpsf.SummaryInformation: java.lang.String getKeywords()>"
+      },
+      {
+        "id": "C13",
+        "decision": "not_source",
+        "reason": "Returns title string from metadata, not attacker-controlled path data.",
+        "evidence": [
+          "K13"
+        ],
+        "signature": "<org.apache.poi.hpsf.SummaryInformation: java.lang.String getTitle()>"
+      }
+    ],
+    "errors": [
+      "Missing decision for C02",
+      "Missing decision for C04",
+      "Missing decision for C05",
+      "Missing decision for C06",
+      "Missing decision for C07",
+      "Missing decision for C08",
+      "Missing decision for C09",
+      "Missing decision for C12",
+      "Missing decision for C13",
+      "Missing decision for C14",
+      "Missing decision for C15",
+      "Missing decision for C17",
+      "Missing decision for C18",
+      "Missing decision for C19",
+      "Missing decision for C20",
+      "Missing decision for C21",
+      "Missing decision for C22",
+      "Missing decision for C25",
+      "Missing decision for C01",
+      "Missing decision for C02",
+      "Missing decision for C03",
+      "Missing decision for C04",
+      "Missing decision for C09",
+      "Missing decision for C10",
+      "Missing decision for C12",
+      "Missing decision for C13",
+      "Missing decision for C14",
+      "Missing decision for C15",
+      "Missing decision for C16",
+      "Missing decision for C17",
+      "Missing decision for C19",
+      "Missing decision for C21",
+      "Missing decision for C22",
+      "Missing decision for C23",
+      "Missing decision for C24",
+      "Missing decision for C25"
+    ],
+    "valid": 52
+  }
+}

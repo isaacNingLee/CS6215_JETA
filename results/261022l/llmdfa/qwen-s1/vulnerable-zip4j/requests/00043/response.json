@@ -1,0 +1,46 @@
+{
+  "id": "gen-1792653912-qDsA4cdJe4HEAzqRHiqB",
+  "object": "chat.completion",
+  "created": 1792653912,
+  "model": "qwen/qwen3-coder-30b-a3b-instruct",
+  "provider": "Amazon Bedrock",
+  "system_fingerprint": null,
+  "service_tier": null,
+  "choices": [
+    {
+      "index": 0,
+      "logprobs": null,
+      "finish_reason": "stop",
+      "native_finish_reason": "end_turn",
+      "message": {
+        "role": "assistant",
+        "content": "Looking at the code, I need to trace the flow from line 42 to line 48 to see if `fileHeader.getFileName()` affects `offsetStartOfData`.\n\nLet me trace the execution:\n\n1. Line 42: `fileHeader.getFileName()` is called in an exception message - this doesn't affect any variable assignments\n2. Line 43: This line throws an exception if `fileHeader.getAesExtraDataRecord()` is null\n3. Line 45: `raf.seek(offsetStartOfData)` - this uses `offsetStartOfData`\n4. Line 48: `return new ZipInputStream(new PartInputStream(raf, offsetStartOfData, comprSize, this))` - this also uses `offsetStartOfData`\n\nLooking at how `offsetStartOfData` is calculated:\n- Line 18: `long offsetStartOfData = localFileHeader.getOffsetStartOfData();`\n- Lines 25-26: When AES encryption is used, `offsetStartOfData` gets modified by adding salt length and password verifier length\n- Lines 33: When standard encryption is used, `offsetStartOfData` gets modified by adding standard decryption header size\n\nThe key point is that `fileHeader.getFileName()` is only used in exception messages (lines 29, 42, 43) and never affects the calculation or assignment of `offsetStartOfData`. The `offsetStartOfData` variable is determined solely by the `localFileHeader.getOffsetStartOfData()` method call and subsequent modifications based on encryption methods, but none of these depend on the filename.\n\nTherefore, `offsetStartOfData` at line 48 does not depend on `fileHeader.getFileName()` at line 42.\n\nExplanation: The variable `offsetStartOfData` is calculated based on `localFileHeader.getOffsetStartOfData()` and then modified according to encryption method parameters (salt length, password verifier length, or standard decryption header size). The `fileHeader.getFileName()` is only used in exception messages and never influences the value of `offsetStartOfData`. There is no data flow path from `fileHeader.getFileName()` to `offsetStartOfData`.\n\nAnswer: No",
+        "refusal": null,
+        "reasoning": null
+      }
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 1804,
+    "completion_tokens": 465,
+    "total_tokens": 2269,
+    "cost": 0.0005496,
+    "is_byok": false,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0,
+      "video_tokens": 0
+    },
+    "cost_details": {
+      "upstream_inference_cost": 0.0005496,
+      "upstream_inference_prompt_cost": 0.0002706,
+      "upstream_inference_completions_cost": 0.000279
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "image_tokens": 0,
+      "audio_tokens": 0
+    }
+  }
+}

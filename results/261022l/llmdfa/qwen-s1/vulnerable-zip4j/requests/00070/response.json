@@ -1,0 +1,46 @@
+{
+  "id": "gen-1792654473-ES0k7HALdS4mPVdJY2ZP",
+  "object": "chat.completion",
+  "created": 1792654473,
+  "model": "qwen/qwen3-coder-30b-a3b-instruct",
+  "provider": "Amazon Bedrock",
+  "system_fingerprint": null,
+  "service_tier": null,
+  "choices": [
+    {
+      "index": 0,
+      "logprobs": null,
+      "finish_reason": "stop",
+      "native_finish_reason": "end_turn",
+      "message": {
+        "role": "assistant",
+        "content": "Explanation: Let me trace through the execution flow step by step:\n\n1. Line 1: `initDecrypter(RandomAccessFile raf)` - The parameter `raf` is passed in\n2. Line 6: `if (localFileHeader.isEncrypted())` - This checks a condition based on `localFileHeader` \n3. Line 7: `if (localFileHeader.getEncryptionMethod() == Zip4jConstants.ENC_METHOD_STANDARD)` - This also checks a condition based on `localFileHeader`\n4. Line 8: `decrypter = new StandardDecrypter(fileHeader, getStandardDecrypterHeaderBytes(raf))` - Here, `raf` is used as an argument to `getStandardDecrypterHeaderBytes(raf)`\n5. Line 9-10: Similar usage of `raf` in `getAESSalt(raf)` and `getAESPasswordVerifier(raf)`\n\nThe key point is that `raf` is used as a parameter in function calls (`getStandardDecrypterHeaderBytes(raf)`, `getAESSalt(raf)`, `getAESPasswordVerifier(raf)`) which occur at lines 8, 10 respectively. These function calls happen after line 1 but before line 7 where `decrypter` is assigned. Since `raf` is directly used as an argument to these functions, and the functions' return values are used to create the `decrypter` object, the value of `decrypter` at line 7 does depend on the value of `raf` at line 1.\n\nAnswer: Yes",
+        "refusal": null,
+        "reasoning": null
+      }
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 1133,
+    "completion_tokens": 329,
+    "total_tokens": 1462,
+    "cost": 0.00036735,
+    "is_byok": false,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0,
+      "video_tokens": 0
+    },
+    "cost_details": {
+      "upstream_inference_cost": 0.00036735,
+      "upstream_inference_prompt_cost": 0.00016995,
+      "upstream_inference_completions_cost": 0.0001974
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "image_tokens": 0,
+      "audio_tokens": 0
+    }
+  }
+}

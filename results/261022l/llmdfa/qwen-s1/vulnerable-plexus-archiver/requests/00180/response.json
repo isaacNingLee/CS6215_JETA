@@ -1,0 +1,46 @@
+{
+  "id": "gen-1792655555-HK8d3Jl7L4mUorVposgw",
+  "object": "chat.completion",
+  "created": 1792655555,
+  "model": "qwen/qwen3-coder-30b-a3b-instruct",
+  "provider": "Amazon Bedrock",
+  "system_fingerprint": null,
+  "service_tier": null,
+  "choices": [
+    {
+      "index": 0,
+      "logprobs": null,
+      "finish_reason": "stop",
+      "native_finish_reason": "end_turn",
+      "message": {
+        "role": "assistant",
+        "content": "Looking at the code, I need to trace the flow from line 27 where `tmp10` is assigned to line 31 where `tmp11` is assigned.\n\nLine 27: `final tmp10 = getSourceFile();`\nLine 28: `extractFileIfIncluded( tmp10, outputDirectory, in, ...`\n\nLine 31: `final tmp11 = ze.getName();`\n\nThe variable `tmp10` is assigned the result of `getSourceFile()` at line 27. This value is then passed as the first argument to the `extractFileIfIncluded` method call at line 28.\n\nThe variable `tmp11` is assigned the result of `ze.getName()` at line 31. This assignment happens within the same scope but is independent of `tmp10`. \n\nLooking at the code structure, `tmp10` and `tmp11` are both local variables that get their values from different sources:\n- `tmp10` gets its value from `getSourceFile()` \n- `tmp11` gets its value from `ze.getName()`\n\nThese variables are not connected through any data flow - `tmp10` is used in a method call but doesn't influence how `tmp11` gets its value. The `ze` object is the same throughout this loop iteration, but `tmp10` and `tmp11` are assigned independently from different method calls on that same object.\n\nExplanation: The variable `tmp10` is assigned the result of `getSourceFile()` at line 27 and is used as an argument in the method call at line 28. However, `tmp11` is assigned the result of `ze.getName()` at line 31, which is completely independent of `tmp10`. There is no data flow connecting these two variables - they are assigned from different expressions and used in different contexts.\n\nAnswer: No",
+        "refusal": null,
+        "reasoning": null
+      }
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 1476,
+    "completion_tokens": 404,
+    "total_tokens": 1880,
+    "cost": 0.0004638,
+    "is_byok": false,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0,
+      "video_tokens": 0
+    },
+    "cost_details": {
+      "upstream_inference_cost": 0.0004638,
+      "upstream_inference_prompt_cost": 0.0002214,
+      "upstream_inference_completions_cost": 0.0002424
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "image_tokens": 0,
+      "audio_tokens": 0
+    }
+  }
+}

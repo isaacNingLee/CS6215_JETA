@@ -1,0 +1,129 @@
+{
+  "project": "plexus-utils",
+  "variant": "fixed",
+  "stamp": {
+    "version": 1,
+    "guards_sha256": "1bf3162985e123f09fc39425bc60c2b50f43de4a4091041200b9202758eed2c1",
+    "checkers_sha256": {
+      "SourceFacts.java": "a4cf29014742376ee9a8d0c848839e281595d1abc8695f99c4b421bbc045c1b9",
+      "CanonicalGuardCheck.java": "de54813e23ce149d7f0168b85fc3268696f69164b8f24ec564fb42994934cb25"
+    }
+  },
+  "commit": "33a2853df8185b4519b1b8bfae284f03392618ef",
+  "model": "JDK POSIX paths; trusted root; no symlinks, filesystem races or custom Path providers",
+  "files": [
+    "src/main/java/org/codehaus/plexus/util/Expand.java",
+    "src/main/java/org/codehaus/plexus/util/FileUtils.java",
+    "src/main/java/org/codehaus/plexus/util/WriterFactory.java",
+    "src/main/java/org/codehaus/plexus/util/xml/XmlStreamWriter.java"
+  ],
+  "contracts": [
+    {
+      "checker": "path",
+      "cls": "org.codehaus.plexus.util.Expand",
+      "method": "extractFile",
+      "guard_line": 140,
+      "guard": "f.getAbsolutePath().startsWith( dir.getAbsolutePath() )",
+      "status": "refuted",
+      "protects_sink": false,
+      "reason": "Path String prefix has no directory-component boundary",
+      "counterexample": {
+        "root": "/tmp/out",
+        "candidate": "/tmp/outside/probe"
+      }
+    },
+    {
+      "checker": "path",
+      "cls": "org.codehaus.plexus.util.FileUtils",
+      "method": "resolveFile",
+      "guard_line": 1381,
+      "guard": "filenm.startsWith( File.separator )",
+      "status": "unknown",
+      "protects_sink": false,
+      "reason": "Requires exactly one supported filesystem sink"
+    },
+    {
+      "checker": "path",
+      "cls": "org.codehaus.plexus.util.FileUtils",
+      "method": "loadFile",
+      "guard_line": 2400,
+      "guard": "line.startsWith( \"#\" )",
+      "status": "unknown",
+      "protects_sink": false,
+      "reason": "Requires exactly one supported filesystem sink"
+    },
+    {
+      "checker": "canonical",
+      "cls": "org.codehaus.plexus.util.Expand",
+      "status": "unknown",
+      "method": "extractFile",
+      "sink_line": 166,
+      "protects_sink": false,
+      "reason": "Unsupported canonical containment contract"
+    },
+    {
+      "checker": "canonical",
+      "cls": "org.codehaus.plexus.util.FileUtils",
+      "status": "unknown",
+      "method": "fileAppend",
+      "sink_line": 435,
+      "protects_sink": false,
+      "reason": "Unsupported canonical containment contract"
+    },
+    {
+      "checker": "canonical",
+      "cls": "org.codehaus.plexus.util.FileUtils",
+      "status": "unknown",
+      "method": "fileWrite",
+      "sink_line": 512,
+      "protects_sink": false,
+      "reason": "Unsupported canonical containment contract"
+    },
+    {
+      "checker": "canonical",
+      "cls": "org.codehaus.plexus.util.FileUtils",
+      "status": "unknown",
+      "method": "doCopyFile",
+      "sink_line": 1115,
+      "protects_sink": false,
+      "reason": "Unsupported canonical containment contract"
+    },
+    {
+      "checker": "canonical",
+      "cls": "org.codehaus.plexus.util.FileUtils",
+      "status": "unknown",
+      "method": "copyStreamToFile",
+      "sink_line": 1217,
+      "protects_sink": false,
+      "reason": "Unsupported canonical containment contract"
+    },
+    {
+      "checker": "canonical",
+      "cls": "org.codehaus.plexus.util.FileUtils",
+      "status": "unknown",
+      "method": "copyFile",
+      "sink_line": 2344,
+      "protects_sink": false,
+      "reason": "Unsupported canonical containment contract"
+    },
+    {
+      "checker": "canonical",
+      "cls": "org.codehaus.plexus.util.WriterFactory",
+      "status": "unknown",
+      "method": "newWriter",
+      "sink_line": 175,
+      "protects_sink": false,
+      "reason": "Unsupported canonical containment contract"
+    },
+    {
+      "checker": "canonical",
+      "cls": "org.codehaus.plexus.util.xml.XmlStreamWriter",
+      "status": "unknown",
+      "method": "<init>",
+      "sink_line": 59,
+      "protects_sink": false,
+      "reason": "Unsupported canonical containment contract"
+    }
+  ],
+  "protected": []
+}

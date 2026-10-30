@@ -1,0 +1,46 @@
+{
+  "id": "gen-1792655286-Lk1Z47AQu3UewncoKSGl",
+  "object": "chat.completion",
+  "created": 1792655286,
+  "model": "qwen/qwen3-coder-30b-a3b-instruct",
+  "provider": "Amazon Bedrock",
+  "system_fingerprint": null,
+  "service_tier": null,
+  "choices": [
+    {
+      "index": 0,
+      "logprobs": null,
+      "finish_reason": "stop",
+      "native_finish_reason": "end_turn",
+      "message": {
+        "role": "assistant",
+        "content": "Looking at the code, I need to trace the flow from line 21 to line 17:\n\nLine 21: `final tmp1 = getSourceFile();`\nLine 16: `final tmp0 = fileInfo.getName();`\nLine 17: `if (isSelected(tmp0, fileInfo))`\n\nThe variable `tmp0` is assigned the result of `fileInfo.getName()` at line 16, and then `tmp0` is used as the first parameter to `isSelected()` at line 17. \n\nHowever, looking more carefully at the code structure:\n- Line 15: `final ZipEntryFileInfo fileInfo = new ZipEntryFileInfo( zf, ze );`\n- Line 16: `final tmp0 = fileInfo.getName();`\n- Line 17: `if (isSelected( tmp0, fileInfo ) )`\n\nThe `fileInfo` variable is created at line 15 and used directly in the `isSelected` call at line 17. The `tmp1` variable (assigned at line 21) is used later in the `extractFileIfIncluded` call but is completely independent of the `fileInfo` variable's creation and usage.\n\nThe `fileInfo` variable is created based on `zf` and `ze` (lines 15), while `tmp1` is created based on `getSourceFile()` (line 21). These are separate assignments that don't affect each other.\n\nExplanation: The variable `fileInfo` is created at line 15 using `new ZipEntryFileInfo(zf, ze)` and is used directly in the isSelected call at line 17. The `tmp1` variable created at line 21 is completely independent - it's assigned from `getSourceFile()` and used later in `extractFileIfIncluded`. There is no dependency between the value of `fileInfo` (created at line 15) and the value of `tmp1` (created at line 21).\n\nAnswer: No",
+        "refusal": null,
+        "reasoning": null
+      }
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 1455,
+    "completion_tokens": 413,
+    "total_tokens": 1868,
+    "cost": 0.00046605,
+    "is_byok": false,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0,
+      "video_tokens": 0
+    },
+    "cost_details": {
+      "upstream_inference_cost": 0.00046605,
+      "upstream_inference_prompt_cost": 0.00021825,
+      "upstream_inference_completions_cost": 0.0002478
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "image_tokens": 0,
+      "audio_tokens": 0
+    }
+  }
+}

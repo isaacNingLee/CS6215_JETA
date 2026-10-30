@@ -1,0 +1,18 @@
+{
+  "model": "deepseek/deepseek-v4-pro",
+  "temperature": 0,
+  "max_tokens": 16000,
+  "reasoning": {
+    "effort": "low"
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are a Java programmer and very good at analyzing Java code."
+    },
+    {
+      "role": "user",
+      "content": "Please identify the sink values for path traversal (CWE-22) according to the following instructions.\n- When a variable/expression is used as argument 0 of a `FileOutputStream` constructor call (the file being opened for writing), it is a sink for path traversal.\nExample (illustrative only; report values from the program below):\n1. Object stream = new FileOutputStream(target);\n- Sink name: target, Line number: 1\nNegative example: 1. validate();\nAnswer: an empty string. A helper call is not the specified sink API.\nNow I will give you the program. Please list all the names of sinks and the line numbers.The line numbers should indicate the line of the call that consumes the value.\nDo not add extra explanations.Just list the pairs of variable/expression and line number line by line.Each line should start with -.If there is no variable as sink, just output an empty string.\nHere are several examples:\nExample 1:\n- Sink name: a, Line number: 2\nExample 2:\n- Sink name: (prefix + name), Line number: 3\nHere is the program:\n```\n1. private void initExtractFile(FileHeader fileHeader, String outPath,\n2. \t\t\tUnzipParameters unzipParameters, String newFileName, ProgressMonitor progressMonitor) throws ZipException {\n3. \n4. \t\tif (fileHeader == null) {\n5. \t\t\tthrow new ZipException(\"fileHeader is null\");\n6. \t\t}\n7. \t\t\n8. \t\ttry {\n9. \t\t\tprogressMonitor.setFileName(fileHeader.getFileName());\n10. \t\t\t\n11. \t\t\tif (!outPath.endsWith(InternalZipConstants.FILE_SEPARATOR)) {\n12. \t\t\t\toutPath += InternalZipConstants.FILE_SEPARATOR;\n13. \t\t\t}\n14. \n15. \t\t\t\n16. \t\t\tString fileName = fileHeader.getFileName();\n17. \t\t\tString completePath = outPath + fileName;\n18. \t\t\tif (!new File(completePath).getCanonicalPath().startsWith(new File(outPath).getCanonicalPath())) {\n19. \t\t\t\tthrow new ZipException(\n20. \t\t\t\t\t\t\"illegal file name that breaks out of the target directory: \" + fileHeader.getFileName());\n21. \t\t\t}\n22. \n23. \t\t\t\n24. \t\t\t\n25. \t\t\tif (fileHeader.isDirectory()) {\n26. \t\t\t\ttry {\n27. \t\t\t\t\tif (!Zip4jUtil.isStringNotNullAndNotEmpty(fileName)) {\n28. \t\t\t\t\t\treturn;\n29. \t\t\t\t\t}\n30. \t\t\t\t\tFile file = new File(completePath);\n31. \t\t\t\t\tif (!file.exists()) {\n32. \t\t\t\t\t\tfile.mkdirs();\n33. \t\t\t\t\t}\n34. \t\t\t\t} catch (Exception e) {\n35. \t\t\t\t\tprogressMonitor.endProgressMonitorError(e);\n36. \t\t\t\t\tthrow new ZipException(e);\n37. \t\t\t\t}\n38. \t\t\t} else {\n39. \t\t\t\t\n40. \t\t\t\tcheckOutputDirectoryStructure(fileHeader, outPath, newFileName);\n41. \t\t\t\t\n42. \t\t\t\tUnzipEngine unzipEngine = new UnzipEngine(zipModel, fileHeader);\n43. \t\t\t\ttry {\n44. \t\t\t\t\tunzipEngine.unzipFile(progressMonitor, outPath, newFileName, unzipParameters);\n45. \t\t\t\t} catch (Exception e) {\n46. \t\t\t\t\tprogressMonitor.endProgressMonitorError(e);\n47. \t\t\t\t\tthrow new ZipException(e);\n48. \t\t\t\t}\n49. \t\t\t}\n50. \t\t} catch (ZipException e) {\n51. \t\t\tprogressMonitor.endProgressMonitorError(e);\n52. \t\t\tthrow e;\n53. \t\t} catch (Exception e) {\n54. \t\t\tprogressMonitor.endProgressMonitorError(e);\n55. \t\t\tthrow new ZipException(e);\n56. \t\t}\n57. \t}\n```\n"
+    }
+  ]
+}

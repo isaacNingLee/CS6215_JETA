@@ -1,0 +1,219 @@
+{
+  "zip4j": {
+    "pool": 5,
+    "reaching": [
+      "<net.lingala.zip4j.crypto.PBKDF2.PBKDF2Parameters: java.lang.String getHashAlgorithm()>",
+      "<net.lingala.zip4j.model.FileHeader: java.lang.String getFileName()>",
+      "<net.lingala.zip4j.model.LocalFileHeader: java.lang.String getFileName()>",
+      "<net.lingala.zip4j.model.ZipModel: java.lang.String getFileNameCharset()>",
+      "<net.lingala.zip4j.model.ZipModel: java.lang.String getZipFile()>"
+    ],
+    "selected": [
+      "<net.lingala.zip4j.model.FileHeader: java.lang.String getFileName()>",
+      "<net.lingala.zip4j.model.LocalFileHeader: java.lang.String getFileName()>"
+    ],
+    "decisions": [
+      {
+        "id": "C03",
+        "decision": "source",
+        "reason": "Returns local file header entry name from archive; attacker-controlled zip entry name.",
+        "evidence": [
+          "K5"
+        ],
+        "signature": "<net.lingala.zip4j.model.LocalFileHeader: java.lang.String getFileName()>"
+      },
+      {
+        "id": "C01",
+        "decision": "not_source",
+        "reason": "Returns crypto algorithm name used to instantiate MacBasedPRF; not attacker-controlled path data.",
+        "evidence": [
+          "K1"
+        ],
+        "signature": "<net.lingala.zip4j.crypto.PBKDF2.PBKDF2Parameters: java.lang.String getHashAlgorithm()>"
+      },
+      {
+        "id": "C02",
+        "decision": "source",
+        "reason": "Returns archive entry file name from FileHeader; attacker-controlled zip entry name used in output path checks.",
+        "evidence": [
+          "K3"
+        ],
+        "signature": "<net.lingala.zip4j.model.FileHeader: java.lang.String getFileName()>"
+      },
+      {
+        "id": "C05",
+        "decision": "not_source",
+        "reason": "Returns zip file path used to open archive; supplied by application/trusted caller, not archive content.",
+        "evidence": [
+          "K9"
+        ],
+        "signature": "<net.lingala.zip4j.model.ZipModel: java.lang.String getZipFile()>"
+      },
+      {
+        "id": "C04",
+        "decision": "not_source",
+        "reason": "Returns charset configuration used to decode file names; not path data or attacker-controlled.",
+        "evidence": [
+          "K7"
+        ],
+        "signature": "<net.lingala.zip4j.model.ZipModel: java.lang.String getFileNameCharset()>"
+      }
+    ],
+    "errors": [],
+    "valid": 5
+  },
+  "zt-zip": {
+    "pool": 2,
+    "reaching": [
+      "<java.util.jar.JarFile$JarFileEntry: java.lang.String getName()>"
+    ],
+    "selected": [
+      "<java.util.jar.JarFile$JarFileEntry: java.lang.String getName()>"
+    ],
+    "decisions": [
+      {
+        "id": "C01",
+        "decision": "source",
+        "reason": "Zip entry names come from archive input and are attacker-controlled; K1 uses the returned name to construct a File path, enabling traversal.",
+        "evidence": [
+          "K1"
+        ],
+        "signature": "<java.util.jar.JarFile$JarFileEntry: java.lang.String getName()>"
+      }
+    ],
+    "errors": [],
+    "valid": 1
+  },
+  "spark": {
+    "pool": 2,
+    "reaching": [
+      "<spark.resource.ClassPathResource: java.lang.String getDescription()>",
+      "<spark.utils.ClassUtils: java.lang.String classPackageAsResourcePath(java.lang.Class)>"
+    ],
+    "selected": [],
+    "decisions": [
+      {
+        "id": "C02",
+        "decision": "not_source",
+        "reason": "Takes a Class object (trusted, not attacker-controlled) and returns a package path; used only in a description string, not for file access.",
+        "evidence": [
+          "K2"
+        ],
+        "signature": "<spark.utils.ClassUtils: java.lang.String classPackageAsResourcePath(java.lang.Class)>"
+      },
+      {
+        "id": "C01",
+        "decision": "not_source",
+        "reason": "Returned string is used only in an exception message, not as a file path; value derived from internal resource metadata, not attacker input.",
+        "evidence": [
+          "K1"
+        ],
+        "signature": "<spark.resource.ClassPathResource: java.lang.String getDescription()>"
+      }
+    ],
+    "errors": [],
+    "valid": 2
+  },
+  "plexus-archiver": {
+    "pool": 6,
+    "reaching": [
+      "<org.apache.commons.compress.archivers.zip.ZipFile: java.lang.String getUnixSymlink(org.apache.commons.compress.archivers.zip.ZipArchiveEntry)>",
+      "<org.codehaus.plexus.archiver.AbstractUnArchiver: java.io.File getDestDirectory()>",
+      "<org.codehaus.plexus.archiver.AbstractUnArchiver: java.io.File getSourceFile()>",
+      "<org.codehaus.plexus.archiver.zip.AbstractZipUnArchiver$ZipEntryFileInfo: java.lang.String getName()>",
+      "<org.codehaus.plexus.archiver.zip.AbstractZipUnArchiver: java.lang.String resolveSymlink(org.apache.commons.compress.archivers.zip.ZipFile,org.apache.commons.compress.archivers.zip.ZipArchiveEntry)>",
+      "<org.codehaus.plexus.components.io.fileselectors.FileInfo: java.lang.String getName()>"
+    ],
+    "selected": [
+      "<org.apache.commons.compress.archivers.zip.ZipFile: java.lang.String getUnixSymlink(org.apache.commons.compress.archivers.zip.ZipArchiveEntry)>",
+      "<org.codehaus.plexus.archiver.zip.AbstractZipUnArchiver$ZipEntryFileInfo: java.lang.String getName()>",
+      "<org.codehaus.plexus.archiver.zip.AbstractZipUnArchiver: java.lang.String resolveSymlink(org.apache.commons.compress.archivers.zip.ZipFile,org.apache.commons.compress.archivers.zip.ZipArchiveEntry)>"
+    ],
+    "decisions": [
+      {
+        "id": "C03",
+        "decision": "not_source",
+        "reason": "Returns the archive file itself, not the entry names or symlink targets that cause traversal. Not attacker-controlled path data.",
+        "evidence": [
+          "K5"
+        ],
+        "signature": "<org.codehaus.plexus.archiver.AbstractUnArchiver: java.io.File getSourceFile()>"
+      },
+      {
+        "id": "C01",
+        "decision": "source",
+        "reason": "Returns symlink target from a zip entry, which an attacker can control by crafting the archive. Used in path construction.",
+        "evidence": [
+          "K1"
+        ],
+        "signature": "<org.apache.commons.compress.archivers.zip.ZipFile: java.lang.String getUnixSymlink(org.apache.commons.compress.archivers.zip.ZipArchiveEntry)>"
+      },
+      {
+        "id": "C02",
+        "decision": "not_source",
+        "reason": "Returns the destination directory set by the program, not attacker-controlled data. It is a trusted base path.",
+        "evidence": [
+          "K3"
+        ],
+        "signature": "<org.codehaus.plexus.archiver.AbstractUnArchiver: java.io.File getDestDirectory()>"
+      },
+      {
+        "id": "C06",
+        "decision": "not_source",
+        "reason": "Only used in an error message, not in file path construction. No evidence of attacker-controlled path usage.",
+        "evidence": [
+          "K11"
+        ],
+        "signature": "<org.codehaus.plexus.components.io.fileselectors.FileInfo: java.lang.String getName()>"
+      },
+      {
+        "id": "C05",
+        "decision": "source",
+        "reason": "Wraps C01, returning attacker-controlled symlink target. Passed to extraction, enabling path traversal.",
+        "evidence": [
+          "K10"
+        ],
+        "signature": "<org.codehaus.plexus.archiver.zip.AbstractZipUnArchiver: java.lang.String resolveSymlink(org.apache.commons.compress.archivers.zip.ZipFile,org.apache.commons.compress.archivers.zip.ZipArchiveEntry)>"
+      },
+      {
+        "id": "C04",
+        "decision": "source",
+        "reason": "Returns the name of a zip entry, directly controlled by an attacker. Used to construct output file paths.",
+        "evidence": [
+          "K9"
+        ],
+        "signature": "<org.codehaus.plexus.archiver.zip.AbstractZipUnArchiver$ZipEntryFileInfo: java.lang.String getName()>"
+      }
+    ],
+    "errors": [],
+    "valid": 6
+  },
+  "plexus-utils": {
+    "pool": 1,
+    "reaching": [],
+    "selected": [],
+    "decisions": [],
+    "errors": [],
+    "valid": 0
+  },
+  "mpxj": {
+    "pool": 2,
+    "reaching": [
+      "<net.sf.mpxj.common.FileHelper: java.io.File createTempDir()>"
+    ],
+    "selected": [],
+    "decisions": [
+      {
+        "id": "C01",
+        "decision": "not_source",
+        "reason": "createTempDir returns a program-chosen temporary directory, not attacker-controlled data. The zip input stream is used later, but this method's return is safe.",
+        "evidence": [
+          "K1"
+        ],
+        "signature": "<net.sf.mpxj.common.FileHelper: java.io.File createTempDir()>"
+      }
+    ],
+    "errors": [],
+    "valid": 1
+  }
+}

@@ -1,0 +1,46 @@
+{
+  "id": "gen-1792653758-MDy8mCH7OpKyEHyOsWBd",
+  "object": "chat.completion",
+  "created": 1792653758,
+  "model": "qwen/qwen3-coder-30b-a3b-instruct",
+  "provider": "Amazon Bedrock",
+  "system_fingerprint": null,
+  "service_tier": null,
+  "choices": [
+    {
+      "index": 0,
+      "logprobs": null,
+      "finish_reason": "stop",
+      "native_finish_reason": "end_turn",
+      "message": {
+        "role": "assistant",
+        "content": "Looking at the code, I need to trace the flow from `fileHeader.getFileName()` at line 20 to `newFileName` at line 44.\n\nLet me analyze the execution path:\n\n1. Line 16: `String fileName = fileHeader.getFileName();` - This gets the filename from fileHeader\n2. Line 17: `String completePath = outPath + fileName;` - Uses fileName to create completePath\n3. Line 20: `throw new ZipException(... + fileHeader.getFileName() + ...)` - Uses fileHeader.getFileName() in error message\n4. Line 40: `checkOutputDirectoryStructure(fileHeader, outPath, newFileName);` - Passes newFileName as parameter\n5. Line 42: `UnzipEngine unzipEngine = new UnzipEngine(zipModel, fileHeader);` - Uses fileHeader but not newFileName\n6. Line 44: `unzipEngine.unzipFile(progressMonitor, outPath, newFileName, unzipParameters);` - Passes newFileName as parameter\n\nThe key insight is that `fileHeader.getFileName()` at line 20 is used in an error message string construction, while `newFileName` is passed as a parameter to `unzipFile()` at line 44. However, there's no direct data flow between these two expressions - `newFileName` is a parameter passed into the method and is not derived from or dependent on the result of `fileHeader.getFileName()`.\n\nThe `fileHeader.getFileName()` call at line 20 is simply used for constructing an error message string, and `newFileName` is completely independent - it's a method parameter that could be any value and doesn't depend on the filename extracted from fileHeader.\n\nExplanation: The value of `newFileName` used at line 44 is a method parameter that is passed into the function independently of `fileHeader.getFileName()`. There is no data flow or dependency between these two expressions - `newFileName` is not constructed using or derived from the result of `fileHeader.getFileName()`, and the use of `fileHeader.getFileName()` at line 20 is only for error message construction, not for influencing `newFileName`.\n\nAnswer: No",
+        "refusal": null,
+        "reasoning": null
+      }
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 1508,
+    "completion_tokens": 468,
+    "total_tokens": 1976,
+    "cost": 0.000507,
+    "is_byok": false,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0,
+      "video_tokens": 0
+    },
+    "cost_details": {
+      "upstream_inference_cost": 0.000507,
+      "upstream_inference_prompt_cost": 0.0002262,
+      "upstream_inference_completions_cost": 0.0002808
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "image_tokens": 0,
+      "audio_tokens": 0
+    }
+  }
+}

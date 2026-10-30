@@ -1,0 +1,46 @@
+{
+  "id": "gen-1792654251-cmkXzvehpkNQOtFejq6O",
+  "object": "chat.completion",
+  "created": 1792654251,
+  "model": "qwen/qwen3-coder-30b-a3b-instruct",
+  "provider": "Amazon Bedrock",
+  "system_fingerprint": null,
+  "service_tier": null,
+  "choices": [
+    {
+      "index": 0,
+      "logprobs": null,
+      "finish_reason": "stop",
+      "native_finish_reason": "end_turn",
+      "message": {
+        "role": "assistant",
+        "content": "Looking at the code, I need to trace the flow from line 16 (`tmp0 = fileInfo.getName()`) to line 31 (`tmp8 = resolveSymlink( zf, ze )`).\n\nLet me trace the execution:\n\n1. Line 16: `tmp0 = fileInfo.getName()` - This assigns the name from fileInfo to tmp0\n2. Line 17: `if (isSelected(tmp0, fileInfo))` - This uses tmp0 as an argument to isSelected\n3. Lines 21-22: `tmp1 = getSourceFile()` and `tmp2 = getDestDirectory()` - These are independent assignments\n4. Line 23: `tmp3 = fileInfo.getName()` - This assigns the same name as tmp0 (since it's the same fileInfo object)\n5. Line 24-32: The extractFileIfIncluded method is called with various parameters including tmp1, tmp2, in, tmp3, etc.\n6. Line 31: `tmp8 = resolveSymlink( zf, ze )` - This is a separate assignment that doesn't use tmp0\n\nThe key point is that tmp0 is assigned on line 16 and used on line 17, but there's no dependency chain between tmp0 and the operations that occur after line 17. The variable tmp8 on line 31 is assigned from a completely independent operation (resolveSymlink) that takes zf and ze as parameters, but tmp0 is not involved in this operation.\n\nThe value of tmp0 (which comes from fileInfo.getName()) is not used to compute or affect the value of tmp8 (which comes from resolveSymlink(zf, ze)).\n\nAnswer: No",
+        "refusal": null,
+        "reasoning": null
+      }
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 1455,
+    "completion_tokens": 356,
+    "total_tokens": 1811,
+    "cost": 0.00043185,
+    "is_byok": false,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0,
+      "video_tokens": 0
+    },
+    "cost_details": {
+      "upstream_inference_cost": 0.00043185,
+      "upstream_inference_prompt_cost": 0.00021825,
+      "upstream_inference_completions_cost": 0.0002136
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "image_tokens": 0,
+      "audio_tokens": 0
+    }
+  }
+}

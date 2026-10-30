@@ -1,0 +1,46 @@
+{
+  "id": "gen-1792653929-akcji8uYNHgnH1Hanrkl",
+  "object": "chat.completion",
+  "created": 1792653929,
+  "model": "qwen/qwen3-coder-30b-a3b-instruct",
+  "provider": "Amazon Bedrock",
+  "system_fingerprint": null,
+  "service_tier": null,
+  "choices": [
+    {
+      "index": 0,
+      "logprobs": null,
+      "finish_reason": "stop",
+      "native_finish_reason": "end_turn",
+      "message": {
+        "role": "assistant",
+        "content": "Looking at the code, I need to trace the flow from line 15 where `fileInfo` is created to line 17 where `tmp0` (which is `fileInfo.getName()`) is used in the `isSelected` method.\n\nLet me trace the execution:\n- Line 15: `final ZipEntryFileInfo fileInfo = new ZipEntryFileInfo( zf, ze );` - creates fileInfo\n- Line 16: `final tmp0 = fileInfo.getName();` - gets name from fileInfo\n- Line 17: `if ( isSelected( tmp0, fileInfo ) )` - uses both tmp0 and fileInfo in isSelected\n\nThe question asks if the value of `fileInfo` used at line 17 depends on the value of `tmp0` (which is `fileInfo.getName()`) at line 23.\n\nLooking more carefully at the code structure, I see that:\n- Line 15: `fileInfo` is created from `zf` and `ze`\n- Line 16: `tmp0` is assigned `fileInfo.getName()` \n- Line 17: `fileInfo` is passed as an argument to `isSelected`\n- Line 23: `tmp3` is assigned `fileInfo.getName()` \n\nThe key insight is that `fileInfo` itself is used in line 17, and `fileInfo.getName()` is used in line 17 as well. However, the question asks about the dependency between the value of `fileInfo` (the object) and the value of `tmp0` (which is `fileInfo.getName()`).\n\nActually, re-reading more carefully: the question asks if the value of `fileInfo` used at line 17 depends on the value of `tmp0` at line 23. But looking at the code structure, `tmp0` is defined at line 16 and used at line 17, while `tmp3` is defined at line 23. These are different variables.\n\nWait, let me re-read the question more carefully. It says \"Does the value of `fileInfo` used at the line 17 depend on the value of `tmp0` at the line 23?\"\n\nLooking at the actual code again:\n- Line 15: `fileInfo` is created\n- Line 16: `tmp0 = fileInfo.getName()` \n- Line 17: `isSelected(tmp0, fileInfo)` - here `fileInfo` is used\n- Line 23: `tmp3 = fileInfo.getName()` - this is a different assignment\n\nThe question seems to have some confusion in the variable names. Looking at what's actually happening:\n- `fileInfo` is created at line 15\n- `tmp0` is assigned `fileInfo.getName()` at line 16\n- `fileInfo` is used in `isSelected` at line 17\n- `tmp3` is assigned `fileInfo.getName()` at line 23\n\nThe value of `fileInfo` used at line 17 doesn't depend on the value of `tmp0` at line 23 because `tmp0` at line 23 would be a different variable than `tmp0` at line 16, and the `fileInfo` object itself is not dependent on the value of `tmp0` at line 23.\n\nBut wait, I think there might be a misreading. Let me look at the exact lines mentioned:\nLine 17: `if ( isSelected( tmp0, fileInfo ) )` - here `tmp0` is the result of `fileInfo.getName()` from line 16\nLine 23: `final tmp3 = fileInfo.getName();` - this is a different tmp variable\n\nThe question asks if `fileInfo` used at line 17 depends on `tmp0` at line 23. Since `tmp0` at line 23 would be a new assignment, and `fileInfo` at line 17 is independent of this later assignment, the answer is no.\n\nHowever, looking at the code structure more carefully, it seems like there might be a typo in the question. If we interpret it as asking whether the value of `fileInfo` used at line 17 depends on the value of `tmp0` (which is `fileInfo.getName()`) at line 16, then yes, because `fileInfo` is used in the isSelected call.\n\nBut based on the literal question asking about line 23 vs line 17, and given that `tmp0` at line 23 would be a different variable than the one used at line 17, the answer is no.\n\nExplanation: The value of `fileInfo` used at line 17 does not depend on the value of `tmp0` at line 23. At line 17, `fileInfo` is used in the `isSelected` method call, while `tmp0` at line 23 refers to a different variable assignment that occurs later in the code. The `fileInfo` object itself is created independently at line 15 and is not influenced by any subsequent assignments to `tmp0`.\n\nAnswer: No",
+        "refusal": null,
+        "reasoning": null
+      }
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 1455,
+    "completion_tokens": 1085,
+    "total_tokens": 2540,
+    "cost": 0.00086925,
+    "is_byok": false,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0,
+      "video_tokens": 0
+    },
+    "cost_details": {
+      "upstream_inference_cost": 0.00086925,
+      "upstream_inference_prompt_cost": 0.00021825,
+      "upstream_inference_completions_cost": 0.000651
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "image_tokens": 0,
+      "audio_tokens": 0
+    }
+  }
+}

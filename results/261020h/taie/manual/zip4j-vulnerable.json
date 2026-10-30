@@ -1,0 +1,89 @@
+{
+  "config": "manual",
+  "project": "zip4j",
+  "variant": "vulnerable",
+  "status": "completed",
+  "taie_sha256": "703d1750b66e8e621d628ac93b07a21315db795b3a1e2224001ad09190c1e4be",
+  "seconds": 21.33,
+  "entry": "Zip4jEntry",
+  "adapter_sha256": "d0645dae6ddeee6f0e9c7b757f9545b8dc9426434a970547d1fc52d727de4c88",
+  "flows": [
+    "TaintFlow{<net.lingala.zip4j.core.HeaderReader: net.lingala.zip4j.model.LocalFileHeader readLocalFileHeader(net.lingala.zip4j.model.FileHeader)>[48@L858] %v46 = invokevirtual fileHeader.getFileName()/result -> <net.lingala.zip4j.unzip.UnzipEngine: java.io.FileOutputStream getOutputStream(java.lang.String,java.lang.String)>[19@L432] invokespecial fileOutputStream.<init>(file)/0}",
+    "TaintFlow{<net.lingala.zip4j.unzip.Unzip: void checkOutputDirectoryStructure(net.lingala.zip4j.model.FileHeader,java.lang.String,java.lang.String)>[8@L185] fileName = invokevirtual fileHeader.getFileName()/result -> <net.lingala.zip4j.unzip.UnzipEngine: java.io.FileOutputStream getOutputStream(java.lang.String,java.lang.String)>[19@L432] invokespecial fileOutputStream.<init>(file)/0}",
+    "TaintFlow{<net.lingala.zip4j.unzip.Unzip: void initExtractFile(net.lingala.zip4j.model.FileHeader,java.lang.String,net.lingala.zip4j.model.UnzipParameters,java.lang.String,net.lingala.zip4j.progress.ProgressMonitor)>[19@L141] fileName = invokevirtual fileHeader.getFileName()/result -> <net.lingala.zip4j.unzip.UnzipEngine: java.io.FileOutputStream getOutputStream(java.lang.String,java.lang.String)>[19@L432] invokespecial fileOutputStream.<init>(file)/0}",
+    "TaintFlow{<net.lingala.zip4j.unzip.UnzipEngine: java.lang.String getOutputFileNameWithPath(java.lang.String,java.lang.String)>[6@L444] fileName = invokevirtual %v6.getFileName()/result -> <net.lingala.zip4j.unzip.UnzipEngine: java.io.FileOutputStream getOutputStream(java.lang.String,java.lang.String)>[19@L432] invokespecial fileOutputStream.<init>(file)/0}",
+    "TaintFlow{<net.lingala.zip4j.unzip.UnzipEngine: net.lingala.zip4j.io.ZipInputStream getInputStream()>[58@L132] %v49 = invokevirtual %v48.getFileName()/result -> <net.lingala.zip4j.unzip.UnzipEngine: java.io.FileOutputStream getOutputStream(java.lang.String,java.lang.String)>[19@L432] invokespecial fileOutputStream.<init>(file)/0}",
+    "TaintFlow{<net.lingala.zip4j.unzip.UnzipEngine: net.lingala.zip4j.io.ZipInputStream getInputStream()>[89@L145] %v69 = invokevirtual %v68.getFileName()/result -> <net.lingala.zip4j.unzip.UnzipEngine: java.io.FileOutputStream getOutputStream(java.lang.String,java.lang.String)>[19@L432] invokespecial fileOutputStream.<init>(file)/0}",
+    "TaintFlow{<net.lingala.zip4j.unzip.UnzipEngine: void checkCRC()>[28@L272] %v36 = invokevirtual %v35.getFileName()/result -> <net.lingala.zip4j.unzip.UnzipEngine: java.io.FileOutputStream getOutputStream(java.lang.String,java.lang.String)>[19@L432] invokespecial fileOutputStream.<init>(file)/0}",
+    "TaintFlow{<net.lingala.zip4j.unzip.UnzipEngine: void checkCRC()>[43@L278] %v28 = invokevirtual %v27.getFileName()/result -> <net.lingala.zip4j.unzip.UnzipEngine: java.io.FileOutputStream getOutputStream(java.lang.String,java.lang.String)>[19@L432] invokespecial fileOutputStream.<init>(file)/0}",
+    "TaintFlow{<net.lingala.zip4j.unzip.UnzipEngine: void checkCRC()>[62@L284] %v50 = invokevirtual %v49.getFileName()/result -> <net.lingala.zip4j.unzip.UnzipEngine: java.io.FileOutputStream getOutputStream(java.lang.String,java.lang.String)>[19@L432] invokespecial fileOutputStream.<init>(file)/0}"
+  ],
+  "locations": [
+    [
+      "HeaderReader",
+      "readLocalFileHeader"
+    ],
+    [
+      "Unzip",
+      "checkOutputDirectoryStructure"
+    ],
+    [
+      "Unzip",
+      "initExtractFile"
+    ],
+    [
+      "UnzipEngine",
+      "checkCRC"
+    ],
+    [
+      "UnzipEngine",
+      "getInputStream"
+    ],
+    [
+      "UnzipEngine",
+      "getOutputFileNameWithPath"
+    ],
+    [
+      "UnzipEngine",
+      "getOutputStream"
+    ]
+  ],
+  "target_reachable": true,
+  "target_pair_reported": true,
+  "policy_sha256": {
+    "file-transfers.yml": "cba09381470f18625d058830578cd837cef99a1a4d636a447acd0581e890cb22",
+    "policy.yml": "53768dd62e9fe93ed3172645649aa7bb5b9ad62355c7b3069effc1df791e1784",
+    "string-transfers.yml": "ef349830601196c03f0cb48ddc86015b5eb0d2e5bfbd868a71ed6c11e449c742"
+  },
+  "scoped_flows": 9,
+  "scoped_locations": [
+    [
+      "HeaderReader",
+      "readLocalFileHeader"
+    ],
+    [
+      "Unzip",
+      "checkOutputDirectoryStructure"
+    ],
+    [
+      "Unzip",
+      "initExtractFile"
+    ],
+    [
+      "UnzipEngine",
+      "checkCRC"
+    ],
+    [
+      "UnzipEngine",
+      "getInputStream"
+    ],
+    [
+      "UnzipEngine",
+      "getOutputFileNameWithPath"
+    ],
+    [
+      "UnzipEngine",
+      "getOutputStream"
+    ]
+  ]
+}

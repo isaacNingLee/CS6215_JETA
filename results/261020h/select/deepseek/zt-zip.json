@@ -1,0 +1,76 @@
+{
+  "request": {
+    "model": "deepseek/deepseek-v4-pro",
+    "temperature": 0,
+    "max_tokens": 8000,
+    "reasoning": {
+      "effort": "low"
+    },
+    "messages": [
+      {
+        "role": "system",
+        "content": "Classify candidate taint SOURCES for a Java CWE-22 (path traversal) static analysis.\nA source is a method call whose RETURNED value can carry data that an external\nattacker controls and that may be used to name a file or resource path, such as\nnames read from an archive or upload, request parameters, environment or\ncommand-line input. Values the program computes or chooses itself, or that a\ntrusted caller supplies, are not sources. For each candidate decide\nsource | not_source | unknown. Cite at least one supplied call-site ID (K...)\nshowing how the value is obtained or used. Do not decide from the method name\nalone; if the supplied code is insufficient, answer unknown. Labels, versions\nand fix locations are unavailable.\nReturn ONLY JSON: {\"sources\":[{\"id\":\"C01\",\"decision\":\"source|not_source|unknown\",\n\"reason\":\"at most 30 words\",\"evidence\":[\"K1\"]}]}. Return every candidate exactly once.\n"
+      },
+      {
+        "role": "user",
+        "content": "{\"scope\": \"Java CWE-22 source selection; candidates already reach a path sink in a static run\", \"project_label\": \"subject\", \"candidates\": [{\"id\": \"C01\", \"signature\": \"<java.util.jar.JarFile$JarFileEntry: java.lang.String getName()>\", \"declared_in_project\": false, \"call_sites\": [{\"id\": \"K1\", \"caller\": \"<org.zeroturnaround.zip.ZipUtil$Unpacker: void process(java.io.InputStream,java.util.zip.ZipEntry)>\", \"line\": 1150, \"code\": \"1145:       this.outputDir = outputDir;\\n1146:       this.mapper = mapper;\\n1147:     }\\n1148: \\n1149:     public void process(InputStream in, ZipEntry zipEntry) throws IOException {\\n1150:       String name = mapper.map(zipEntry.getName());\\n1151:       if (name != null) {\\n1152:         File file = new File(outputDir, name);\\n1153:         if (zipEntry.isDirectory()) {\\n1154:           FileUtils.forceMkdir(file);\\n1155:         }\"}, {\"id\": \"K2\", \"caller\": \"<org.zeroturnaround.zip.ZipUtil$Unpacker: void process(java.io.InputStream,java.util.zip.ZipEntry)>\", \"line\": 1160, \"code\": \"1155:         }\\n1156:         else {\\n1157:           FileUtils.forceMkdir(file.getParentFile());\\n1158: \\n1159:           if (log.isDebugEnabled() && file.exists()) {\\n1160:             log.debug(\\\"Overwriting file '{}'.\\\", zipEntry.getName());\\n1161:           }\\n1162: \\n1163:           FileUtils.copy(in, file);\\n1164:         }\\n1165: \"}, {\"id\": \"K3\", \"caller\": \"<org.zeroturnaround.zip.ZipUtil: void iterate(java.io.File,org.zeroturnaround.zip.ZipEntryCallback,java.nio.charset.Charset)>\", \"line\": 511, \"code\": \"506:         InputStream is = zf.getInputStream(e);\\n507:         try {\\n508:           action.process(is, e);\\n509:         }\\n510:         catch (IOException ze) {\\n511:           throw new ZipException(\\\"Failed to process zip entry '\\\" + e.getName() + \\\"' with action \\\" + action, ze);\\n512:         }\\n513:         catch (ZipBreakException ex) {\\n514:           break;\\n515:         }\\n516:         finally {\"}]}]}"
+      }
+    ]
+  },
+  "response": {
+    "id": "gen-1792478392-nd4qsxNFiDzrNQzp35TI",
+    "object": "chat.completion",
+    "created": 1792478392,
+    "model": "deepseek/deepseek-v4-pro",
+    "provider": "Cloudflare",
+    "system_fingerprint": null,
+    "service_tier": null,
+    "choices": [
+      {
+        "index": 0,
+        "logprobs": null,
+        "finish_reason": "stop",
+        "native_finish_reason": "stop",
+        "message": {
+          "role": "assistant",
+          "content": "{\"sources\":[{\"id\":\"C01\",\"decision\":\"source\",\"reason\":\"Zip entry names come from archive input and are attacker-controlled; K1 uses the returned name to construct a File path, enabling traversal.\",\"evidence\":[\"K1\"]}]}",
+          "refusal": null,
+          "reasoning": "We need answer JSON only. Need classify C01. Need reason at most 30 words, evidence call-site IDs. Need decide source/not_source/unknown.\n\nWe need understand candidate: java.util.jar.JarFile$JarFileEntry: String getName(). This is method on JarFile entry returning name of entry in jar/zip. In context ZipUtil Unpacker process: String name = mapper.map(zipEntry.getName()); then new File(outputDir, name). This is path traversal from zip entry name. Zip entry names are attacker-controllable if archive comes from external input. The method returns name from archive entry. Candidate is source? The question: \"A source is a method call whose RETURNED value can carry data that an external attacker controls and that may be used to name a file or resource path, such as names read from an archive or upload...\" Yes, names read from an archive. So source. Need cite K1 showing name used in File path. K1: String name = mapper.map(zipEntry.getName()); File file = new File(outputDir, name). That is enough. Need maybe mention archive entry name attacker-controlled. Decision source.\n\nNeed ensure JSON only. Include id C01. Evidence [\"K1\"]. Reason <=30 words. Let's craft concise.\n\n",
+          "reasoning_details": [
+            {
+              "type": "reasoning.text",
+              "text": "We need answer JSON only. Need classify C01. Need reason at most 30 words, evidence call-site IDs. Need decide source/not_source/unknown.\n\nWe need understand candidate: java.util.jar.JarFile$JarFileEntry: String getName(). This is method on JarFile entry returning name of entry in jar/zip. In context ZipUtil Unpacker process: String name = mapper.map(zipEntry.getName()); then new File(outputDir, name). This is path traversal from zip entry name. Zip entry names are attacker-controllable if archive comes from external input. The method returns name from archive entry. Candidate is source? The question: \"A source is a method call whose RETURNED value can carry data that an external attacker controls and that may be used to name a file or resource path, such as names read from an archive or upload...\" Yes, names read from an archive. So source. Need cite K1 showing name used in File path. K1: String name = mapper.map(zipEntry.getName()); File file = new File(outputDir, name). That is enough. Need maybe mention archive entry name attacker-controlled. Decision source.\n\nNeed ensure JSON only. Include id C01. Evidence [\"K1\"]. Reason <=30 words. Let's craft concise.\n\n",
+              "format": "unknown",
+              "index": 0
+            }
+          ]
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 896,
+      "completion_tokens": 317,
+      "total_tokens": 1213,
+      "cost": 0.00183875,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 0,
+        "cache_write_tokens": 0,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 0.00183875,
+        "upstream_inference_prompt_cost": 0.0010304,
+        "upstream_inference_completions_cost": 0.00080835
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 296,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    }
+  },
+  "attempts": 1,
+  "seconds": 8.68
+}

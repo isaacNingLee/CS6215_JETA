@@ -1,0 +1,46 @@
+{
+  "id": "gen-1792653861-B92oikiIwCUqEQ8UuHJS",
+  "object": "chat.completion",
+  "created": 1792653861,
+  "model": "qwen/qwen3-coder-30b-a3b-instruct",
+  "provider": "Amazon Bedrock",
+  "system_fingerprint": null,
+  "service_tier": null,
+  "choices": [
+    {
+      "index": 0,
+      "logprobs": null,
+      "finish_reason": "stop",
+      "native_finish_reason": "end_turn",
+      "message": {
+        "role": "assistant",
+        "content": "Looking at the code, I need to trace the flow from line 22 to line 25 to see if `zipEntry.getName()` affects the value of `in` used at line 25.\n\nLet me trace through the execution:\n- Line 2: `final tmp1 = zipEntry.getName();` - This gets the name from zipEntry\n- Line 22: `zipEntry.getName()` is called again (this is the same expression as line 2)\n- Line 25: `FileUtils.copy(in, file);` - This uses the `in` parameter\n\nThe key point is that `zipEntry.getName()` is called at line 22, but it's just being used for logging purposes (`log.debug(\"Overwriting file '{}'.\", zipEntry.getName());`). \n\nHowever, looking more carefully at the code structure, there's no direct connection between the value of `zipEntry.getName()` at line 22 and the parameter `in` at line 25. The `in` parameter is passed into the method from outside and is used directly in the `FileUtils.copy(in, file)` call. The `zipEntry.getName()` call at line 22 is only used for the debug message and doesn't affect the value of `in`.\n\nThe `zipEntry.getName()` expression is evaluated but its result is only used for string concatenation in the debug log message. The `in` parameter remains unchanged throughout the method execution and is not influenced by the value of `zipEntry.getName()`.\n\nExplanation: The value of `zipEntry.getName()` at line 22 is only used for a debug log message and does not influence the `in` parameter which is passed directly to `FileUtils.copy()` at line 25. There is no data flow or dependency between these two expressions.\n\nAnswer: No",
+        "refusal": null,
+        "reasoning": null
+      }
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 1208,
+    "completion_tokens": 378,
+    "total_tokens": 1586,
+    "cost": 0.000408,
+    "is_byok": false,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0,
+      "video_tokens": 0
+    },
+    "cost_details": {
+      "upstream_inference_cost": 0.000408,
+      "upstream_inference_prompt_cost": 0.0001812,
+      "upstream_inference_completions_cost": 0.0002268
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "image_tokens": 0,
+      "audio_tokens": 0
+    }
+  }
+}

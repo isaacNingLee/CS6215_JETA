@@ -1,0 +1,46 @@
+{
+  "id": "gen-1792653824-rBnwLwfF4l3Zj8zi4Qgc",
+  "object": "chat.completion",
+  "created": 1792653824,
+  "model": "qwen/qwen3-coder-30b-a3b-instruct",
+  "provider": "SiliconFlow",
+  "system_fingerprint": null,
+  "service_tier": null,
+  "choices": [
+    {
+      "index": 0,
+      "logprobs": null,
+      "finish_reason": "stop",
+      "native_finish_reason": "stop",
+      "message": {
+        "role": "assistant",
+        "content": "Looking at the code, I need to trace the dependency between `raf` at line 48 and `fileHeader.getFileName()` at line 29.\n\nLet me trace through the execution:\n\n1. `raf` is declared at line 6 and assigned at line 8 with `createFileHandler(InternalZipConstants.READ_MODE)`\n2. `fileHeader.getFileName()` is called at line 29, but this is inside an exception message construction in line 28\n3. The `fileHeader.getFileName()` call at line 29 is part of an exception message and doesn't affect the value of `raf`\n4. At line 48, `raf` is used in the constructor of `ZipInputStream` as part of `new PartInputStream(raf, offsetStartOfData, comprSize, this)`\n5. The `raf` variable is never reassigned or modified between its initialization at line 8 and its usage at line 48\n6. The `fileHeader.getFileName()` call at line 29 is only used for error message construction and doesn't influence the value of `raf`\n\nThe value of `raf` at line 48 is determined by the `createFileHandler(InternalZipConstants.READ_MODE)` call at line 8, and this value is not affected by the `fileHeader.getFileName()` call at line 29.\n\nAnswer: No",
+        "refusal": null,
+        "reasoning": null
+      }
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 1798,
+    "completion_tokens": 288,
+    "total_tokens": 2086,
+    "cost": 0.0002065,
+    "is_byok": false,
+    "prompt_tokens_details": {
+      "cached_tokens": 736,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0,
+      "video_tokens": 0
+    },
+    "cost_details": {
+      "upstream_inference_cost": 0.0002065,
+      "upstream_inference_prompt_cost": 0.00012586,
+      "upstream_inference_completions_cost": 8.064e-05
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "image_tokens": 0,
+      "audio_tokens": 0
+    }
+  }
+}

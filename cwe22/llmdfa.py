@@ -161,7 +161,7 @@ def plan_for(out, short, sample, projects):
                 sample=sample, bug_type=lock["bug_type"], propagator_spec=lock["propagator_spec"],
                 validator_spec=lock["validator_spec"], syn_parser=False, fscot=True, syn_solver=False,
                 solving_refine_number=3, max_requests=MAX_REQUESTS, cost_limit=COST_LIMIT,
-                max_tokens=config.max_tokens(config.MODELS[short]), request_timeout=REQUEST_TIMEOUT,
+                max_tokens=config.max_tokens(config.MODELS[short], long=True), request_timeout=REQUEST_TIMEOUT,
                 case_timeout=CASE_TIMEOUT, cases=cases, policy={p: specs.POLICY[p] for p in projects},
                 taie_policy=specs.check_policy_matches_taie(projects),
                 deviations=list(runtime_deviations()), configuration=lock["configuration"],

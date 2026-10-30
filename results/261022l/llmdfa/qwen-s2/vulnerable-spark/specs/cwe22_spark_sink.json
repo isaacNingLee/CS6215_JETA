@@ -1,0 +1,33 @@
+{
+  "model_role_name": "Path Traversal Sink Extractor",
+  "user_role_name": "Path Traversal Sink Extractor",
+  "system_role": "You are a Java programmer and very good at analyzing Java code.",
+  "task": "Please identify the sink values for path traversal (CWE-22) according to the following instructions.",
+  "analysis_rules": [
+    "- When a variable/expression is used as argument 0 of a `getResourceAsStream(String)` call (the resource path being opened), it is a sink for path traversal."
+  ],
+  "analysis_examples": [
+    "Example (illustrative only; report values from the program below):",
+    "1. Object stream = loader.getResourceAsStream(target);",
+    "- Sink name: target, Line number: 1",
+    "Negative example: 1. validate();",
+    "Answer: an empty string. A helper call is not the specified sink API."
+  ],
+  "meta_prompts": [
+    "Now I will give you the program. Please list all the names of sinks and the line numbers.",
+    "The line numbers should indicate the line of the call that consumes the value."
+  ],
+  "output_constraints": [
+    "Do not add extra explanations.",
+    "Just list the pairs of variable/expression and line number line by line.",
+    "Each line should start with -.",
+    "If there is no variable as sink, just output an empty string."
+  ],
+  "output_examples": [
+    "Here are several examples:",
+    "Example 1:",
+    "- Sink name: a, Line number: 2",
+    "Example 2:",
+    "- Sink name: (prefix + name), Line number: 3"
+  ]
+}

@@ -28,7 +28,7 @@ from datetime import datetime, timezone
 
 from . import catalogue, config, entry, llm, spec, taie
 from .report import f4, pct, ranged, spread
-from .scoring import aggregate, flow_locations, score
+from .scoring import aggregate, score
 from .subjects import check_dataset, fix_labels, manifest
 from .util import read_json, sha256, write_json
 
@@ -144,15 +144,11 @@ class Run:
                 print("  tai-e {} {} {}".format(cfg, project, variant), flush=True)
                 result.update(taie.analyze(project, variant, self.subjects[project], classpath, self.jhome, raw,
                                            heap, timeout, adapter=adapter, policy=policy), status="completed")
-                classes = set(taie.project_classes(classpath[0], adapter.stem))
-                scoped = spec.app_scoped(result["flows"], classes)
-                result.update(scoped_flows=len(scoped), scoped_locations=[list(x) for x in flow_locations(scoped)])
             except (OSError, RuntimeError, subprocess.SubprocessError) as exc:
                 result["error"] = "{}: {} (logs: {})".format(type(exc).__name__, exc, raw)
             write_json(self.taie_path(cfg, project, variant), result)
-            print("{} {} {}: {}".format(cfg, project, variant, "{} flows, {} scoped".format(
-                len(result["flows"]), result["scoped_flows"]) if result["status"] == "completed"
-                else result["error"]), flush=True)
+            print("{} {} {}: {}".format(cfg, project, variant, "{} flows".format(len(result["flows"]))
+                                        if result["status"] == "completed" else result["error"]), flush=True)
 
         with ThreadPoolExecutor(TAIE_WORKERS) as pool:
             list(pool.map(one, jobs))
@@ -342,14 +338,15 @@ def budgets(run_dir):
     return {model: "/".join(map(str, sorted(v))) for model, v in sorted(found.items())}
 
 
-def taie_locations(run, cfg, project, variant, scoped):
+def taie_locations(run, cfg, project, variant):
+    """Endpoint methods of every flow of one Tai-e configuration; ([], error) if Tai-e failed."""
     path = run.taie_path(cfg, project, variant)
     if not path.is_file():
         return None, None
     result = read_json(path)
     if result["status"] != "completed":
         return [], result.get("error", "failed")
-    return [tuple(x) for x in result["scoped_locations" if scoped else "locations"]], None
+    return [tuple(x) for x in result["locations"]], None
 
 
 def hinted_locations(run, short, level, project, variant, sample):
@@ -371,8 +368,7 @@ def arms(models):
             cfg = taie_config(level, short)
             suffix = {"h2b": " [{} selection]", "e": " [{} driver + selection]"}.get(level, "").format(
                 short.capitalize())
-            rows.append((level, "Tai-e" + suffix, ("taie", cfg, False)))
-            rows.append((level, "Tai-e app scope" + suffix, ("taie", cfg, True)))
+            rows.append((level, "Tai-e" + suffix, ("taie", cfg, None)))
         for short in models:
             rows.append((level, "Hinted " + short.capitalize(), ("llm", short, level)))
     return rows
@@ -394,10 +390,10 @@ def evaluate(run_dir, projects=tuple(config.PROJECTS), models=tuple(config.MODEL
             for project in projects:
                 for variant in config.VARIANTS:
                     if kind == "taie":
-                        locations, failure = taie_locations(run, a, project, variant, b)
+                        locations, failure = taie_locations(run, a, project, variant)
                     else:
                         locations, failure = hinted_locations(run, a, b, project, variant, sample)
-                    if failure and not (kind == "taie" and b):  # list each Tai-e failure once
+                    if failure:
                         result["failures"].append(dict(level=level, arm=label, sample=sample, project=project,
                                                        variant=variant, reason=failure))
                     if variant == "fixed":
@@ -445,8 +441,7 @@ def render(result, projects, labels):
                  result["baseline"]),
              "file and sink files). From H1 on, the hinted LLM sees exactly the entry program and policy files",
              "Tai-e receives, plus the production fix file. H2b and E are per model: each model",
-             "selects its own sources (and writes its own driver) and is hinted with that configuration.",
-             "*Tai-e app scope* keeps only flows whose two endpoint methods are project or entry code.", "",
+             "selects its own sources (and writes its own driver) and is hinted with that configuration.", "",
              "Unit: `(simple class, method)` on the vulnerable revision; Detected = K > 0, FDR = 1 − K/N,",
              "F1 = 2K/(N+K). Fix-location proxies, not verified vulnerability labels.", "",
              "## Summary", "", "Mean over samples, [min–max] when samples differ.", "",

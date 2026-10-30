@@ -1,0 +1,76 @@
+{
+  "request": {
+    "model": "deepseek/deepseek-v4-pro",
+    "temperature": 0,
+    "max_tokens": 8000,
+    "reasoning": {
+      "effort": "low"
+    },
+    "messages": [
+      {
+        "role": "system",
+        "content": "Classify candidate taint SOURCES for a Java CWE-22 (path traversal) static analysis.\nA source is a method call whose RETURNED value can carry data that an external\nattacker controls and that may be used to name a file or resource path, such as\nnames read from an archive or upload, request parameters, environment or\ncommand-line input. Values the program computes or chooses itself, or that a\ntrusted caller supplies, are not sources. For each candidate decide\nsource | not_source | unknown. Cite at least one supplied call-site ID (K...)\nshowing how the value is obtained or used. Do not decide from the method name\nalone; if the supplied code is insufficient, answer unknown. Labels, versions\nand fix locations are unavailable.\nReturn ONLY JSON: {\"sources\":[{\"id\":\"C01\",\"decision\":\"source|not_source|unknown\",\n\"reason\":\"at most 30 words\",\"evidence\":[\"K1\"]}]}. Return every candidate exactly once.\n"
+      },
+      {
+        "role": "user",
+        "content": "{\"scope\": \"Java CWE-22 source selection; candidates already reach a path sink in a static run\", \"project_label\": \"subject\", \"candidates\": [{\"id\": \"C01\", \"signature\": \"<net.sf.mpxj.common.FileHelper: java.io.File createTempDir()>\", \"declared_in_project\": true, \"call_sites\": [{\"id\": \"K1\", \"caller\": \"<net.sf.mpxj.common.InputStreamHelper: java.io.File writeZipStreamToTempDir(java.io.InputStream)>\", \"line\": 84, \"code\": \"79:     * @param inputStream zip file input stream\\n80:     * @return File instance representing the temporary directory\\n81:     */\\n82:    public static File writeZipStreamToTempDir(InputStream inputStream) throws IOException\\n83:    {\\n84:       File dir = FileHelper.createTempDir();\\n85: \\n86:       try\\n87:       {\\n88:          processZipStream(dir, inputStream);\\n89:       }\"}]}]}"
+      }
+    ]
+  },
+  "response": {
+    "id": "gen-1792478400-pZVTEkvDFlDZVgzzUxBb",
+    "object": "chat.completion",
+    "created": 1792478400,
+    "model": "deepseek/deepseek-v4-pro",
+    "provider": "Novita",
+    "system_fingerprint": "a307abda487cd1b463329ccb945ce396",
+    "service_tier": null,
+    "choices": [
+      {
+        "index": 0,
+        "logprobs": null,
+        "finish_reason": "stop",
+        "native_finish_reason": "stop",
+        "message": {
+          "role": "assistant",
+          "content": "{\"sources\":[{\"id\":\"C01\",\"decision\":\"not_source\",\"reason\":\"createTempDir returns a program-chosen temporary directory, not attacker-controlled data. The zip input stream is used later, but this method's return is safe.\",\"evidence\":[\"K1\"]}]}",
+          "refusal": null,
+          "reasoning": "We need answer JSON only. Need classify candidate C01. Need inspect provided info. Candidate signature: net.sf.mpxj.common.FileHelper: java.io.File createTempDir(). Declared in project true. Call site K1 in InputStreamHelper.writeZipStreamToTempDir(InputStream inputStream), line 84: File dir = FileHelper.createTempDir(); then processZipStream(dir, inputStream). We need decide source or not_source or unknown for Java CWE-22 path traversal. Source is method call whose RETURNED value can carry external attacker-controlled data used to name file/resource path. Here createTempDir() returns a File representing a temporary directory created by program, not attacker controlled. The inputStream may be zip from attacker and processZipStream may extract zip entries into dir; but candidate is createTempDir return. The returned File is directory path chosen by program (temp dir), not external data. So not_source. Need evidence K1. Reason <=30 words. Return JSON. Ensure exactly candidate once.",
+          "reasoning_details": [
+            {
+              "type": "reasoning.text",
+              "text": "We need answer JSON only. Need classify candidate C01. Need inspect provided info. Candidate signature: net.sf.mpxj.common.FileHelper: java.io.File createTempDir(). Declared in project true. Call site K1 in InputStreamHelper.writeZipStreamToTempDir(InputStream inputStream), line 84: File dir = FileHelper.createTempDir(); then processZipStream(dir, inputStream). We need decide source or not_source or unknown for Java CWE-22 path traversal. Source is method call whose RETURNED value can carry external attacker-controlled data used to name file/resource path. Here createTempDir() returns a File representing a temporary directory created by program, not attacker controlled. The inputStream may be zip from attacker and processZipStream may extract zip entries into dir; but candidate is createTempDir return. The returned File is directory path chosen by program (temp dir), not external data. So not_source. Need evidence K1. Reason <=30 words. Return JSON. Ensure exactly candidate once.",
+              "format": "unknown",
+              "index": 0
+            }
+          ]
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 523,
+      "completion_tokens": 268,
+      "total_tokens": 791,
+      "cost": 0.0016944,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 0,
+        "cache_write_tokens": 0,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 0.0016944,
+        "upstream_inference_prompt_cost": 0.0008368,
+        "upstream_inference_completions_cost": 0.0008576
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 209,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    }
+  },
+  "attempts": 1,
+  "seconds": 7.03
+}

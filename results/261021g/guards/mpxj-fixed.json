@@ -1,0 +1,157 @@
+{
+  "project": "mpxj",
+  "variant": "fixed",
+  "stamp": {
+    "version": 1,
+    "guards_sha256": "1bf3162985e123f09fc39425bc60c2b50f43de4a4091041200b9202758eed2c1",
+    "checkers_sha256": {
+      "SourceFacts.java": "a4cf29014742376ee9a8d0c848839e281595d1abc8695f99c4b421bbc045c1b9",
+      "CanonicalGuardCheck.java": "de54813e23ce149d7f0168b85fc3268696f69164b8f24ec564fb42994934cb25"
+    }
+  },
+  "commit": "8eaf4225048ea5ba7e59ef4556dab2098fcc4a1d",
+  "model": "JDK POSIX paths; trusted root; no symlinks, filesystem races or custom Path providers",
+  "files": [
+    "src/main/java/net/sf/mpxj/common/InputStreamHelper.java",
+    "src/main/java/net/sf/mpxj/mpd/MPDUtility.java",
+    "src/main/java/net/sf/mpxj/mpp/MPPUtility.java",
+    "src/main/java/net/sf/mpxj/mpp/Props12.java",
+    "src/main/java/net/sf/mpxj/mpp/Props14.java",
+    "src/main/java/net/sf/mpxj/mpp/Props8.java",
+    "src/main/java/net/sf/mpxj/mpp/Props9.java",
+    "src/main/java/net/sf/mpxj/primavera/p3/P3PRXFileReader.java",
+    "src/main/java/net/sf/mpxj/primavera/suretrak/SureTrakSTXFileReader.java",
+    "src/main/java/net/sf/mpxj/utility/ProjectCleanUtility.java",
+    "src/main/java/net/sf/mpxj/writer/AbstractProjectWriter.java"
+  ],
+  "contracts": [
+    {
+      "checker": "path",
+      "cls": "net.sf.mpxj.common.InputStreamHelper",
+      "method": "processZipStream",
+      "guard_line": 131,
+      "guard": "canonicalDestinationFile.startsWith(canonicalDestinationDirPath + File.separator)",
+      "status": "unknown",
+      "protects_sink": false,
+      "reason": "Parse-only proof requires an explicitly qualified JDK sink"
+    },
+    {
+      "checker": "canonical",
+      "cls": "net.sf.mpxj.common.InputStreamHelper",
+      "status": "unknown",
+      "method": "writeStreamToTempFile",
+      "sink_line": 53,
+      "protects_sink": false,
+      "reason": "Unsupported canonical containment contract"
+    },
+    {
+      "checker": "canonical",
+      "cls": "net.sf.mpxj.common.InputStreamHelper",
+      "status": "supported",
+      "method": "processZipStream",
+      "sink_line": 148,
+      "protects_sink": true,
+      "reason": "Attributed JDK canonical paths + File.separator; rejecting guard dominates the same immutable File at a direct sink in the same block",
+      "guard_line": 131,
+      "root_parameter": "dir"
+    },
+    {
+      "checker": "canonical",
+      "cls": "net.sf.mpxj.mpd.MPDUtility",
+      "status": "unknown",
+      "method": "fileHexDump",
+      "sink_line": 469,
+      "protects_sink": false,
+      "reason": "Unsupported canonical containment contract"
+    },
+    {
+      "checker": "canonical",
+      "cls": "net.sf.mpxj.mpd.MPDUtility",
+      "status": "unknown",
+      "method": "fileDump",
+      "sink_line": 513,
+      "protects_sink": false,
+      "reason": "Unsupported canonical containment contract"
+    },
+    {
+      "checker": "canonical",
+      "cls": "net.sf.mpxj.mpp.MPPUtility",
+      "status": "unknown",
+      "method": "fileHexDump",
+      "sink_line": 960,
+      "protects_sink": false,
+      "reason": "Unsupported canonical containment contract"
+    },
+    {
+      "checker": "canonical",
+      "cls": "net.sf.mpxj.mpp.MPPUtility",
+      "status": "unknown",
+      "method": "fileDump",
+      "sink_line": 1005,
+      "protects_sink": false,
+      "reason": "Unsupported canonical containment contract"
+    },
+    {
+      "checker": "canonical",
+      "cls": "net.sf.mpxj.primavera.p3.P3PRXFileReader",
+      "status": "unknown",
+      "method": "extractFile",
+      "sink_line": 123,
+      "protects_sink": false,
+      "reason": "Unsupported canonical containment contract"
+    },
+    {
+      "checker": "canonical",
+      "cls": "net.sf.mpxj.primavera.suretrak.SureTrakSTXFileReader",
+      "status": "unknown",
+      "method": "extractFile",
+      "sink_line": 110,
+      "protects_sink": false,
+      "reason": "Unsupported canonical containment contract"
+    },
+    {
+      "checker": "canonical",
+      "cls": "net.sf.mpxj.utility.ProjectCleanUtility",
+      "status": "unknown",
+      "method": "processFile",
+      "sink_line": 144,
+      "protects_sink": false,
+      "reason": "Unsupported canonical containment contract"
+    },
+    {
+      "checker": "canonical",
+      "cls": "net.sf.mpxj.utility.ProjectCleanUtility",
+      "status": "unknown",
+      "method": "processMPP",
+      "sink_line": 232,
+      "protects_sink": false,
+      "reason": "Unsupported canonical containment contract"
+    },
+    {
+      "checker": "canonical",
+      "cls": "net.sf.mpxj.writer.AbstractProjectWriter",
+      "status": "unknown",
+      "method": "write",
+      "sink_line": 43,
+      "protects_sink": false,
+      "reason": "Unsupported canonical containment contract"
+    },
+    {
+      "checker": "canonical",
+      "cls": "net.sf.mpxj.writer.AbstractProjectWriter",
+      "status": "unknown",
+      "method": "write",
+      "sink_line": 54,
+      "protects_sink": false,
+      "reason": "Unsupported canonical containment contract"
+    }
+  ],
+  "protected": [
+    {
+      "cls": "net.sf.mpxj.common.InputStreamHelper",
+      "method": "processZipStream",
+      "line": 148,
+      "checker": "canonical"
+    }
+  ]
+}

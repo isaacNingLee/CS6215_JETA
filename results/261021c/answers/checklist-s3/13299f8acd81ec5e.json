@@ -1,0 +1,137 @@
+{
+  "request": {
+    "model": "typesafe/jev-1.13",
+    "state": {
+      "task": "Java code that a taint analysis reported as a possible path traversal (CWE-22). The questions are about the method under review.",
+      "code": "// File: src/main/java/net/sf/mpxj/common/InputStreamHelper.java\n// Method under review: InputStreamHelper.processZipStream\n   private static void processZipStream(File dir, InputStream inputStream) throws IOException\n   {\n      String canonicalDestinationDirPath = dir.getCanonicalPath();\n      ZipInputStream zip = new ZipInputStream(inputStream);\n      while (true)\n      {\n         ZipEntry entry = zip.getNextEntry();\n         if (entry == null)\n         {\n            break;\n         }\n\n         File file = new File(dir, entry.getName());\n\n         // https://snyk.io/research/zip-slip-vulnerability\n         String canonicalDestinationFile = file.getCanonicalPath();\n         if (!canonicalDestinationFile.startsWith(canonicalDestinationDirPath + File.separator))\n         {\n            throw new IOException(\"Entry is outside of the target dir: \" + entry.getName());\n         }\n\n         if (entry.isDirectory())\n         {\n            FileHelper.mkdirsQuietly(file);\n            continue;\n         }\n\n         File parent = file.getParentFile();\n         if (parent != null)\n         {\n            FileHelper.mkdirsQuietly(parent);\n         }\n\n         FileOutputStream fos = new FileOutputStream(file);\n         byte[] bytes = new byte[1024];\n         int length;\n         while ((length = zip.read(bytes)) >= 0)\n         {\n            fos.write(bytes, 0, length);\n         }\n         fos.close();\n      }\n   }"
+    },
+    "questions": {
+      "p1_c1": {
+        "type": "noul",
+        "instructions": "True if the answer to this question is yes: Is there a base directory (field, constant, or local variable typed as java.io.File or java.nio.file.Path) representing the restricted parent?"
+      },
+      "p1_c2": {
+        "type": "noul",
+        "instructions": "True if the answer to this question is yes: Does the method construct a target path from the base directory and the user input (e.g., new File(baseDir, userInput) or baseDir.resolve(userInput))?"
+      },
+      "p1_c3": {
+        "type": "noul",
+        "instructions": "True if the answer to this question is yes: Does the method obtain the canonical path of the base directory using File.getCanonicalPath() or Path.toRealPath()?"
+      },
+      "p1_c4": {
+        "type": "noul",
+        "instructions": "True if the answer to this question is yes: Does the method obtain the canonical path of the constructed target using File.getCanonicalPath() or Path.toRealPath()?"
+      },
+      "p1_c5": {
+        "type": "noul",
+        "instructions": "True if the answer to this question is yes: Does the method verify that the canonical target path equals or is a proper descendant of the canonical base path (e.g., targetCanonicalPath.equals(baseCanonicalPath) || targetCanonicalPath.startsWith(baseCanonicalPath + File.separator))?"
+      },
+      "p2_c1": {
+        "type": "noul",
+        "instructions": "True if the answer to this question is yes: Does the method use a hardcoded mapping (e.g., Map, switch, if/else chain) from the user input to a fixed safe file path that does not contain any part of the input?"
+      },
+      "p2_c2": {
+        "type": "noul",
+        "instructions": "True if the answer to this question is yes: Does the method reject the input or return a safe default when it does not match any mapping entry?"
+      },
+      "p3_c1": {
+        "type": "noul",
+        "instructions": "True if the answer to this question is yes: Does the method call org.apache.commons.io.FilenameUtils.getName() on the user input?"
+      },
+      "p3_c2": {
+        "type": "noul",
+        "instructions": "True if the answer to this question is yes: Does the method construct the target path by combining a fixed base directory with the result of getName() (e.g., new File(baseDir, FilenameUtils.getName(input)))?"
+      },
+      "p3_c3": {
+        "type": "noul",
+        "instructions": "True if the answer to this question is yes: Is the base directory assigned from a constant or field, not influenced by any user input?"
+      },
+      "p4_c1": {
+        "type": "noul",
+        "instructions": "True if the answer to this question is yes: Does the method validate the user input by checking that it matches a regular expression that allows only alphanumeric characters, hyphens, underscores, and periods, and explicitly rejects characters like '/', '\\', and the '..' sequence?"
+      },
+      "p4_c2": {
+        "type": "noul",
+        "instructions": "True if the answer to this question is yes: Does the validation also reject input containing the null character ('\\0')?"
+      },
+      "p4_c3": {
+        "type": "noul",
+        "instructions": "True if the answer to this question is yes: Does the method construct the target path by combining a fixed base directory with the validated input (e.g., new File(baseDir, input))?"
+      },
+      "p4_c4": {
+        "type": "noul",
+        "instructions": "True if the answer to this question is yes: Is the base directory assigned from a constant or field, not influenced by any user input?"
+      }
+    }
+  },
+  "response": {
+    "model": "typesafe/jev-1.13-20260917",
+    "answers": {
+      "p1_c1": {
+        "type": "noul",
+        "noul": 0.96
+      },
+      "p1_c2": {
+        "type": "noul",
+        "noul": 0.97
+      },
+      "p1_c3": {
+        "type": "noul",
+        "noul": 0.98
+      },
+      "p1_c4": {
+        "type": "noul",
+        "noul": 0.97
+      },
+      "p1_c5": {
+        "type": "noul",
+        "noul": 0.52
+      },
+      "p2_c1": {
+        "type": "noul",
+        "noul": 0.03
+      },
+      "p2_c2": {
+        "type": "noul",
+        "noul": 0.37
+      },
+      "p3_c1": {
+        "type": "noul",
+        "noul": 0.03
+      },
+      "p3_c2": {
+        "type": "noul",
+        "noul": 0.7
+      },
+      "p3_c3": {
+        "type": "noul",
+        "noul": 0.33
+      },
+      "p4_c1": {
+        "type": "noul",
+        "noul": 0.03
+      },
+      "p4_c2": {
+        "type": "noul",
+        "noul": 0.45
+      },
+      "p4_c3": {
+        "type": "noul",
+        "noul": 0.89
+      },
+      "p4_c4": {
+        "type": "noul",
+        "noul": 0.35
+      }
+    },
+    "usage": {
+      "input_tokens": 1339,
+      "output_tokens": 270,
+      "cost": 5.6238e-05
+    },
+    "id": "gen-dec-1792545481-FhwS0jJg4DEeR6KxBzRx",
+    "provider": "TypeSafe"
+  },
+  "attempts": 1,
+  "seconds": 0.52
+}

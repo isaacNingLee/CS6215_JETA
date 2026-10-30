@@ -1,0 +1,18 @@
+{
+  "model": "deepseek/deepseek-v4-pro",
+  "temperature": 0,
+  "max_tokens": 16000,
+  "reasoning": {
+    "effort": "low"
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are a Java programmer and very good at analyzing Java code."
+    },
+    {
+      "role": "user",
+      "content": "Please identify the sink values for path traversal (CWE-22) according to the following instructions.\n- When a variable/expression is used as argument 0 of a `FileOutputStream` constructor call (the file being opened for writing), it is a sink for path traversal.\nExample (illustrative only; report values from the program below):\n1. Object stream = new FileOutputStream(target);\n- Sink name: target, Line number: 1\nNegative example: 1. validate();\nAnswer: an empty string. A helper call is not the specified sink API.\nNow I will give you the program. Please list all the names of sinks and the line numbers.The line numbers should indicate the line of the call that consumes the value.\nDo not add extra explanations.Just list the pairs of variable/expression and line number line by line.Each line should start with -.If there is no variable as sink, just output an empty string.\nHere are several examples:\nExample 1:\n- Sink name: a, Line number: 2\nExample 2:\n- Sink name: (prefix + name), Line number: 3\nHere is the program:\n```\n1. public void process(InputStream in, ZipEntry zipEntry) throws IOException {\n2.       final tmp1 = zipEntry.getName();\n3.       String root = getRootName(tmp1);\n4.       if (rootDir == null) {\n5.         rootDir = root;\n6.       }\n7.       else if (!rootDir.equals(root)) {\n8.         throw new ZipException(\"Unwrapping with multiple roots is not supported, roots: \" + rootDir + \", \" + root);\n9.       }\n10. \n11.       String name = mapper.map(getUnrootedName(root, zipEntry.getName()));\n12.       if (name != null) {\n13.         File file = new File(outputDir, name);\n14. \n15.         \n16. \n17. \n18. \n19.         if (name.indexOf(\"..\") != -1 && !file.getCanonicalPath().startsWith(outputDir.getCanonicalPath())) {\n20.           throw new ZipException(\"The file \"+name+\" is trying to leave the target output directory of \"+outputDir+\". Ignoring this file.\");\n21.         }\n22. \n23.         if (zipEntry.isDirectory()) {\n24.           FileUtils.forceMkdir(file);\n25.         }\n26.         else {\n27.           File tmp2 = file.getParentFile();\n28.           FileUtils.forceMkdir(tmp2);\n29. \n30.           if (log.isDebugEnabled() && file.exists()) {\n31.             log.debug(\"Overwriting file '{}'.\", zipEntry.getName());\n32.           }\n33. \n34.           FileUtils.copy(in, file);\n35.         }\n36.       }\n37.     }\n```\n"
+    }
+  ]
+}

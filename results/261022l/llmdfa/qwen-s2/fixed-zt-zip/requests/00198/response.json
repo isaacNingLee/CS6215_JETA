@@ -1,0 +1,46 @@
+{
+  "id": "gen-1792656325-hmNl6E6kF256PGao0ZPH",
+  "object": "chat.completion",
+  "created": 1792656325,
+  "model": "qwen/qwen3-coder-30b-a3b-instruct",
+  "provider": "Amazon Bedrock",
+  "system_fingerprint": null,
+  "service_tier": null,
+  "choices": [
+    {
+      "index": 0,
+      "logprobs": null,
+      "finish_reason": "stop",
+      "native_finish_reason": "end_turn",
+      "message": {
+        "role": "assistant",
+        "content": "Explanation: Let me trace through the code to determine if tmp2 depends on zipEntry. \n\nLine 1: `public void process(InputStream in, ZipEntry zipEntry) throws IOException {`\n- zipEntry is a parameter passed to the method\n\nLine 2: `final tmp1 = zipEntry.getName();`\n- tmp1 gets the result of zipEntry.getName()\n\nLine 11: `String name = mapper.map(getUnrootedName(root, zipEntry.getName()));`\n- zipEntry.getName() is called again here, which means zipEntry is used in the computation of name\n\nLine 27: `File tmp2 = file.getParentFile();`\n- tmp2 is created from file, which is constructed using name (from line 11)\n- Since name depends on zipEntry.getName() (line 11), and tmp2 depends on file which depends on name, then tmp2 indirectly depends on zipEntry\n\nThe chain is: zipEntry → zipEntry.getName() → name → file → tmp2\n\nAnswer: Yes",
+        "refusal": null,
+        "reasoning": null
+      }
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 1296,
+    "completion_tokens": 213,
+    "total_tokens": 1509,
+    "cost": 0.0003222,
+    "is_byok": false,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0,
+      "video_tokens": 0
+    },
+    "cost_details": {
+      "upstream_inference_cost": 0.0003222,
+      "upstream_inference_prompt_cost": 0.0001944,
+      "upstream_inference_completions_cost": 0.0001278
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "image_tokens": 0,
+      "audio_tokens": 0
+    }
+  }
+}

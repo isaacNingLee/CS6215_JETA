@@ -1,0 +1,11 @@
+You are checking the flows described by a static taint-analysis configuration, not doing a free-form audit.
+
+Tai-e, a whole-program static taint analyzer, is run on this project with exactly the inputs below: the entry program it starts from and its taint policy files (Tai-e YAML: sources introduce attacker-controlled data, sinks are the dangerous arguments, transfers propagate taint between values). You receive the same configuration the analyzer receives.
+
+{config}
+
+Given the following Java source file, decide whether attacker-controlled data from a configured source can reach a configured sink without an adequate restriction (e.g. path normalization, allow-listing, a containment check) somewhere on the way. Respond with ONLY a JSON object, no prose outside it, in this exact shape:
+{{"findings": [{{"cwe": "CWE-22", "class": "EnclosingClassName", "method": "methodName", "explanation": "one paragraph naming exactly where the missing or inadequate check is"}}]}}
+List one finding per enclosing method you believe is actually responsible for the unguarded flow (there may be more than one, e.g. an entry method and a helper it calls). Use the class's simple name (no package) and the method name as written (for a constructor, use the class name). If you conclude every such flow is fully restricted, or no configured source reaches a configured sink across the file(s) shown, return {{"findings": []}}.
+
+{files}

@@ -1,0 +1,18 @@
+{
+  "model": "qwen/qwen3-coder-30b-a3b-instruct",
+  "temperature": 0,
+  "max_tokens": 8000,
+  "reasoning": {
+    "effort": "low"
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are a Java programmer and very good at analyzing Java code."
+    },
+    {
+      "role": "user",
+      "content": "Please identify the sink values for path traversal (CWE-22) according to the following instructions.\n- When a variable/expression is used as argument 0 of a `FileOutputStream` constructor call (the file being opened for writing), it is a sink for path traversal.\nExample (illustrative only; report values from the program below):\n1. Object stream = new FileOutputStream(target);\n- Sink name: target, Line number: 1\nNegative example: 1. validate();\nAnswer: an empty string. A helper call is not the specified sink API.\nNow I will give you the program. Please list all the names of sinks and the line numbers.The line numbers should indicate the line of the call that consumes the value.\nDo not add extra explanations.Just list the pairs of variable/expression and line number line by line.Each line should start with -.If there is no variable as sink, just output an empty string.\nHere are several examples:\nExample 1:\n- Sink name: a, Line number: 2\nExample 2:\n- Sink name: (prefix + name), Line number: 3\nHere is the program:\n```\n1. private RandomAccessFile checkSplitFile() throws ZipException {\n2. \t\tif (zipModel.isSplitArchive()) {\n3. \t\t\tint diskNumberStartOfFile = fileHeader.getDiskNumberStart();\n4. \t\t\tcurrSplitFileCounter = diskNumberStartOfFile + 1;\n5. \t\t\tString curZipFile = zipModel.getZipFile();\n6. \t\t\tString partFile = null;\n7. \t\t\tif (diskNumberStartOfFile == zipModel.getEndCentralDirRecord().getNoOfThisDisk()) {\n8. \t\t\t\tpartFile = zipModel.getZipFile();\n9. \t\t\t} else {\n10. \t\t\t\tif (diskNumberStartOfFile >= 9) {\n11. \t\t\t\t\tpartFile = curZipFile.substring(0, curZipFile.lastIndexOf(\".\")) + \".z\" + (diskNumberStartOfFile+ 1);\n12. \t\t\t\t} else{\n13. \t\t\t\t\tpartFile = curZipFile.substring(0, curZipFile.lastIndexOf(\".\")) + \".z0\" + (diskNumberStartOfFile+ 1);\n14. \t\t\t\t}\n15. \t\t\t}\n16. \t\t\t\n17. \t\t\ttry {\n18. \t\t\t\tRandomAccessFile raf = new RandomAccessFile(partFile, InternalZipConstants.READ_MODE);\n19. \t\t\t\t\n20. \t\t\t\tif (currSplitFileCounter == 1) {\n21. \t\t\t\t\tbyte[] splitSig = new byte[4];\n22. \t\t\t\t\traf.read(splitSig);\n23. \t\t\t\t\tif (Raw.readIntLittleEndian(splitSig, 0) != InternalZipConstants.SPLITSIG) {\n24. \t\t\t\t\t\tthrow new ZipException(\"invalid first part split file signature\");\n25. \t\t\t\t\t}\n26. \t\t\t\t}\n27. \t\t\t\treturn raf;\n28. \t\t\t} catch (FileNotFoundException e) {\n29. \t\t\t\tthrow new ZipException(e);\n30. \t\t\t} catch (IOException e) {\n31. \t\t\t\tthrow new ZipException(e);\n32. \t\t\t}\n33. \t\t}\n34. \t\treturn null;\n35. \t}\n```\n"
+    }
+  ]
+}
