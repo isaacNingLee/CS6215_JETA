@@ -37,6 +37,7 @@ class PaperNumbersTest(unittest.TestCase):
         stages = self.numbers["table2_ablation"]
         self.assertEqual(self.macro(stages["Agreement guard"]), [27.4, 79.5, 6.0])
         self.assertEqual(round(stages["+ blind checklist"]["pc"][0], 1), 1.3)
+        self.assertEqual(round(stages["+ blind checklist"]["flag"][0], 1), 4.7)
 
     def test_hint_relaxation(self):
         jeta = self.numbers["figure5_6_relaxation"]["Qwen"]["+ checklist"]

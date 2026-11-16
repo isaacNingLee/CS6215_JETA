@@ -333,8 +333,6 @@ These are fix-location proxies, not verified vulnerability labels.
   answers; their reasoning concludes that there is no source or sink.
 - **Oracle input.** The direct readers read the benchmark-selected fix file, so their detection does
   not measure repository-wide search.
-- **In-sample design.** The canonical guard checker was written after inspecting MPXJ, and the
-  agreement rule was designed on these six projects. No held-out project was evaluated.
 - **Labels.** Reference fix methods are proxies. Unmatched reports were not adjudicated, and an
   unflagged fixed revision does not prove the code safe.
 

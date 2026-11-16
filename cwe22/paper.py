@@ -3,7 +3,7 @@
 ``python3 -m cwe22 paper`` writes to results/paper/:
 
 * table1_main.tex        Table 1: per-project FDR, F1 and detections, Original configuration
-* table2_ablation.tex    Table 2: incremental effect of JETA's stages on vulnerable revisions
+* table2_ablation.tex    Table 2: incremental effect of JETA's stages on vulnerable and fixed revisions
 * table3_cost.tex        Table 3: model calls, tokens, charges and time (cost.py)
 * fig5_hint_relaxation.pdf, fig6_pair_correct.pdf, fig8_cost_breakdown.pdf   (figures.py; needs matplotlib)
 * numbers.json           every number behind the tables and figures, and the case-study numbers in the text
@@ -176,16 +176,21 @@ def table1(scores, groups):
 
 
 def table2(stages):
-    """Paper Table 2: Agreement guard, + Jev judgment, + blind checklist (vulnerable revisions)."""
-    cols = (("fdr", "mean", min), ("f1", "mean", max), ("det", "sum", max))
+    """Paper Table 2: Agreement guard, + Jev judgment, + blind checklist (vulnerable and fixed revisions)."""
+    cols = (("fdr", "mean", min), ("f1", "mean", max), ("det", "sum", max), ("flag", "sum", min), ("pc", "sum", max))
     best = [pick(r1(st.mean(per_sample(r, k, agg))) for _, r in stages) for k, agg, pick in cols]
     lines = [MSD, r"\begin{table}[!htbp]", r"\centering",
-             r"\caption{Incremental effects of JETA stages on vulnerable revisions under original hints. Each row "
-             r"adds a stage to the preceding pipeline. FDR and F1 are macro means across six projects; Det. counts "
-             r"detected projects. Subscripts show sample standard deviations over three aligned runs. Bold marks "
-             r"the best mean, including ties.}", r"\label{tab:vulnerable-ablation}",
-             r"\begin{tabular*}{\columnwidth}{@{\extracolsep{\fill}}lccc@{}}", r"\toprule",
-             r"JETA stage & FDR (\%)$\downarrow$ & F1 (\%)$\uparrow$ & Det. (/6)$\uparrow$ \\", r"\midrule"]
+             r"\caption{Incremental effects of JETA stages under original hints. Each row adds a stage to the "
+             r"preceding pipeline. On vulnerable revisions, FDR and F1 are macro percentages across six projects "
+             r"and Det. counts detected projects. Flag. counts projects whose fixed revision still reports a "
+             r"reference fix method; P-C counts pair-correct projects (\cref{sec:metrics}). Subscripts show sample "
+             r"standard deviations over three aligned runs. Bold marks the best mean, including ties.}",
+             r"\label{tab:ablation}", r"\small", r"\setlength{\tabcolsep}{2pt}",
+             r"\begin{tabular*}{\columnwidth}{@{\extracolsep{\fill}}lccccc@{}}", r"\toprule",
+             r"& \multicolumn{3}{c}{Vulnerable} & \multicolumn{2}{c}{Fixed / paired} \\",
+             r"\cmidrule(lr){2-4}\cmidrule(l){5-6}",
+             r"JETA stage & FDR$\downarrow$ & F1$\uparrow$ & Det.$\uparrow$ & Flag.$\downarrow$ & P-C$\uparrow$ \\",
+             r"\midrule"]
     for name, runs in stages:
         cells = [value(per_sample(runs, k, agg), r1(st.mean(per_sample(runs, k, agg))) == b, False)
                  for (k, agg, _), b in zip(cols, best)]
